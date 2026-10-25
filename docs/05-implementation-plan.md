@@ -58,6 +58,12 @@ Work is cut into **vertical slices**. Each slice ends with something you can run
 - Dev proxy `/api` → `http://localhost:8081`, so the refresh cookie is same-origin
 - **Done when:** a new visitor signs up, verifies email, logs in, creates a portal, and lands in it
 
+### Slice 2b: Admin console and support impersonation ✅ Done 2026-10-26
+- New Angular app `admin-console/` (port 4300, own git repo), built from `projecty-tenant-admin.html`: admin sign-in, tenants list, tenant detail (details, users, permissions placeholder, activity), platform audit logs, "Start impersonation" dialog. Left out until the backend supports them: add/edit/suspend tenant, add/deactivate user, plan, domain, CSV export
+- Platform service: modules `admin` (separate admin accounts and sessions, cookie `py_admin_refresh`, first admin from `projecty.admin.bootstrap`), `impersonation`, `audit`; Flyway `V2`
+- Impersonation: admin picks user, duration (15 min–24 h), reason and comment, and confirms → audit `IMPERSONATION_REQUESTED` → one-time launch link (2 min) opens the customer app in a new tab → `/api/auth/impersonation/redeem` opens a session as the user whose token carries `act` (the admin) → banner "Support session · ends HH:MM · End session" → audit `STARTED` / `ENDED`. The session cannot outlive the chosen duration
+- Tests: 5 backend integration tests (role separation, lockout, tenant views, request validation, full support-session flow); admin console specs; browser run across both apps
+
 ### Slice 3: Tenant isolation and portal settings (PTL-US-02, -03, -04, -12)
 - `TenantContext` filter: reads `X-Portal-Id`, checks it against the token's organizations, else 403
 - Every repository query is scoped by `portal_id`

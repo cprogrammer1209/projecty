@@ -33,15 +33,24 @@ The standard lives in **[ARCHITECTURE.md](../ARCHITECTURE.md)** at the repo root
 
 | Module | Owns | Exposes (`api/`) |
 |---|---|---|
-| `account` | `AppUser`, `EmailToken`; signup, verify email, password reset, `/api/me` | `UserLookUpService`, `UserWriteService.authenticate`, `UserResponseDTO`, `UserPasswordResetEvent` |
-| `session` | `AuthSession`, `RefreshToken`; login, refresh, logout | `SessionWriteService.revokeAllForUser` |
-| `token` | `SigningKey`; JWT signing and checking, JWKS | `TokenWriteService.issueAccessToken` |
-| `portal` | `Portal`, `PortalMember`; create portal, slug rules | `PortalLookUpService` |
-| `shared` | `OpaqueTokenHelper` (used by account and session) | — |
+| `account` | `AppUser`, `EmailToken`; signup, verify email, password reset, `/api/me` | `UserLookUpService` (`findById`, `findByIds`), `UserWriteService.authenticate`, `UserResponseDTO`, `UserPasswordResetEvent` |
+| `session` | `AuthSession`, `RefreshToken`; login, refresh, logout | `SessionWriteService` (`revokeAllForUser`, `openSupportSession`, `endSupportSession`), `SupportSessionExpiredEvent` |
+| `token` | `SigningKey`; JWT signing and checking, JWKS; maps audience → role (USER / PLATFORM_ADMIN) | `TokenWriteService.issueAccessToken`, `issueAdminAccessToken` |
+| `portal` | `Portal`, `PortalMember`; create portal, slug rules | `PortalLookUpService` (incl. `findAllPortals`, `findMembers`, `isActiveMember`) |
+| `admin` | `AdminUser`, `AdminSession`; admin console sign-in (`/api/admin/auth`), first-admin bootstrap; tenant views (Aggregate service over portal + account) | `AdminLookUpService` |
+| `impersonation` | `Impersonation`; every support-session endpoint: `POST /api/admin/impersonations`, `POST /api/auth/impersonation/redeem`, `/end` | — (no other module needs it) |
+| `audit` | `AuditEvent` (append-only); `/api/admin/audit-events` | `AuditWriteService.record` |
+| `common/security/helper` | `RefreshCookieHelper` for the customer `py_refresh` cookie (used by session and impersonation) | — |
+| `shared` | `OpaqueTokenHelper` (account, session, admin, impersonation); `AuditEventConstants` (values every auditing module uses) | — |
 | `external/mail` | SMTP sending | `MailService` |
 
 ```
-session ──▶ account.api, portal.api, token.api
-account ──▶ portal.api, external/mail
-account ──UserPasswordResetEvent──▶ session
+session       ──▶ account.api, portal.api, token.api
+account       ──▶ portal.api, external/mail
+admin         ──▶ account.api, portal.api, token.api, audit.api
+impersonation ──▶ session.api, account.api, portal.api, admin.api, audit.api
+account ──UserPasswordResetEvent────▶ session
+session ──SupportSessionExpiredEvent──▶ impersonation
 ```
+
+**Two kinds of access token, one signing key.** Customer tokens have audience `projecty-api` (role USER); admin console tokens have audience `projecty-admin` (role PLATFORM_ADMIN). `SecurityConfig` gives `/api/admin/**` to PLATFORM_ADMIN and the rest of `/api/**` to USER, so neither token works on the other side. A support session is a normal customer token for the target user plus `act` (the admin) and `imp` (session id and end time).

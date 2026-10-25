@@ -18,11 +18,13 @@ Prerequisites: Docker, Java 21, Node 22.
 docker compose up -d                              # Postgres :5432, Mailpit :8025
 cd platform-service && ./mvnw spring-boot:run     # Platform service :8081
 cd frontend && npm start                          # Angular :4200
+cd admin-console && npm start                     # Admin console :4300
 ```
 
 | What | URL | Login |
 |---|---|---|
 | App | http://localhost:4200 | — |
+| Admin console | http://localhost:4300 | `admin@projecty.local` / `projecty-admin-dev` (created at first start) |
 | Platform health | http://localhost:8081/actuator/health | — |
 | API docs (Swagger UI) | http://localhost:8081/swagger-ui.html | Authorize with a token from `/api/auth/login` |
 | Mailpit (local inbox) | http://localhost:8025 | — |
@@ -54,6 +56,7 @@ Read these in order. Business requirements come first; technical design starts o
 - [x] Slice 0: dev environment (Docker Compose with Postgres, Mailpit)
 - [x] Slice 1: backend auth (signup, verify, login, refresh, logout, reset) and first portal
 - [x] Slice 2: Angular auth screens (sign in, sign up, verify, reset, create portal, portal picker)
+- [x] Slice 2b: Admin console (`admin-console/`) with audited support impersonation
 - [ ] **Slice 3: Tenant isolation and portal settings** ← *next*. See the [Implementation Plan](docs/05-implementation-plan.md)
 
 ## Working agreement
