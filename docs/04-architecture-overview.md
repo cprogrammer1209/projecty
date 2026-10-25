@@ -10,7 +10,7 @@ Services are drawn around **which data must change together in one transaction**
 
 | # | Service | Owns | Why separate |
 |---|---|---|---|
-| 1 | **Platform** | Portals/tenants, identities, users, teams, roles, profiles, authentication (delegated to **Keycloak**, which handles login, 2FA, SSO and token issuance; Platform drives it through the Admin API), entitlements, plans, subscriptions, billing, and audit log storage | Identity and tenancy are the root of trust, and every other service depends on them through tokens rather than calls. |
+| 1 | **Platform** | Portals/tenants, identities, users, teams, roles, profiles, authentication (login, 2FA, SSO, token issuance: built in Platform, which signs JWTs and publishes its public keys), entitlements, plans, subscriptions, billing, and audit log storage | Identity and tenancy are the root of trust, and every other service depends on them through tokens rather than calls. |
 | 2 | **Work** | Projects, phases, task lists, tasks, issues, custom modules, the customization engine, blueprint *validation*, views, Gantt and scheduling, calendar, documents (metadata), comments, collaboration, time tracking, timesheets, resources, budgets, search indexing, reports, portfolio, and AI | Timesheets, budgets, and resources constantly join with tasks, assignees, and hours. One database gives real joins and transactions with no event-fed copies to keep in sync. |
 | 3 | **Notification** | Delivery of in-app, email, and digest notifications (and future push/WhatsApp), templates, user preferences, the in-app inbox, and real-time WebSocket push | Bursty fan-out (one comment can notify 50 people on 3 channels). Keeps slow email providers from ever blocking a task save. |
 | 4 | **Automation** | Workflow rules engine, blueprint *after-actions*, SLA timers and escalations, scheduled jobs (recurring tasks, reminders, digests), custom function sandbox, outgoing webhooks, third-party integrations, and import/migration jobs | Runs user-written code that needs sandboxing. Long-running and time-based runtime model. A runaway workflow can't take down Work. |
@@ -48,7 +48,7 @@ Services are drawn around **which data must change together in one transaction**
 
 ## Decided
 
-- Identity provider: **Keycloak** (2026-10-25). Services validate its JWTs locally as OAuth2 resource servers.
+- Identity: **own auth in Platform** (2026-10-25, replacing an earlier Keycloak choice). Platform signs RS256 JWTs and publishes keys at `/.well-known/jwks.json`; other services validate tokens locally as OAuth2 resource servers.
 
 ## To be decided in technical design
 

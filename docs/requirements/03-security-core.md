@@ -76,10 +76,10 @@ Verification email, password reset email, new login from a new device (email, V1
 None. This is the base layer. Portal (01) and Users (02) build on identity.
 
 ## 12. Open questions
-- ~~Should we build our own auth, or use an identity server?~~ **Decided 2026-10-25: Keycloak.** Login, 2FA, password reset, email verification and SSO are configured in Keycloak. Platform keeps portals, users, profiles and permissions. See [Implementation Plan](../05-implementation-plan.md#decisions-taken).
+- ~~Should we build our own auth, or use an identity server?~~ **Decided 2026-10-25: own auth in Platform** (briefly Keycloak earlier the same day). Platform stores identities, hashes passwords, signs JWTs and publishes its keys, so login and signup screens are fully native. 2FA and SSO become our own work in V1/LATER. See [Implementation Plan](../05-implementation-plan.md#decisions-taken).
 
 ## Change log
 | Date | Change |
 |---|---|
 | 2026-10-25 | Initial draft |
-| 2026-10-25 | Identity provider decided: Keycloak |
+| 2026-10-25 | Identity provider decided: Keycloak, then replaced by own auth in Platform |

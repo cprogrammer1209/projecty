@@ -10,6 +10,25 @@ A personal, production-grade project management application modeled on **Zoho Pr
 
 ---
 
+## Run locally
+
+Prerequisites: Docker, Java 21, Node 22.
+
+```bash
+docker compose up -d                              # Postgres :5432, Mailpit :8025
+cd platform-service && ./mvnw spring-boot:run     # Platform service :8081
+cd frontend && npm start                          # Angular :4200
+```
+
+| What | URL | Login |
+|---|---|---|
+| App | http://localhost:4200 | — |
+| Platform health | http://localhost:8081/actuator/health | — |
+| API docs (Swagger UI) | http://localhost:8081/swagger-ui.html | Authorize with a token from `/api/auth/login` |
+| Mailpit (local inbox) | http://localhost:8025 | — |
+
+Local credentials are for development only. To reset all data: `docker compose down -v`.
+
 ## Documentation map
 
 Read these in order. Business requirements come first; technical design starts once they are agreed.
@@ -22,6 +41,7 @@ Read these in order. Business requirements come first; technical design starts o
 | 4 | [Architecture Overview](docs/04-architecture-overview.md) | The 4-service decision and module-to-service mapping (technical detail comes later) |
 | 5 | [Business Requirements](docs/requirements/README.md) | One requirements document per module: user stories, rules, acceptance criteria |
 | 6 | [Implementation Plan: M0](docs/05-implementation-plan.md) | Decisions taken and the vertical slices to build M0 |
+| 7 | [Architecture](ARCHITECTURE.md) + [ProjectY additions](docs/06-backend-architecture.md) | Mandatory code structure for every Spring service and new feature |
 
 ## Current status
 
@@ -29,9 +49,12 @@ Read these in order. Business requirements come first; technical design starts o
 - [x] Build order agreed (24 steps, 7 phases)
 - [x] Service decomposition agreed (4 services)
 - [ ] Business requirements reviewed and signed off (Phase 0 continues alongside implementation)
-- [x] Identity provider chosen: Keycloak
+- [x] Identity: own auth in Platform (Keycloak considered and dropped)
 - [x] Scaffolded: `frontend/` (Angular 20), `platform-service/` (Spring Boot 4.1, Java 21)
-- [ ] **Phase 0 implementation: Slice 0** ← *we are here*. See the [Implementation Plan](docs/05-implementation-plan.md)
+- [x] Slice 0: dev environment (Docker Compose with Postgres, Mailpit)
+- [x] Slice 1: backend auth (signup, verify, login, refresh, logout, reset) and first portal
+- [x] Slice 2: Angular auth screens (sign in, sign up, verify, reset, create portal, portal picker)
+- [ ] **Slice 3: Tenant isolation and portal settings** ← *next*. See the [Implementation Plan](docs/05-implementation-plan.md)
 
 ## Working agreement
 
