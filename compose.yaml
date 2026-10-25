@@ -1,0 +1,59 @@
+# Local development infrastructure for ProjectY.
+# Credentials here are for local use only.
+name: projecty
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: platform
+      POSTGRES_USER: projecty
+      POSTGRES_PASSWORD: projecty
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U projecty -d platform"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.1
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: projecty
+      KC_DB_PASSWORD: projecty
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./infra/keycloak:/opt/keycloak/data/import:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q '\"UP\"' <&3"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    labels:
+      # Spring Boot's Docker Compose support should start this container but not connect to it.
+      org.springframework.boot.ignore: "true"
+
+  mailpit:
+    image: axllent/mailpit:v1.32.0
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    labels:
+      org.springframework.boot.ignore: "true"
+
+volumes:
+  postgres-data:
