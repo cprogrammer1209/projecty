@@ -13,11 +13,3 @@ node_modules/
 .env
 *.log
 .DS_Store
-
-frontend/
-platform-service/
-
-# App repos are versioned separately
-/frontend/
-/platform-service/
-/admin-console/

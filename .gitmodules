@@ -1,0 +1,9 @@
+[submodule "frontend"]
+	path = frontend
+	url = https://github.com/cprogrammer1209/projecty-frontend.git
+[submodule "admin-console"]
+	path = admin-console
+	url = https://github.com/cprogrammer1209/projecty-admin-console.git
+[submodule "platform-service"]
+	path = platform-service
+	url = https://github.com/cprogrammer1209/projecty-platform-service.git
