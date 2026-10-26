@@ -10,6 +10,19 @@ A personal, production-grade project management application modeled on **Zoho Pr
 
 ---
 
+## Get the code
+
+The app repos (`frontend`, `admin-console`, `platform-service`) are git submodules, so clone with `--recurse-submodules`:
+
+```bash
+git clone --recurse-submodules https://github.com/cprogrammer1209/projecty.git
+cd projecty
+```
+
+Already cloned without it? Run `git submodule update --init --recursive`. To pull the latest of everything later: `git pull --recurse-submodules && git submodule update --remote` (the second command moves each app to its newest `master`).
+
+---
+
 ## Run locally
 
 Prerequisites: Docker, Java 21, Node 22.
