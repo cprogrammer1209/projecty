@@ -19,6 +19,16 @@ Every feature keeps all of its code in its own module: controllers (every endpoi
 - **Avoid dependency cycles.** If module A calls B's `api/`, B must not call A's `api/`. For the reverse direction, publish an event from `api/event/` and listen to it, as `UserPasswordResetEvent` does. Or keep the data the other side needs on your own side.
 - **Shared infrastructure** (HTTP cookie helpers, security plumbing) goes in `common/`, so feature modules don't have to reach into each other for it.
 - **Before writing a feature, list its endpoints and confirm they all land in the feature's module.** If one seems to belong elsewhere, stop and ask.
+- **Portal-owned data:**
+  - every portal-owned table has `portal_id`, and every repository method on it takes `portalId`
+  - the id comes only from `RequestPortalContext.requirePortalId()` (verified from `X-Portal-Id`), never from the request body
+  - another portal's record is "not found" (404)
+- **Events:**
+  - every create, update or delete of portal data publishes through `OutboxWriteService` in the same transaction; never call Kafka directly
+  - a new aggregate adds its topic to `projecty.broker.topics`; rules and envelope are in [docs/07-events.md](docs/07-events.md)
+- **Permissions:**
+  - put `@RequirePermission(PermissionConstants.X)` on every portal endpoint that changes or reveals data beyond the caller's own
+  - add new permission names to `PermissionConstants`, and grant them in `MemberConstants.SYSTEM_PROFILES` (plus a Flyway insert for existing portals)
 
 Reference example: `impersonation` owns all of its endpoints, including `/api/auth/impersonation/*`. It opens and ends sessions through `session/api` (`SessionWriteService.openSupportSession` / `endSupportSession`), and session reports expiry back through `SupportSessionExpiredEvent`.
 

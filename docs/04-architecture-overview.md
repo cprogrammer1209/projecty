@@ -53,7 +53,7 @@ Services are drawn around **which data must change together in one transaction**
 ## To be decided in technical design
 
 - Tenancy model: shared schema with `tenant_id` vs. schema-per-tenant
-- Message broker (Kafka, Redpanda, RabbitMQ, or NATS)
+- Message broker: Apache Kafka (KRaft). Event contract: [07 — Events](07-events.md)
 - Database (PostgreSQL assumed), and storage for custom field values (JSONB vs. EAV)
 - Search engine (OpenSearch vs. PostgreSQL full-text for the early phases)
 - Object storage for documents (S3-compatible, MinIO locally)

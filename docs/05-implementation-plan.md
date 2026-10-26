@@ -14,7 +14,7 @@ Work is cut into **vertical slices**. Each slice ends with something you can run
 | Active portal | Token lists the user's portal ids (`portals` claim); Angular sends `X-Portal-Id`; services check it against the token | Switch portals without logging in again (PTL-US-03) |
 | Permissions | Stored in Platform, not in the token | Tokens stay small; permission changes take effect without re-login |
 | Database | PostgreSQL 17, one database per service | Architecture boundary rule 1 |
-| Events | Transactional **outbox table** now, broker later | Broker choice is open; the outbox makes events reliable from day one (SEC-US-06) |
+| Events | Transactional **outbox table**, relayed to **Apache Kafka** (KRaft, 2026-10-26). Contract in [07 — Events](07-events.md) | The outbox makes events reliable (SEC-US-06); Kafka keeps history, so services added later can replay it |
 | Local email | **Mailpit** container | Catches verification and reset emails locally |
 | API docs | springdoc, Swagger UI at `/swagger-ui.html` | The frontend is built against a documented contract |
 | Code structure | Modular monolith per service: [06 — Backend Architecture](06-backend-architecture.md) | One structure for every service; modules can be extracted later |
@@ -28,6 +28,7 @@ Work is cut into **vertical slices**. Each slice ends with something you can run
 | Platform service | 8081 |
 | Work service (Phase 1) | 8082 |
 | Mailpit UI / SMTP | 8025 / 1025 |
+| Kafka | 9092 |
 | PostgreSQL | 5432 |
 
 ## Slices
@@ -64,26 +65,60 @@ Work is cut into **vertical slices**. Each slice ends with something you can run
 - Impersonation: admin picks user, duration (15 min–24 h), reason and comment, and confirms → audit `IMPERSONATION_REQUESTED` → one-time launch link (2 min) opens the customer app in a new tab → `/api/auth/impersonation/redeem` opens a session as the user whose token carries `act` (the admin) → banner "Support session · ends HH:MM · End session" → audit `STARTED` / `ENDED`. The session cannot outlive the chosen duration
 - Tests: 5 backend integration tests (role separation, lockout, tenant views, request validation, full support-session flow); admin console specs; browser run across both apps
 
-### Slice 3: Tenant isolation and portal settings (PTL-US-02, -03, -04, -12)
-- `TenantContext` filter: reads `X-Portal-Id`, checks it against the token's organizations, else 403
-- Every repository query is scoped by `portal_id`
-- Portal settings (time zone, date format, currency, week start); personal time zone
-- Working portal switcher in the top bar
-- **Done when:** a user in two portals switches between them, and a crafted request for a foreign portal gets 403
+### Slice 3: Tenant isolation and portal settings ✅ Done 2026-10-26 (PTL-US-02, -03, -04, -12)
+- **Isolation:**
+  - the customer app sends `X-Portal-Id`, taken from the URL `/p/{slug}`
+  - `common/security/filter/PortalContextFilter` checks it against the token's `portals` claim: not listed → 403 `PORTAL_ACCESS_DENIED`, malformed → 400
+  - endpoints read the verified id from `common/service/RequestPortalContext`; `requirePortalId()` returns 400 `PORTAL_REQUIRED` when it's missing
+- **Portal settings:**
+  - `GET /api/portal` and `PATCH /api/portal/settings` (time zone, date format, currency, week start); owner-only until Slice 4
+  - every change is audited as `PORTAL_SETTINGS_CHANGED`, with the before → after values (PTL-BR-04)
+  - a new portal defaults to the creator's browser time zone
+- **Personal time zone:** `PATCH /api/me/preferences`; `/api/me` returns `timeZone`. Dates show in the user's zone, else the portal's (PTL-BR-05, the `pyDate` pipe).
+- **Customer app shell** from `projecty-home.html`:
+  - sidebar with the portal switcher, top bar, Home with empty states (tasks and projects arrive in M1)
+  - Settings → Portal / My preferences
+  - an unknown slug shows "Portal not found"
+- **Migration:** Flyway `V4`
+- **Verification:** existing tests pass; checked by hand in the browser and with curl. No new automated tests were written for this slice, at your request.
 
-### Slice 4: Users and profiles (USR-US-01 to -06)
-- Default profiles seeded per portal: Portal Owner, Admin, Manager, Employee, Client
-- Permission check (`@RequirePermission`) on the API, plus a permission map in `/api/me` for the UI to hide actions
-- Invite by email (an existing identity is reused), accept invite, list/search users, change profile
-- Deactivate: disable the `portal_member`, revoke sessions, and reject requests at once via a status check
-- **Done when:** an Admin invites a user, the invitee joins, and an Employee is blocked from admin pages and APIs
+### Slice 4: Users and profiles ✅ Done 2026-10-26 (USR-US-01 to -06)
+- **New `member` module**, which owns `PortalMember`, `Profile`, `Invitation` and every user-management endpoint:
+  - `portal` no longer touches membership
+  - it publishes `PortalCreatedEvent`, and `member` seeds the profiles, adds the owner as Admin and enforces the 20-portal limit
+- **Profiles:** four system profiles per portal (Admin, Manager, Employee, Client), stored as data (`profile`, `profile_permission`). The Owner is `portal.owner_user_id` and holds Admin. Custom profiles come in V1.
+- **Permissions:** `PORTAL_SETTINGS_MANAGE`, `USERS_VIEW` and `USERS_MANAGE`, enforced by `@RequirePermission` (`common/security/handler/PermissionInterceptor`) through the `common/service/PortalAccessService` port that `member` implements. `GET /api/portal/me` gives the UI the caller's permissions.
+- **Invitations:**
+  - an email link, valid 7 days and single-use; re-inviting replaces a pending invite
+  - a new person creates an already-verified account from the link
+  - an existing user accepts while signed in, and the email must match
+- **Deactivation:**
+  - `PortalContextFilter` re-checks membership on every request, so access ends at once even with a valid token (USR-BR-09)
+  - the owner can't be demoted or deactivated, and the last Admin rule is enforced too
+- **Audit:** invitations, profile changes, deactivation and reactivation
+- **Customer app:**
+  - Settings → Users (list, search, filter, change profile, deactivate/reactivate, invite, pending invitations)
+  - the `/invite` accept page, and actions hidden by permission
+  - "You no longer have access" when removed mid-session
+- **Migration:** Flyway `V5` (existing owners became Admins)
+- **Verification:** existing tests pass (3 assertions updated for the new profile model); checked by hand with curl and in the browser. No new automated tests were written, at your request.
 
-### Slice 5: Audit and events (SEC-US-05, SEC-US-06)
-- `audit_log` table, written for every admin and security change
-- `outbox` table written in the same transaction; a relay publishes the events (logged for now, sent to the broker later)
-- Events: `PortalCreated`, `UserInvited`, `UserActivated`, `UserProfileChanged`, `UserDeactivated`
-- Audit log page for Admins
-- **Done when:** every action in Slices 1–4 leaves an audit row and an outbox event, and a rolled-back change leaves neither
+### Slice 5: Audit and events ✅ Done 2026-10-26 (SEC-US-05, SEC-US-06)
+- **Audit:** `audit_event` already existed (V2). Added the missing actions: `USER_SIGNED_UP`, `LOGIN_SUCCEEDED`, `LOGIN_FAILED`, `ACCOUNT_LOCKED`, `PASSWORD_RESET` (category `AUTH`, no portal) and `PORTAL_CREATED`. Login failures are only recorded for a known email, and are written in the existing no-rollback transaction, so they survive the 401. A database trigger rejects every UPDATE and DELETE on `audit_event` (SEC-BR-06).
+- **Outbox:** new `outbox` module (`OutboxWriteService.publish`, `MANDATORY` transaction, so a rollback removes the event) and `outbox_event` table. `OutboxRelay` polls every second (`projecty.outbox.*`), locks the oldest unpublished rows with `FOR UPDATE SKIP LOCKED`, and marks each published after `external/broker` `BrokerPublisher` accepts it. Delivery is at least once and in id order. The only publisher logs the event; the broker comes in Phase 1.
+- **Events:** `PortalCreated`, `UserInvited`, `UserActivated` (invitation accepted, reactivated), `UserProfileChanged`, `UserDeactivated`. Names live in `OutboxEventConstants`. Payloads hold ids only, no emails.
+- **Audit log API:** `GET /api/audit-events?category=&action=&page=&size=` returns the current portal's events, newest first, as `PagedResponse` (`items`, `page`, `size`, `totalItems`, `totalPages`). Needs the new `AUDIT_VIEW` permission, which Admins have. The platform-wide `/api/admin/audit-events` is unchanged.
+- **API change:** `PortalService.create` now takes the caller's name for the audit entry.
+- **Migration:** Flyway `V6` (outbox table, `AUDIT_VIEW` for existing Admin profiles, append-only trigger).
+- **Customer app:** the Settings → Audit log page is still to build in `frontend/`, against the contract above.
+- **Verification:** existing 35 tests pass (one assertion updated: a portal's log now starts with `PORTAL_CREATED`); checked by hand with curl against a running backend: every action left its audit row and outbox event, the events were published, a rejected invite left neither, an Employee gets 403 and another portal's id gets `PORTAL_ACCESS_DENIED`. No new automated tests, at your request.
+
+### Slice 5b: Kafka event backbone ✅ Done 2026-10-26
+- **Kafka:** `compose.yaml` runs Apache Kafka 4.0 in KRaft mode (one node, no ZooKeeper), port 9092. `OutboxRelay` publishes through `KafkaBrokerPublisher` (acks=all, idempotent producer, short timeouts, waits for the broker's ack before marking a row published). Topics `projecty.portal`, `projecty.member`, `projecty.invitation` are created at startup from `projecty.broker.topics`. Tests use `projecty.broker.type=logging` (`src/test/resources/application.properties`).
+- **Envelope and replay:** every message carries `eventId`, `type`, `version`, `occurredAt`, `portalId`, `aggregateType`, `aggregateId`, `actor` and `payload`. Flyway `V7` added the actor and version columns, moved relay ordering to `(created_at, id)`, re-sent the events the logging publisher had "published", and backfilled events for data created before the outbox existed (marked `"backfill": true`).
+- **New events:** `PortalSettingsChanged`, `InvitationRevoked`. Published rows are purged after 7 days.
+- **Contract:** [07 — Events](07-events.md).
+- **Verification:** existing tests pass; all existing events arrived in Kafka (portal 22, member 16, invitation 11, every `eventId` unique); live flows produced one message per change; a rejected invite produced none; with Kafka stopped the API kept working and the events were delivered once after it restarted. The purge job was not exercised by hand. No new automated tests, at your request.
 
 ## Deferred out of M0
 
@@ -91,7 +126,6 @@ Work is cut into **vertical slices**. Each slice ends with something you can run
 |---|---|---|
 | SEC-US-07 Trash and restore | Step 4 (Projects) | It applies to projects, tasks and documents, which live in Work. M0 only sets the soft-delete convention. |
 | USR-US-07 Project members | Step 4 (Projects) | Needs projects to exist |
-| Message broker | Phase 1, when Work starts consuming events | Nothing consumes events yet |
 | 2FA (SEC-US-08), session list (SEC-US-09), change password (SEC-US-13) | V1 | Not needed for M0 |
 
 ## After M0

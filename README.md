@@ -15,7 +15,7 @@ A personal, production-grade project management application modeled on **Zoho Pr
 Prerequisites: Docker, Java 21, Node 22.
 
 ```bash
-docker compose up -d                              # Postgres :5432, Mailpit :8025
+docker compose up -d                              # Postgres :5432, Mailpit :8025, Kafka :9092
 cd platform-service && ./mvnw spring-boot:run     # Platform service :8081
 cd frontend && npm start                          # Angular :4200
 cd admin-console && npm start                     # Admin console :4300
@@ -28,6 +28,7 @@ cd admin-console && npm start                     # Admin console :4300
 | Platform health | http://localhost:8081/actuator/health | — |
 | API docs (Swagger UI) | http://localhost:8081/swagger-ui.html | Authorize with a token from `/api/auth/login` |
 | Mailpit (local inbox) | http://localhost:8025 | — |
+| Kafka (events, see [docs/07-events.md](docs/07-events.md)) | localhost:9092 | — |
 
 Local credentials are for development only. To reset all data: `docker compose down -v`.
 
@@ -57,7 +58,9 @@ Read these in order. Business requirements come first; technical design starts o
 - [x] Slice 1: backend auth (signup, verify, login, refresh, logout, reset) and first portal
 - [x] Slice 2: Angular auth screens (sign in, sign up, verify, reset, create portal, portal picker)
 - [x] Slice 2b: Admin console (`admin-console/`) with audited support impersonation
-- [ ] **Slice 3: Tenant isolation and portal settings** ← *next*. See the [Implementation Plan](docs/05-implementation-plan.md)
+- [x] Slice 3: Tenant isolation, portal settings, personal time zone, app shell with portal switcher
+- [x] Slice 4: Users and profiles (invites, 4 system profiles, permissions, deactivation)
+- [ ] **Slice 5: Audit and events** (audit everything, outbox) ← *next*. See the [Implementation Plan](docs/05-implementation-plan.md)
 
 ## Working agreement
 

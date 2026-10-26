@@ -36,21 +36,39 @@ The standard lives in **[ARCHITECTURE.md](../ARCHITECTURE.md)** at the repo root
 | `account` | `AppUser`, `EmailToken`; signup, verify email, password reset, `/api/me` | `UserLookUpService` (`findById`, `findByIds`), `UserWriteService.authenticate`, `UserResponseDTO`, `UserPasswordResetEvent` |
 | `session` | `AuthSession`, `RefreshToken`; login, refresh, logout | `SessionWriteService` (`revokeAllForUser`, `openSupportSession`, `endSupportSession`), `SupportSessionExpiredEvent` |
 | `token` | `SigningKey`; JWT signing and checking, JWKS; maps audience → role (USER / PLATFORM_ADMIN) | `TokenWriteService.issueAccessToken`, `issueAdminAccessToken` |
-| `portal` | `Portal`, `PortalMember`; create portal, slug rules | `PortalLookUpService` (incl. `findAllPortals`, `findMembers`, `isActiveMember`) |
+| `portal` | `Portal`; create portal, slug rules, settings | `PortalLookUpService` (`findAllPortals`, `findPortal`, `findByIds`), `PortalCreatedEvent` |
+| `member` | `PortalMember`, `Profile`, `Invitation`; user list, profiles, invitations, deactivation | `MemberLookUpService` (`findActivePortalIds`, `findMemberships`, `findMembers`, `isActiveMember`, `countMembers`); implements `common` `PortalAccessService` |
 | `admin` | `AdminUser`, `AdminSession`; admin console sign-in (`/api/admin/auth`), first-admin bootstrap; tenant views (Aggregate service over portal + account) | `AdminLookUpService` |
 | `impersonation` | `Impersonation`; every support-session endpoint: `POST /api/admin/impersonations`, `POST /api/auth/impersonation/redeem`, `/end` | — (no other module needs it) |
-| `audit` | `AuditEvent` (append-only); `/api/admin/audit-events` | `AuditWriteService.record` |
+| `audit` | `AuditEvent` (append-only); `/api/admin/audit-events` (platform admins), `/api/audit-events` (portal Admins, `AUDIT_VIEW`) | `AuditWriteService.record` |
+| `outbox` | `OutboxEvent`; the relay that publishes business events (SEC-US-06) | `OutboxWriteService.publish` (needs the caller's transaction) |
 | `common/security/helper` | `RefreshCookieHelper` for the customer `py_refresh` cookie (used by session and impersonation) | — |
 | `shared` | `OpaqueTokenHelper` (account, session, admin, impersonation); `AuditEventConstants` (values every auditing module uses) | — |
 | `external/mail` | SMTP sending | `MailService` |
+| `external/broker` | Kafka publisher (`BrokerPublisher`; `projecty.broker.type=logging` only logs, used by tests) and topic creation | `BrokerPublisher` |
 
 ```
-session       ──▶ account.api, portal.api, token.api
-account       ──▶ portal.api, external/mail
-admin         ──▶ account.api, portal.api, token.api, audit.api
-impersonation ──▶ session.api, account.api, portal.api, admin.api, audit.api
+session       ──▶ account.api, member.api, token.api
+member        ──▶ portal.api, account.api, audit.api, outbox.api, external/mail
+portal        ──▶ audit.api, outbox.api
+outbox        ──▶ external/broker
+portal ──PortalCreatedEvent──────────▶ member
+account       ──▶ portal.api, member.api, audit.api, external/mail
+admin         ──▶ account.api, portal.api, member.api, token.api, audit.api
+impersonation ──▶ session.api, account.api, member.api, admin.api, audit.api
 account ──UserPasswordResetEvent────▶ session
 session ──SupportSessionExpiredEvent──▶ impersonation
 ```
+
+**Portal-owned data (PTL-BR-01).**
+- Every portal-owned table has a `portal_id`, and every repository method on it takes `portalId` (`findByIdAndPortalId…`).
+- Services get the id only from `common/service/RequestPortalContext` (`requirePortalId()`), never from the request body or path.
+- `PortalContextFilter` has already checked the id against the token, so a record from another portal is simply not found (404).
+- Each feature adds a "foreign portal → 404" check.
+
+**Permissions.**
+- Annotate each portal endpoint with `@RequirePermission(PermissionConstants.X)`. `PermissionInterceptor` checks it through the `PortalAccessService` port, which is defined in `common/service` and implemented by `member`, so `common` never imports a module.
+- Permission names live in `modules/shared/constants/PermissionConstants`. Profiles grant them in `MemberConstants.SYSTEM_PROFILES`.
+- **Two service beans in `member`:** the read-only `MembershipService` (repositories + `portal.api`) and the management `MemberService` (needs `account.api`). This split prevents a bean cycle, because `account` reads memberships for `/api/me`.
 
 **Two kinds of access token, one signing key.** Customer tokens have audience `projecty-api` (role USER); admin console tokens have audience `projecty-admin` (role PLATFORM_ADMIN). `SecurityConfig` gives `/api/admin/**` to PLATFORM_ADMIN and the rest of `/api/**` to USER, so neither token works on the other side. A support session is a normal customer token for the target user plus `act` (the admin) and `imp` (session id and end time).
