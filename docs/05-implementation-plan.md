@@ -29,6 +29,7 @@ Work is cut into **vertical slices**. Each slice ends with something you can run
 | Work service (Phase 1) | 8082 |
 | Mailpit UI / SMTP | 8025 / 1025 |
 | Kafka | 9092 |
+| Redpanda Console (Kafka UI) | 8088 |
 | PostgreSQL | 5432 |
 
 ## Slices

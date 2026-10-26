@@ -59,6 +59,19 @@ services:
     labels:
       org.springframework.boot.ignore: "true"
 
+  kafka-console:
+    image: redpandadata/console:v2.8.0
+    # Host network: Kafka advertises localhost:9092, which a bridged container could not reach.
+    network_mode: host
+    environment:
+      KAFKA_BROKERS: localhost:9092
+      SERVER_LISTENPORT: 8088
+    depends_on:
+      kafka:
+        condition: service_healthy
+    labels:
+      org.springframework.boot.ignore: "true"
+
 volumes:
   postgres-data:
   kafka-data:

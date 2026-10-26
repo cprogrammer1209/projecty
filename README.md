@@ -15,7 +15,7 @@ A personal, production-grade project management application modeled on **Zoho Pr
 Prerequisites: Docker, Java 21, Node 22.
 
 ```bash
-docker compose up -d                              # Postgres :5432, Mailpit :8025, Kafka :9092
+docker compose up -d                              # Postgres :5432, Mailpit :8025, Kafka :9092, Kafka UI :8088
 cd platform-service && ./mvnw spring-boot:run     # Platform service :8081
 cd frontend && npm start                          # Angular :4200
 cd admin-console && npm start                     # Admin console :4300
@@ -29,6 +29,7 @@ cd admin-console && npm start                     # Admin console :4300
 | API docs (Swagger UI) | http://localhost:8081/swagger-ui.html | Authorize with a token from `/api/auth/login` |
 | Mailpit (local inbox) | http://localhost:8025 | — |
 | Kafka (events, see [docs/07-events.md](docs/07-events.md)) | localhost:9092 | — |
+| Redpanda Console (browse topics and messages) | http://localhost:8088 | — |
 
 Local credentials are for development only. To reset all data: `docker compose down -v`.
 
