@@ -48,13 +48,15 @@ Services are drawn around **which data must change together in one transaction**
 
 ## Decided
 
+- Layouts (2026-11-23): a layout (sections + placed fields with per-layout required, read-only, default and width) belongs to a module; a record points to its layout; fields outside it are hidden, never deleted. Same module as custom fields; `work-service/.../customfield/README.md`.
+- Custom field values (2026-11-23): **a JSONB column on each record**, keyed by the field's immutable api_name; definitions in tables owned by Work's `customfield` module. Details and the options compared: `work-service/src/main/java/com/projecty/work/modules/customfield/README.md`.
 - Identity: **own auth in Platform** (2026-10-25, replacing an earlier Keycloak choice). Platform signs RS256 JWTs and publishes keys at `/.well-known/jwks.json`; other services validate tokens locally as OAuth2 resource servers.
 
 ## To be decided in technical design
 
 - Tenancy model: shared schema with `tenant_id` vs. schema-per-tenant
 - Message broker: Apache Kafka (KRaft). Event contract: [07 — Events](07-events.md)
-- Database (PostgreSQL assumed), and storage for custom field values (JSONB vs. EAV)
+- Database (PostgreSQL assumed)
 - Search engine (OpenSearch vs. PostgreSQL full-text for the early phases)
 - Object storage for documents (S3-compatible, MinIO locally)
 - Angular architecture (standalone components, state management, micro-frontends or not)

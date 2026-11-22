@@ -1,0 +1,210 @@
+CUSTOM FIELDS ON POSTGRESQL: THREE WAYS TO STORE THE VALUES, WITH SAMPLE ROWS
+==============================================================================
+
+Same data in every option, so you can compare like with like.
+(Ids are shortened for reading: p1, f1, o1. Real ones are UUIDs.)
+
+THE EXAMPLE
+-----------
+Portal N = "Northwind". Portal A = "Acme". Both share the same tables.
+
+Northwind projects have four extra fields:
+  Customer tier   picklist (Gold / Silver / Bronze)
+  Budget          decimal
+  Go-live         date
+  VIP             checkbox
+
+Acme has one extra field on projects:
+  Region          text
+
+Projects:
+  WEB  (Northwind)  tier Gold    budget 12000.00  go-live 2026-12-01  VIP yes
+  MOB  (Northwind)  tier Silver  budget  8500.50  go-live 2027-01-29  VIP no
+  BRD  (Acme)       region EMEA
+
+
+A. THE DEFINITIONS (identical in options 2 and 3; option 1 has no use for most of it)
+-------------------------------------------------------------------------------------
+custom_field
+  id | portal | entity_type | api_name         | label         | field_type | mandatory | active
+  f1 | N      | PROJECT     | cf_customer_tier | Customer tier | PICKLIST   | false     | true
+  f2 | N      | PROJECT     | cf_budget        | Budget        | DECIMAL    | false     | true
+  f3 | N      | PROJECT     | cf_go_live       | Go-live       | DATE       | false     | true
+  f4 | N      | PROJECT     | cf_vip           | VIP           | CHECKBOX   | false     | true
+  f5 | A      | PROJECT     | cf_region        | Region        | TEXT       | false     | true
+
+custom_field_option  (the picklist choices of f1)
+  id | field_id | label  | active
+  o1 | f1       | Gold   | true
+  o2 | f1       | Silver | true
+  o3 | f1       | Bronze | true
+
+
+======================================================================================
+OPTION 1: A REAL COLUMN FOR EVERY CUSTOM FIELD
+======================================================================================
+Each time an admin creates a field, the project table itself gets a new column.
+
+project   (one table, shared by every portal)
+  id | portal | key | name     | cf_customer_tier | cf_budget | cf_go_live | cf_vip | cf_region
+  p1 | N      | WEB | Website  | o1               | 12000.00  | 2026-12-01 | true   | NULL
+  p2 | N      | MOB | Mobile   | o2               |  8500.50  | 2027-01-29 | false  | NULL
+  p3 | A      | BRD | Brand    | NULL             | NULL      | NULL       | NULL   | EMEA
+
+Creating a field means changing the table for EVERYONE:
+  ALTER TABLE project ADD COLUMN cf_vip BOOLEAN;
+
+What goes wrong:
+  * Other portals' rows get the column too (see the NULLs above).
+  * Two portals that both want a field called "Budget" collide on the name, so
+    columns need portal-specific names (cf_budget_n, cf_budget_a).
+  * 1,000 portals x 25 fields = up to 25,000 columns. PostgreSQL allows about 1,600.
+  * Every new field is a schema change on a live shared table (locks, migrations).
+  * Deleting a field = DROP COLUMN for everyone's table, and it cannot be undone.
+
+
+======================================================================================
+OPTION 2: ONE ROW PER VALUE (EAV: "entity, attribute, value")
+======================================================================================
+Values live in a separate table, one row each, with a typed column per data type.
+
+project   (no custom columns at all)
+  id | portal | key | name
+  p1 | N      | WEB | Website
+  p2 | N      | MOB | Mobile
+  p3 | A      | BRD | Brand
+
+custom_field_value
+  entity_type | entity_id | field_id | v_text | v_number | v_date    | v_bool
+  PROJECT     | p1        | f1       | o1     |          |           |
+  PROJECT     | p1        | f2       |        | 12000.00 |           |
+  PROJECT     | p1        | f3       |        |          | 2026-12-01|
+  PROJECT     | p1        | f4       |        |          |           | true
+  PROJECT     | p2        | f1       | o2     |          |           |
+  PROJECT     | p2        | f2       |        |  8500.50 |           |
+  PROJECT     | p2        | f3       |        |          | 2027-01-29|
+  PROJECT     | p2        | f4       |        |          |           | false
+  PROJECT     | p3        | f5       | EMEA   |          |           |
+
+Showing a list of projects with their fields means pivoting those rows back into columns:
+  SELECT p.key, p.name,
+         MAX(CASE WHEN v.field_id = 'f1' THEN v.v_text   END) AS tier,
+         MAX(CASE WHEN v.field_id = 'f2' THEN v.v_number END) AS budget,
+         MAX(CASE WHEN v.field_id = 'f3' THEN v.v_date   END) AS go_live,
+         MAX(CASE WHEN v.field_id = 'f4' THEN v.v_bool   END) AS vip
+  FROM project p
+  LEFT JOIN custom_field_value v ON v.entity_id = p.id AND v.entity_type = 'PROJECT'
+  WHERE p.portal = 'N'
+  GROUP BY p.id;
+
+What goes wrong:
+  * Rows grow as records x fields (see the count at the end).
+  * Every extra field in a filter or a sort is one more join to the same table.
+  * The Project module's data is split across two tables owned by two modules.
+Good: no schema changes, typed columns, easy to index per field.
+
+
+======================================================================================
+OPTION 3: ONE JSONB COLUMN ON THE RECORD   (the one I suggested)
+======================================================================================
+All custom values of a record sit in a single JSONB column, keyed by api_name.
+
+project
+  id | portal | key | name    | custom_values
+  p1 | N      | WEB | Website | {"cf_customer_tier": "o1", "cf_budget": 12000.00,
+     |        |     |         |  "cf_go_live": "2026-12-01", "cf_vip": true}
+  p2 | N      | MOB | Mobile  | {"cf_customer_tier": "o2", "cf_budget": 8500.50,
+     |        |     |         |  "cf_go_live": "2027-01-29", "cf_vip": false}
+  p3 | A      | BRD | Brand   | {"cf_region": "EMEA"}
+
+Setup, once:
+  ALTER TABLE project ADD COLUMN custom_values JSONB NOT NULL DEFAULT '{}';
+  CREATE INDEX ix_project_cv ON project USING GIN (custom_values jsonb_path_ops);
+
+A new field later changes NOTHING in the table: it is just a new key in the JSON.
+Reading a project: one row, everything on it.
+
+What goes wrong / what you give up:
+  * The database does not check the values (type, required). Our code validates
+    every save through one gate.
+  * Unique custom fields need a small helper table.
+  * Sorting by a number needs a cast, and an index per busy field.
+  * Key names repeat in every row (small, with ~25 fields).
+
+
+======================================================================================
+THE SAME QUESTION IN EACH OPTION:  "Northwind projects whose tier is Gold, by budget"
+======================================================================================
+Answer in all three: WEB (12000.00).
+
+Option 1 (columns)
+  SELECT * FROM project
+  WHERE portal = 'N' AND cf_customer_tier = 'o1'
+  ORDER BY cf_budget;
+
+Option 2 (one row per value): two joins, one per field used
+  SELECT p.* FROM project p
+  JOIN custom_field_value t ON t.entity_id = p.id AND t.field_id = 'f1' AND t.v_text = 'o1'
+  JOIN custom_field_value b ON b.entity_id = p.id AND b.field_id = 'f2'
+  WHERE p.portal = 'N'
+  ORDER BY b.v_number;
+
+Option 3 (JSONB): no joins; the filter uses the GIN index
+  SELECT * FROM project
+  WHERE portal = 'N' AND custom_values @> '{"cf_customer_tier": "o1"}'
+  ORDER BY (custom_values->>'cf_budget')::numeric;
+
+Group by tier (Option 3):
+  SELECT custom_values->>'cf_customer_tier' AS tier, count(*)
+  FROM project WHERE portal = 'N' GROUP BY 1;
+
+
+======================================================================================
+WHAT EACH OPERATION LOOKS LIKE
+======================================================================================
+Rename the label "Budget" to "Total budget"
+  1: UPDATE custom_field SET label = 'Total budget' WHERE id = 'f2';   (column name unchanged)
+  2: same one-row update
+  3: same one-row update (the JSON key is the api_name, which never changes)
+
+Deactivate the field (hide it, keep the data)
+  all:  UPDATE custom_field SET active = false WHERE id = 'f2';
+
+Delete the field for good
+  1: ALTER TABLE project DROP COLUMN cf_budget;                  -- everyone's table, irreversible
+  2: DELETE FROM custom_field_value WHERE field_id = 'f2';       -- one row per record deleted
+  3: UPDATE project SET custom_values = custom_values - 'cf_budget' WHERE portal = 'N';
+                                                                 -- rewrites the rows that have the key
+
+Make a field unique (e.g. a "Contract number")
+  1: CREATE UNIQUE INDEX ... ON project (portal, cf_contract);
+  2: needs a partial unique index per field, or a helper table
+  3: helper table:  custom_field_unique_value(field_id, value_key, entity_id) PRIMARY KEY (field_id, value_key)
+     (it is written in the same transaction as the record, so a duplicate is refused)
+
+Rows for 100 projects with 10 custom fields each
+  1: 100 rows (and the table has all portals' custom columns)
+  2: 100 project rows + 1,000 value rows
+  3: 100 rows (each with a small JSON value)
+
+Who checks the values (type, required)?
+  1: the database
+  2: partly (typed columns, but our code picks the column)
+  3: our code only (one validation gate used by every save)
+
+Does a new field change the table?
+  1: yes, a schema change for everyone      2: no      3: no
+
+
+======================================================================================
+SUMMARY
+======================================================================================
+                              Real columns    One row per value    JSONB column
+  Many portals, one table     No              Yes                  Yes
+  New field = schema change   Yes             No                   No
+  Read one record             1 row           1 row + N rows       1 row
+  Filter/sort/group           Easiest         Joins per field      Index, casts
+  DB checks the values        Yes             Partly               No (our code)
+  Fits "each module owns      Yes             No (second owner)    Yes
+  its own tables"
+  Verdict                     Rejected        Possible, heavy      Recommended

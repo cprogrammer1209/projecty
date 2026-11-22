@@ -11,6 +11,10 @@ prototype/
     step4/               M1 Step 4 Projects: M0 plus Projects list, create/edit, overview with members, trash
       prototype.html
       css/  js/  assets/
+    step7/               M1 Step 7 Custom fields: Step 4 plus a Linear-style Settings (Portal; Modules → Projects: Fields, Layouts with the visual canvas layout builder, Statuses, Templates; other modules marked Soon), and custom fields on the project form and overview, grouped in the layout's sections
+      prototype.html
+      css/  js/  assets/
+    explorations/        one-off comparisons, not part of a step (inline-edit.html: HubSpot, Zoho and Linear style editing)
     step5/ ...           added when each step is built, copied from the step before
 ```
 
@@ -19,6 +23,8 @@ The plan for what each step contains is in [`docs/project-plan.html`](../docs/pr
 ## Run it
 
 Open a step's `prototype.html` in a browser (double-click is fine, no server or build). Routes are hash-based, e.g. `m1/step4/prototype.html#/p/northwind-labs/projects`.
+
+The step 7 mock store (`js/store.js`) mirrors the layout API of `work-service` (`GET /layouts/active`, `PUT /layouts/{id}`, `PUT /projects/{id}/layout`), so the Angular port is mechanical.
 
 Demo logins (password `password123`):
 

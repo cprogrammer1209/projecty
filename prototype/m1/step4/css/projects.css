@@ -1,5 +1,5 @@
 /* M1 · Step 4 · Projects. Builds on the Settings table, panel and dialog look (.users-page) and the shared py-* classes. */
-.projects-page { max-width: 1180px; }
+.projects-page { max-width: none; } /* fluid: list, overview and trash fill the page; the form below keeps a readable width */
 .projects-page .page-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .projects-page .page-title h1 { font: 600 24px/1.2 var(--py-font-ui); letter-spacing: -.03em; margin: 0; }
 .projects-page .page-title p { margin: 6px 0 0; color: var(--py-ink-muted); font-size: 13px; max-width: 70ch; }

@@ -67,6 +67,36 @@ Published by `work-service` through its own outbox, topic `projecty.project` (ag
 | `ProjectMemberAdded` | A person joins the project | `portalId`, `projectId`, `key`, `userId`, `role` |
 | `ProjectMemberRemoved` | A person leaves the project | `portalId`, `projectId`, `key`, `userId` |
 
+#### Custom field events (Work, topic `projecty.field`)
+
+Aggregate `FIELD`, message key = field id. Payloads carry ids, `entityType` and `apiName` only.
+
+| Event | Raised when | Payload |
+|---|---|---|
+| `FieldCreated` | A custom field is defined | `portalId`, `fieldId`, `entityType`, `apiName` |
+| `FieldUpdated` | Label, rules, default, a choice, or the field is activated again | same |
+| `FieldDeactivated` | A field is hidden (its answers are kept) | same |
+| `FieldDeleted` | A field is deleted and its answers removed | same |
+
+#### Layout events (Work, topic `projecty.layout`)
+
+Aggregate `LAYOUT`, message key = layout id. Payloads carry ids only: `portalId`, `layoutId`, `entityType`, and `change`
+(`created`, `saved`, `default`, `activated`, `deactivated`).
+
+| Event | Raised when |
+|---|---|
+| `LayoutCreated` | A layout is created, cloned, or the default layout is created the first time it is needed |
+| `LayoutUpdated` | A layout is saved, becomes the default, is activated or deactivated |
+
+`ProjectLayoutChanged` (aggregate `PROJECT`, topic `projecty.project`; payload `portalId`, `projectId`, `key`,
+`fromLayoutId`, `toLayoutId`) is raised when a project is moved to another layout.
+
+Changes to the answers themselves are reported by the module that owns the record: `ProjectUpdated` lists
+`custom field <api_name>` among its `changes`.
+
+Platform added the permissions `CUSTOM_FIELDS_VIEW` (every profile) and `CUSTOM_FIELDS_MANAGE` (Admin) in Flyway `V9`,
+which also announced every active member again with their permissions (`"backfill": true`).
+
 Work is also a **consumer**: group `work-service` reads `projecty.member` from the start (`auto-offset-reset: earliest`), drops repeated `eventId`s using its `processed_event` table, and applies `UserActivated`, `UserProfileChanged` and `UserDeactivated` to its `member_access` table.
 
 ## Rules for producers

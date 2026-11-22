@@ -12,7 +12,7 @@ const Shell = (() => {
 
   /**
    * @param ctx    { me, portal, membership, can(permission), timeZone, slug }
-   * @param page   { crumb, nav: 'home' | 'settings', mount(contentEl, ctx) }
+   * @param page   { crumb, nav: 'home' | 'settings', mount(contentEl, ctx), fluid? } (fluid = use the full width, no centred column)
    */
   function render(root, ctx, page) {
     const { me, portal, membership } = ctx;
@@ -80,7 +80,7 @@ const Shell = (() => {
           ${PY.themeButton('icon-btn')}
           <span class="py-avatar py-avatar--sm" title="${esc(me.email)}">${esc(initials(me.fullName))}</span>
         </header>
-        <div class="content" id="content"></div>
+        <div class="content${page.fluid ? ' content--fluid' : ''}" id="content"></div>
       </main>
     </div></div>`;
 

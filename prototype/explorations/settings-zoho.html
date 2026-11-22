@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Settings · ProjectY</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#1f73e0;--blue-d:#1a5fbd;--blue-t:#eaf2fd;--red:#e42527;--bg:#f5f6f8;--bd:#dde1e7;--bd2:#e9ecf0;--tx:#263238;--mu:#6b7785;--ok:#2f9e6f;--warn:#e8890c;--top:48px}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font:13px/1.45 "Open Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--tx);background:var(--bg)}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ic{width:16px;height:16px;fill:currentColor;flex:none;vertical-align:middle}
+h1,h2,h3{margin:0;font-weight:600}
+/* top bar */
+.top{position:sticky;top:0;z-index:30;height:var(--top);display:flex;align-items:center;gap:12px;padding:0 16px;background:#fff;border-bottom:1px solid var(--bd)}
+.top .brand{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
+.top .brand i{width:8px;height:20px;background:var(--red);border-radius:2px;display:inline-block}
+.top .search{position:relative;flex:0 1 320px;margin-left:24px}
+.top .search input{width:100%;height:30px;border:1px solid var(--bd);border-radius:4px;padding:0 8px 0 28px;background:var(--bg)}
+.top .search .ic{position:absolute;left:8px;top:7px;color:var(--mu)}
+.top .back{margin-left:auto;display:flex;align-items:center;gap:6px;font-weight:600}
+.burger{display:none}
+.icon{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border:1px solid transparent;background:none;border-radius:3px;cursor:pointer;color:var(--mu);padding:0}
+.icon:hover:not(:disabled){background:#e9edf3;color:var(--tx)}.icon:disabled{opacity:.35;cursor:default}
+/* shell */
+.shell{display:flex;align-items:flex-start}
+.side{width:236px;flex:none;position:sticky;top:var(--top);height:calc(100vh - var(--top));overflow:auto;background:#fff;border-right:1px solid var(--bd);padding:8px 0 24px}
+.ng-h{display:flex;width:100%;align-items:center;justify-content:space-between;border:0;background:none;padding:10px 16px 6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mu);cursor:pointer}
+.ng-h .ic{transition:transform .15s}.ng-h[aria-expanded=true] .ic{transform:rotate(90deg)}
+.ni{display:flex;align-items:center;gap:6px;padding:6px 16px 6px 13px;border-left:3px solid transparent;color:var(--tx);font-size:13px}
+.ni:hover{background:var(--bg);text-decoration:none}
+.ni.sub{padding-left:30px;color:#44505c}
+.ni.on{border-left-color:var(--red);background:var(--blue-t);color:var(--blue-d);font-weight:600}
+.ni.mod{font-weight:600}.ni.dis{color:#a3acb8;cursor:default}.ni.dis:hover{background:none}
+.ni .hint{color:var(--mu);font-weight:400;font-size:11px}
+.tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;background:#eceff3;color:var(--mu);border-radius:8px;padding:0 6px;margin-left:auto}
+.nomatch{padding:12px 16px;color:var(--mu)}
+.backdrop{display:none}
+main{flex:1;min-width:0}
+.page{padding:16px 24px 48px;max-width:1280px}
+.crumbs{font-size:12px;color:var(--mu);margin-bottom:6px}.crumbs a{color:var(--mu)}.crumbs a:hover{color:var(--blue)}.crumbs span+span:before,.crumbs a+span:before,.crumbs span+a:before{content:"/";margin:0 6px;color:#b5bcc6}
+.phead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.phead h1{font-size:20px}.phead .pact{margin-left:auto;display:flex;gap:8px}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--bd);margin-bottom:14px;overflow-x:auto}
+.tabs a,.tabs span,.tabs button{padding:8px 14px;border:0;border-bottom:2px solid transparent;background:none;color:var(--tx);white-space:nowrap;margin-bottom:-1px;cursor:pointer;font-weight:600}
+.tabs a:hover{text-decoration:none;background:#eef1f5}
+.tabs [aria-current=page],.tabs .on{color:var(--blue);border-bottom-color:var(--blue)}
+.tabs .dis{color:#a3acb8;cursor:default;font-weight:600}
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 14px;border:1px solid #c3c9d2;border-radius:3px;background:#fff;color:var(--tx);cursor:pointer;font-weight:600;white-space:nowrap}
+.btn:hover:not(:disabled){background:#f1f3f6;text-decoration:none}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}.btn.primary:hover:not(:disabled){background:var(--blue-d)}
+.btn.danger{background:var(--red);border-color:var(--red);color:#fff}
+.btn.sm{height:24px;padding:0 9px;font-size:12px}.btn:disabled{opacity:.5;cursor:default}
+.btn[aria-pressed=true]{background:var(--blue-t);border-color:var(--blue);color:var(--blue-d)}
+.linkbtn{border:0;background:none;color:var(--blue);cursor:pointer;padding:2px 4px;font-weight:600}.linkbtn:hover:not(:disabled){text-decoration:underline}.linkbtn:disabled{color:#a3acb8;cursor:default}.linkbtn.red{color:var(--red)}
+/* panels, tables */
+.card{background:#fff;border:1px solid var(--bd);border-radius:4px}
+.card>h2{font-size:13px;padding:10px 14px;border-bottom:1px solid var(--bd);background:#fafbfc}
+.card .cb{padding:14px}
+.tw{position:relative;overflow-x:auto;background:#fff;border:1px solid var(--bd);border-radius:4px}
+table{width:100%;border-collapse:collapse}
+th{background:#eef0f3;text-align:left;font-size:12px;font-weight:600;color:#44505c;padding:8px 12px;border-bottom:1px solid var(--bd);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--bd2);vertical-align:middle}
+tr:last-child td{border-bottom:0}tbody tr:hover td{background:#fafcff}
+td .sub{color:var(--mu);font-size:12px}td.num,th.num{text-align:right}
+td.act{white-space:nowrap;text-align:right}
+.chip{display:inline-block;font-size:11px;font-weight:600;border-radius:3px;padding:1px 6px;margin-right:4px;background:#eceff3;color:#44505c;white-space:nowrap}
+.chip.blue{background:var(--blue-t);color:var(--blue-d)}.chip.red{background:#fde8e8;color:#b81c1e}.chip.green{background:#e3f4ec;color:#1f7a54}.chip.grey{background:#eceff3;color:var(--mu)}.chip.amber{background:#fdf0dc;color:#9a5a05}
+.alert{border:1px solid;border-radius:3px;padding:8px 12px;margin-bottom:12px;display:flex;gap:8px;align-items:flex-start}
+.alert.err{background:#fff3f3;border-color:#f1b9ba;color:#9c1517}.alert.info{background:var(--blue-t);border-color:#b7d3f7;color:#16407a}
+.alert[hidden]{display:none}
+.fl{display:block;margin-bottom:12px;font-weight:600;font-size:12px;color:#44505c}
+.fl input:not([type=checkbox]),.fl select,.fl textarea{display:block;width:100%;margin-top:4px;height:30px;padding:0 8px;border:1px solid #c3c9d2;border-radius:3px;background:#fff;font-weight:400;color:var(--tx)}
+.fl textarea{height:auto;padding:6px 8px}
+.fl input[readonly]{background:var(--bg);color:var(--mu)}
+.fl .help{display:block;font-weight:400;color:var(--mu);margin-top:3px}
+.req{color:var(--red)}
+.chk{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:400}
+.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px;max-width:760px}
+.mu{color:var(--mu)}
+/* cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.cards .card{padding:14px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:-1px}
+.sgroup{margin-bottom:14px}.sgroup h2{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mu);padding:6px 0}
+.srow{display:flex;align-items:center;padding:8px 14px;border-bottom:1px solid var(--bd2);background:#fff}
+.sgroup .box{border:1px solid var(--bd);border-radius:4px;overflow:hidden}.srow:last-child{border-bottom:0}
+.addrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.addrow input{height:30px;border:1px solid #c3c9d2;border-radius:3px;padding:0 8px;min-width:220px}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 14px;border-bottom:1px solid var(--bd2)}.switch:last-child{border-bottom:0}
+.switch input{width:36px;height:20px;appearance:none;background:#c3c9d2;border-radius:10px;position:relative;cursor:pointer;flex:none;margin:0}
+.switch input:before{content:"";position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
+.switch input:checked{background:var(--blue)}.switch input:checked:before{left:18px}
+.place{background:#fff;border:1px dashed var(--bd);border-radius:4px;padding:28px;text-align:center;color:var(--mu)}
+.place strong{display:block;color:var(--tx);font-size:14px;margin-bottom:4px}
+/* builder */
+.bld{padding:0 0 48px}
+.bcrumb{padding:12px 24px 6px}
+.bbar{position:sticky;top:var(--top);z-index:20;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 24px;background:#fff;border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)}
+.bbar .lname{height:30px;font-size:15px;font-weight:600;border:1px solid transparent;border-radius:3px;padding:0 8px;min-width:200px;width:280px;max-width:100%;background:transparent}
+.bbar .lname:hover{border-color:var(--bd)}.bbar .lname:focus{border-color:var(--blue);background:#fff}
+.dirty{color:var(--warn);font-weight:600;font-size:12px}.dirty.clean{color:var(--mu);font-weight:400}
+.bbar .sp{flex:1}
+.bprob{padding:10px 24px 0}.bprob .alert{margin:0}
+.bcols{display:grid;grid-template-columns:260px minmax(0,1fr) 280px;gap:14px;padding:14px 24px;align-items:start}
+.bcols.preview{grid-template-columns:minmax(0,1fr)}.bcols.preview .pal,.bcols.preview .props{display:none}
+.pal,.props{background:#fff;border:1px solid var(--bd);border-radius:4px;position:sticky;top:calc(var(--top) + 56px);max-height:calc(100vh - var(--top) - 70px);overflow:auto}
+.pal.over{outline:2px dashed var(--blue);outline-offset:-2px;background:#f4f9ff}
+.pal .tabs{margin:0;padding:0 4px}.pal .tabs button{padding:9px 10px;font-size:12px}
+.pl{padding:8px;display:flex;flex-direction:column;gap:6px}
+.pi{display:flex;align-items:center;gap:8px;border:1px solid var(--bd);border-radius:3px;padding:6px 8px;background:#fff;cursor:grab}
+.pi:hover{border-color:#9db9e0;background:#fafcff}.pi .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.pi .ti{width:22px;height:22px;border-radius:3px;background:var(--blue-t);color:var(--blue-d);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+.pi.col{flex-direction:column;align-items:stretch;gap:4px}.pi .r1{display:flex;align-items:center;gap:8px}
+.pi select{height:24px;font-size:12px;border:1px solid #c3c9d2;border-radius:3px;background:#fff;width:100%}
+.phint{padding:8px 12px 12px;color:var(--mu);font-size:12px}
+.cv{display:flex;flex-direction:column;gap:12px;min-width:0}
+.sec{background:#fff;border:1px solid var(--bd);border-radius:4px}
+.sec-h{display:flex;align-items:center;gap:6px;padding:6px 8px;background:#eef0f3;border-bottom:1px solid var(--bd);border-radius:4px 4px 0 0}
+.sec.col .sec-h{border-bottom:0;border-radius:4px}
+.sec-t{display:flex;align-items:center;gap:4px;flex:1;min-width:0;color:var(--mu)}
+.sec-name{flex:1;min-width:0;height:26px;border:1px solid transparent;background:transparent;border-radius:3px;font-weight:600;font-size:13px;padding:0 6px}
+.sec-name:hover{border-color:#c3c9d2;background:#fff}.sec-name:focus{border-color:var(--blue);background:#fff}
+.sec-h .cnt{color:var(--mu);font-size:12px;white-space:nowrap}
+.sec-h .chv{transition:transform .15s}.sec-h button[aria-expanded=true] .chv{transform:rotate(90deg)}
+.sec-b{padding:12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;min-height:70px;border-radius:0 0 4px 4px}
+.sec-b.over{outline:2px dashed var(--blue);outline-offset:-3px;background:#f4f9ff}
+.sec.col .sec-b{display:none}
+.fc{border:1px solid var(--bd);border-radius:3px;background:#fff;padding:6px 8px;cursor:grab;min-width:0;border-left:3px solid #c3c9d2}
+.fc.span2{grid-column:1/-1}.fc:hover{border-color:#9db9e0;border-left-color:#9db9e0}
+.fc.sel{border-color:var(--blue);border-left-color:var(--blue);background:var(--blue-t);box-shadow:0 0 0 1px var(--blue)}
+.fc.dragging,.pi.dragging{opacity:.45}
+.fc-main{display:flex;align-items:center;gap:6px;min-width:0;cursor:pointer;flex-wrap:wrap}
+.fc-main .grip{color:#9aa4b2}.fc .lab{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.fc .ty{color:var(--mu);font-size:12px;margin-left:auto}
+.fc .chips{margin-top:2px}
+.fc-act{display:flex;gap:4px;align-items:center;margin-top:6px}
+.fc-act select{flex:1;min-width:0;height:24px;font-size:12px;border:1px solid #c3c9d2;border-radius:3px;background:#fff}
+.fc-act .icon{width:24px;height:24px}
+.empty{grid-column:1/-1;border:1px dashed #c3c9d2;border-radius:3px;color:var(--mu);text-align:center;padding:18px;font-size:12px}
+.sec-b.over .empty{border-color:var(--blue);color:var(--blue)}
+.addsec{align-self:flex-start}
+.props{padding:12px}.props h3{font-size:13px;margin-bottom:10px}
+.props .none{color:var(--mu)}
+.props .btn{margin-top:6px}
+/* preview form */
+.pform{background:#fff;border:1px solid var(--bd);border-radius:4px;padding:6px 16px 16px}
+.pform h3{font-size:13px;background:#eef0f3;margin:12px -16px 12px;padding:7px 16px;border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)}
+.pform .pg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 24px}.pform .span2{grid-column:1/-1}
+.sm-ctl{display:flex;flex-direction:column;gap:4px}.sm-lab{font-weight:600;font-size:12px;color:#44505c}.sm-req{color:var(--red)}
+.sm-ro{font-weight:400;font-size:11px;color:var(--mu);background:#eceff3;border-radius:3px;padding:0 5px;margin-left:4px}
+.sm-ctl input:not([type=checkbox]),.sm-ctl select,.sm-ctl textarea{height:30px;border:1px solid #c3c9d2;border-radius:3px;padding:0 8px;background:#fff;width:100%}
+.sm-ctl textarea{height:auto;padding:6px 8px;font:inherit}
+.sm-ctl :disabled{background:var(--bg);color:var(--mu)}
+.sm-check{display:inline-flex;align-items:center;gap:6px;font-weight:400;margin-right:12px}.sm-multi{display:flex;flex-wrap:wrap;gap:4px 8px;padding:4px 0}
+/* dialog */
+dialog{border:0;border-radius:4px;padding:0;box-shadow:0 8px 32px rgba(0,0,0,.25);width:min(440px,calc(100vw - 24px));color:var(--tx)}
+dialog::backdrop{background:rgba(20,30,45,.4)}
+dialog.drawer{margin:0 0 0 auto;height:100vh;max-height:100vh;border-radius:0;width:min(400px,100vw)}
+.dform{display:flex;flex-direction:column;height:100%;max-height:100vh;margin:0}
+.dform header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--bd);background:#fafbfc}
+.dform h2{font-size:15px}.dbody{padding:16px;flex:1;overflow:auto}
+.dform footer{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--bd);background:#fafbfc}
+.derr{color:#9c1517;background:#fff3f3;border:1px solid #f1b9ba;border-radius:3px;padding:6px 10px;margin:8px 0 0}.derr[hidden]{display:none}
+.toasts{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:100;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none;width:max-content;max-width:calc(100vw - 24px)}
+.toast{background:#2f9e6f;color:#fff;padding:8px 16px;border-radius:3px;box-shadow:0 2px 10px rgba(0,0,0,.2);font-weight:600}.toast.error{background:var(--red)}
+/* responsive */
+@media (max-width:1100px){.bcols{grid-template-columns:220px minmax(0,1fr)}.props{grid-column:1/-1;position:static;max-height:none}.pal{top:calc(var(--top) + 56px)}}
+@media (max-width:800px){
+ .burger{display:inline-flex}.top .search{margin-left:0;flex:1}.top .back span{display:none}.top .brand span{display:none}
+ .side{position:fixed;left:0;top:var(--top);bottom:0;z-index:40;transform:translateX(-100%);transition:transform .2s;height:auto;width:260px;box-shadow:2px 0 12px rgba(0,0,0,.2)}
+ body.nav-open .side{transform:none}
+ body.nav-open .backdrop{display:block;position:fixed;inset:var(--top) 0 0 0;background:rgba(20,30,45,.35);z-index:35}
+ .page{padding:12px 16px 40px}.bcrumb{padding:10px 16px 4px}.bbar{padding:8px 16px}.bprob{padding:10px 16px 0}
+ .bcols{grid-template-columns:minmax(0,1fr);padding:12px 16px}.pal,.props{position:static;max-height:none}
+ .sec-b,.pform .pg,.formgrid{grid-template-columns:minmax(0,1fr)}.fc.span2{grid-column:auto}.pform .span2{grid-column:auto}
+ .bbar .lname{width:100%;flex:1 1 100%}.bbar .sp{display:none}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <button class="icon burger" data-act="nav" aria-label="Toggle navigation" aria-expanded="false" id="burger"></button>
+  <div class="brand"><i></i><span>Settings</span></div>
+  <div class="search"><span id="sic"></span><input id="navsearch" type="search" placeholder="Search settings" aria-label="Search settings"></div>
+  <a class="back" href="#/projects/layouts" data-back id="backlink"></a>
+</header>
+<div class="shell">
+  <nav class="side" id="nav" aria-label="Settings navigation"></nav>
+  <div class="backdrop" data-act="nav"></div>
+  <main id="main" tabindex="-1"></main>
+</div>
+<dialog id="dlg"></dialog>
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+<script src="settings-model.js"></script>
+<script>
+(() => {
+'use strict';
+const E = SM.esc, $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const IC = {
+  pencil: 'M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zM20.7 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z',
+  up: 'M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z', down: 'M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z', chev: 'M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z',
+  trash: 'M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z',
+  grip: 'M9 4a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm6 0a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM9 10.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm6 0a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM9 17a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm6 0a1.5 1.5 0 110 3 1.5 1.5 0 010-3z',
+  plus: 'M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z', menu: 'M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z', close: 'M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z',
+  back: 'M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z', search: 'M15.5 14h-.79l-.28-.27A6.5 6.5 0 109.5 16a6.47 6.47 0 004.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0a4.5 4.5 0 110-9 4.5 4.5 0 010 9z',
+};
+const ic = (n, c = '') => `<svg class="ic ${c}" viewBox="0 0 24 24" aria-hidden="true"><path d="${IC[n]}"/></svg>`;
+const iconBtn = (act, icon, label, attrs = '') => `<button type="button" class="icon" data-act="${act}" aria-label="${E(label)}" title="${E(label)}" ${attrs}>${ic(icon)}</button>`;
+const chip = (t, c = '') => `<span class="chip ${c}">${E(t)}</span>`;
+const TYPE_ICON = { TEXT: 'Aa', LONG_TEXT: '¶', NUMBER: '#', DECIMAL: '1.5', DATE: 'D', CHECKBOX: '☑', PICKLIST: '▾', MULTI_PICKLIST: '≣', USER: '@' };
+const SPAN2 = (t) => t === 'LONG_TEXT' || t === 'MULTI_PICKLIST';
+const main = $('#main');
+let B = null;            // builder state
+let navQuery = '';
+const navOpen = { Portal: true, Modules: true };
+const prefs = { digest: true, desktop: false, compact: false, sound: false };
+
+/* ---------- chrome helpers ---------- */
+$('#burger').innerHTML = ic('menu'); $('#sic').innerHTML = ic('search'); $('#backlink').innerHTML = ic('back') + '<span>Back to app</span>';
+function toast(msg, kind = '') { const t = document.createElement('div'); t.className = 'toast ' + kind; t.textContent = msg; $('#toasts').append(t); setTimeout(() => t.remove(), 3200); }
+function openDlg({ title, body, ok = 'Save', cancel = 'Cancel', drawer = false, danger = false, onOk }) {
+  const dlg = $('#dlg'); dlg.className = drawer ? 'drawer' : '';
+  dlg.innerHTML = `<form class="dform" novalidate><header><h2>${E(title)}</h2>${iconBtn('dclose', 'close', 'Close dialog')}</header><div class="dbody">${body}<p class="derr" role="alert" hidden></p></div><footer><button class="btn ${danger ? 'danger' : 'primary'}" type="submit">${E(ok)}</button><button type="button" class="btn" data-act="dclose">${E(cancel)}</button></footer></form>`;
+  const form = $('form', dlg);
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    try { if (onOk(form) !== false) dlg.close(); } catch (err) { const p = $('.derr', form); p.textContent = err.message; p.hidden = false; }
+  });
+  if (!dlg.open) dlg.showModal();
+  ($('input:not([readonly]),select', form) || $('button[type=submit]', form)).focus();
+}
+const confirmDlg = (title, text, ok, onOk, danger = true) => openDlg({ title, body: `<p>${text}</p>`, ok, danger, onOk: () => { onOk(); } });
+const go = (h) => { location.hash = h; };
+
+/* ---------- navigation ---------- */
+const PORTAL = [['portal', 'Portal profile', '#/portal'], ['users', 'Users & profiles', '#/users'], ['audit', 'Audit log', '#/audit'], ['prefs', 'My preferences', '#/preferences']];
+const parts = () => location.hash.replace(/^#\/?/, '').split('/').filter(Boolean).map(decodeURIComponent);
+function currentKey() {
+  const p = parts(); if (!p.length) return '';
+  if (p[0] === 'preferences') return 'prefs';
+  return p[1] ? `${p[0]}/${p[1]}` : p[0];
+}
+function renderNav() {
+  const p = parts(), key = currentKey(), q = navQuery.trim().toLowerCase();
+  const match = (label, parent) => !q || label.toLowerCase().includes(q) || (parent && parent.toLowerCase().includes(q));
+  const link = (cls, href, label, extra = '', k = '') => `<a class="ni ${cls} ${k === key ? 'on' : ''}" href="${href}" ${k === key ? 'aria-current="page"' : ''}>${E(label)}${extra}</a>`;
+  let html = '';
+  const portal = PORTAL.filter(([, l]) => match(l));
+  if (portal.length) {
+    html += `<button class="ng-h" data-act="grp" data-g="Portal" aria-expanded="${q ? true : navOpen.Portal}">Portal ${ic('chev')}</button>`;
+    if (q || navOpen.Portal) html += portal.map(([k, l, h]) => link('', h, l, '', k)).join('');
+  }
+  let mods = '';
+  SM.modules.forEach((m) => {
+    const current = p[0] === m.id, soon = m.live ? '' : '<span class="tag">Soon</span>';
+    const subs = m.tabs.filter(([, tl]) => match(tl, m.name));
+    const showSelf = match(m.name);
+    if (q) {
+      if (showSelf) mods += link('mod', m.live ? '#/projects/layouts' : '#/' + m.id, m.name, soon, m.live ? '' : m.id);
+      if (!showSelf) subs.forEach(([t, tl]) => { mods += m.live ? link('sub', `#/${m.id}/${t}`, tl, `<span class="hint">· ${E(m.name)}</span>`, `${m.id}/${t}`) : `<span class="ni sub dis" aria-disabled="true">${E(tl)}<span class="hint">· ${E(m.name)}</span></span>`; });
+      return;
+    }
+    mods += m.live ? `<a class="ni mod ${current ? 'cur' : ''}" href="#/projects/layouts">${E(m.name)}</a>` : link('mod', '#/' + m.id, m.name, soon, m.id);
+    if (current) m.tabs.forEach(([t, tl]) => { mods += m.live ? link('sub', `#/${m.id}/${t}`, tl, '', `${m.id}/${t}`) : `<span class="ni sub dis" aria-disabled="true">${E(tl)}</span>`; });
+  });
+  if (mods) { html += `<button class="ng-h" data-act="grp" data-g="Modules" aria-expanded="${q ? true : navOpen.Modules}">Modules ${ic('chev')}</button>`; if (q || navOpen.Modules) html += mods; }
+  $('#nav').innerHTML = html || '<div class="nomatch">No settings match your search.</div>';
+}
+
+/* ---------- page frame ---------- */
+function setTitle(t) { document.title = `${t} · Settings · ProjectY`; }
+const crumbs = (list) => `<nav class="crumbs" aria-label="Breadcrumb">${['Settings', ...list].map((c, i, a) => (Array.isArray(c) ? `<a href="${c[1]}">${E(c[0])}</a>` : i === a.length - 1 ? `<span aria-current="page">${E(c)}</span>` : `<span>${E(c)}</span>`)).join('')}</nav>`;
+function page({ title, crumb, actions = '', tabs = '', body }) {
+  setTitle(title);
+  main.innerHTML = `<div class="page">${crumbs(crumb)}<div class="phead"><h1>${E(title)}</h1><div class="pact">${actions}</div></div>${tabs}${body}</div>`;
+}
+function modTabs(m, active) {
+  return `<div class="tabs" role="${m.live ? 'navigation' : 'presentation'}" aria-label="${E(m.name)} settings">${m.tabs.map(([t, l]) => m.live
+    ? `<a href="#/${m.id}/${t}" ${t === active ? 'aria-current="page"' : ''}>${E(l)}</a>` : `<span class="dis" aria-disabled="true">${E(l)}</span>`).join('')}</div>`;
+}
+
+/* ---------- router ---------- */
+function route() {
+  const p = parts(); B = null;
+  if (!p.length) { location.replace('#/projects/layouts'); return; }
+  document.body.classList.remove('nav-open'); $('#burger').setAttribute('aria-expanded', 'false');
+  renderNav();
+  const [a, b, c] = p;
+  if (a === 'portal') pPortal();
+  else if (a === 'users') pUsers();
+  else if (a === 'audit') pAudit();
+  else if (a === 'preferences') pPrefs();
+  else if (a === 'projects') {
+    if (!b) { location.replace('#/projects/layouts'); return; }
+    if (b === 'fields') pFields(); else if (b === 'layouts') { c ? pBuilder(c) : pLayouts(); }
+    else if (b === 'statuses') pStatuses(); else if (b === 'templates') pTemplates(); else notFound();
+  } else if (SM.modules.some((m) => m.id === a && !m.live)) pPlaceholder(SM.modules.find((m) => m.id === a));
+  else notFound();
+  main.scrollTop = 0;
+}
+function notFound() { page({ title: 'Page not found', crumb: ['Not found'], body: `<div class="place"><strong>That settings page does not exist.</strong><a href="#/projects/layouts">Go to Projects layouts</a></div>` }); }
+function refresh() { const y = window.scrollY; route(); window.scrollTo(0, y); }
+
+/* ---------- simple pages ---------- */
+function pPortal() {
+  const P = SM.portal, zones = ['Asia/Kolkata', 'Europe/London', 'America/New_York', 'America/Los_Angeles', 'Australia/Sydney'], dfs = ['MMM d, yyyy', 'dd/MM/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd'], cur = ['USD', 'EUR', 'GBP', 'INR'], wk = ['Monday', 'Sunday', 'Saturday'];
+  const sel = (n, label, opts, v) => `<label class="fl">${label}<select name="${n}">${opts.map((o) => `<option ${o === v ? 'selected' : ''}>${E(o)}</option>`).join('')}</select></label>`;
+  page({ title: 'Portal profile', crumb: ['Portal', 'Portal profile'], body: `<form class="card" data-form="portal" novalidate><h2>Portal details</h2><div class="cb"><div class="formgrid">
+    <label class="fl">Portal name <span class="req">*</span><input name="name" value="${E(P.name)}" required></label>
+    <label class="fl">Portal URL name<input value="${E(P.slug)}" readonly aria-describedby="slughelp"><span class="help" id="slughelp">Cannot be changed after the portal is created.</span></label>
+    ${sel('timeZone', 'Time zone', zones, P.timeZone)}${sel('dateFormat', 'Date format', dfs, P.dateFormat)}${sel('currency', 'Currency', cur, P.currency)}${sel('weekStart', 'Week starts on', wk, P.weekStart)}
+    </div></div><div class="cb" style="border-top:1px solid var(--bd);background:#fafbfc"><button class="btn primary" type="submit">Save</button> <button class="btn" type="reset">Reset</button></div></form>` });
+}
+function pUsers() {
+  page({ title: 'Users & profiles', crumb: ['Portal', 'Users & profiles'], actions: '<button class="btn primary" data-act="invite">Invite user</button>', body: `
+  <div class="tw"><table><thead><tr><th>Name</th><th>Email</th><th>Profile</th><th>Status</th><th>Last active</th></tr></thead><tbody>${SM.users.map((u) => `<tr><td><strong>${E(u.name)}</strong> ${u.owner ? chip('Owner', 'blue') : ''}</td><td>${E(u.email)}</td><td>${E(u.profile)}</td><td>${chip(u.status, u.status === 'Active' ? 'green' : 'grey')}</td><td class="mu">${E(u.last)}</td></tr>`).join('')}</tbody></table></div>
+  <h2 style="margin:20px 0 8px;font-size:14px">Profiles</h2>
+  <div class="tw"><table><thead><tr><th>Profile</th><th>What it can do</th><th class="num">People</th></tr></thead><tbody>${SM.profiles.map((p) => `<tr><td><strong>${E(p.name)}</strong></td><td>${E(p.note)}</td><td class="num">${p.people}</td></tr>`).join('')}</tbody></table></div>` });
+}
+function pAudit() {
+  page({ title: 'Audit log', crumb: ['Portal', 'Audit log'], body: `<div class="tw"><table><thead><tr><th>When</th><th>Who</th><th>Action</th><th>Details</th></tr></thead><tbody>${SM.audit.map((a) => `<tr><td class="mu" style="white-space:nowrap">${E(a.when)}</td><td>${E(a.who)}</td><td><strong>${E(a.what)}</strong></td><td>${E(a.detail)}</td></tr>`).join('')}</tbody></table></div>` });
+}
+function pPrefs() {
+  const rows = [['digest', 'Daily email digest', 'A summary of what changed in your projects.'], ['desktop', 'Desktop notifications', 'Show a notification when you are mentioned.'], ['compact', 'Compact tables', 'Show more rows on one screen.'], ['sound', 'Play a sound for new notifications', 'Off by default.']];
+  page({ title: 'My preferences', crumb: ['Portal', 'My preferences'], body: `<div class="card" style="max-width:640px"><h2>Personal settings</h2>${rows.map(([k, l, h]) => `<label class="switch"><span><strong>${l}</strong><br><span class="mu">${h}</span></span><input type="checkbox" role="switch" data-pref="${k}" ${prefs[k] ? 'checked' : ''} aria-label="${E(l)}"></label>`).join('')}</div>` });
+}
+function pPlaceholder(m) {
+  page({ title: m.name, crumb: ['Modules', m.name], tabs: modTabs(m, ''), body: `<div class="place"><strong>${E(m.name)} settings are coming</strong>Settings for ${E(m.name)} will appear here when the module arrives.<br><span class="tag" style="display:inline-block;margin:10px 0 0">${E(m.note || 'Soon')}</span></div>` });
+}
+function pStatuses() {
+  const m = SM.modules[0], order = ['Active', 'On hold', 'Completed', 'Cancelled'];
+  page({ title: 'Statuses', crumb: ['Modules', 'Projects', 'Statuses'], tabs: modTabs(m, 'statuses'), body: `<p class="mu" style="margin-top:0">Project statuses, grouped by what they mean for reporting.</p>
+  ${order.map((t) => `<div class="sgroup"><h2>${t}</h2><div class="box">${SM.statuses().filter((s) => s.type === t).map((s) => `<div class="srow"><span class="dot" style="background:${E(s.color)}"></span><strong>${E(s.name)}</strong><span class="tag">${E(s.type)}</span></div>`).join('') || '<div class="srow mu">No statuses</div>'}</div></div>`).join('')}
+  <form class="addrow" data-form="status" novalidate><label class="sr" for="stn">New status name</label><input id="stn" name="name" placeholder="New status name"><button class="btn primary" type="submit">Add status</button><span class="derr" role="alert" hidden></span></form>` });
+}
+function pTemplates() {
+  const m = SM.modules[0];
+  page({ title: 'Templates', crumb: ['Modules', 'Projects', 'Templates'], tabs: modTabs(m, 'templates'), actions: '<button class="btn primary" data-act="soon-tpl">New template</button>', body: `<div class="cards">${SM.templates().map((t) => `<div class="card"><h3 style="font-size:14px">${E(t.name)}</h3><p class="mu">${E(t.description)}</p><p><span class="chip blue">Used ${t.uses} times</span></p><button class="linkbtn" data-act="soon-tpl">Edit</button></div>`).join('')}</div>` });
+}
+
+/* ---------- fields ---------- */
+function pFields() {
+  const m = SM.modules[0], lays = SM.layouts().map((l) => SM.layout(l.id));
+  const rows = SM.fields().map((f) => {
+    const n = lays.filter((d) => SM.draft.placed(d, f.key)).length, on = f.status === 'ACTIVE';
+    return `<tr><td><strong>${E(f.label)}</strong>${f.description ? `<div class="sub">${E(f.description)}</div>` : ''}</td><td><code>${E(f.key)}</code></td><td>${E(SM.typeLabel(f.type))}</td>
+    <td>${f.mandatory ? chip('Required', 'red') : ''}${f.unique ? chip('Unique', 'blue') : ''}${f.sensitive ? chip('Sensitive', 'amber') : ''}${!f.mandatory && !f.unique && !f.sensitive ? '<span class="mu">None</span>' : ''}</td>
+    <td>${n} layout${n === 1 ? '' : 's'} · ${f.usage} project${f.usage === 1 ? '' : 's'}</td><td>${chip(on ? 'Active' : 'Inactive', on ? 'green' : 'grey')}</td>
+    <td class="act"><button class="linkbtn" data-act="toggle-field" data-key="${E(f.key)}">${on ? 'Deactivate' : 'Activate'}</button></td></tr>`;
+  }).join('');
+  page({ title: 'Fields', crumb: ['Modules', 'Projects', 'Fields'], tabs: modTabs(m, 'fields'), actions: '<button class="btn primary" data-act="new-field">New field</button>',
+    body: `<div id="fmsg"></div><div class="tw"><table><thead><tr><th>Label</th><th>Key</th><th>Type</th><th>Rules</th><th>Used by</th><th>Status</th><th><span class="sr">Actions</span></th></tr></thead><tbody>${rows}</tbody></table></div><p class="mu">${SM.fields().length} of ${SM.MAX_FIELDS} fields used.</p>` });
+}
+function newFieldDrawer() {
+  openDlg({ title: 'New field', drawer: true, ok: 'Create field', body: `<label class="fl">Field label <span class="req">*</span><input name="label" required></label>
+   <label class="fl">Type<select name="type">${SM.TYPES.map(([v, l]) => `<option value="${v}">${E(l)}</option>`).join('')}</select></label>
+   <label class="chk"><input type="checkbox" name="mandatory"> Required on every layout</label><p class="mu">The field is created unused. Add it to a layout in the layout builder.</p>`,
+    onOk: (f) => { const d = SM.createField({ label: f.label.value, type: f.type.value, mandatory: f.mandatory.checked }); toast(`Field "${d.label}" created`); setTimeout(refresh, 0); } });
+}
+
+/* ---------- layouts list ---------- */
+function pLayouts(err) {
+  const m = SM.modules[0], ls = SM.layouts();
+  const rows = ls.map((l) => `<tr data-lrow="${E(l.id)}"><td><a href="#/projects/layouts/${E(l.id)}"><strong>${E(l.name)}</strong></a> ${l.isDefault ? chip('Default', 'blue') : ''}<div class="sub">${E(l.description || 'No description')}</div></td>
+    <td class="num">${l.sectionCount}</td><td class="num">${l.fieldCount}</td><td class="num">${l.usage}</td><td>${chip(l.active ? 'Active' : 'Inactive', l.active ? 'green' : 'grey')}</td>
+    <td class="act"><a class="btn sm" href="#/projects/layouts/${E(l.id)}">Edit</a> <button class="btn sm" data-act="clone" data-id="${E(l.id)}">Clone</button>
+    <button class="btn sm" data-act="default" data-id="${E(l.id)}" ${l.isDefault || !l.active ? 'disabled' : ''}>Make default</button>
+    <button class="btn sm" data-act="toggle-layout" data-id="${E(l.id)}" data-on="${l.active ? '0' : '1'}">${l.active ? 'Deactivate' : 'Activate'}</button></td></tr>`).join('');
+  page({ title: 'Layouts', crumb: ['Modules', 'Projects', 'Layouts'], tabs: modTabs(m, 'layouts'), actions: '<button class="btn primary" data-act="new-layout">New layout</button>',
+    body: `<div id="lmsg">${err ? `<div class="alert err" role="alert">${E(err)}</div>` : ''}</div><p class="mu" style="margin-top:0">A layout decides which fields a project form shows, and in which sections. ${ls.length} of ${SM.MAX_LAYOUTS} layouts used. Layouts are deactivated, never deleted.</p>
+    <div class="tw"><table><thead><tr><th>Layout</th><th class="num">Sections</th><th class="num">Fields</th><th class="num">Projects using it</th><th>Status</th><th><span class="sr">Actions</span></th></tr></thead><tbody>${rows}</tbody></table></div>` });
+}
+function layoutErr(e) { toast(e.message, 'error'); const box = $('#lmsg'); if (box) box.innerHTML = `<div class="alert err" role="alert">${E(e.message)}</div>`; }
+function newLayoutDlg() {
+  openDlg({ title: 'New layout', ok: 'Create layout', body: `<label class="fl">Layout name <span class="req">*</span><input name="name" required></label>
+  <label class="fl">Start from<select name="from"><option value="">A blank layout</option>${SM.layouts().map((l) => `<option value="${E(l.id)}">A copy of ${E(l.name)}</option>`).join('')}</select></label>`,
+    onOk: (f) => { let id; try { id = SM.createLayout({ name: f.name.value, cloneFrom: f.from.value || null }); } catch (e) { const full = /at most/.test(e.message); if (full) { $('#dlg').close(); layoutErr(e); return false; } throw e; } toast('Layout created'); go('#/projects/layouts/' + id); setTimeout(() => { if (!B) refresh(); }, 0); } });
+}
+function cloneDlg(id) {
+  const l = SM.layouts().find((x) => x.id === id);
+  openDlg({ title: 'Clone layout', ok: 'Clone', body: `<label class="fl">Name for the copy <span class="req">*</span><input name="name" value="${E(l.name)} copy" required></label><p class="mu">Copies all sections and fields of "${E(l.name)}".</p>`,
+    onOk: (f) => { try { SM.createLayout({ name: f.name.value, cloneFrom: id }); } catch (e) { if (/at most/.test(e.message)) { $('#dlg').close(); layoutErr(e); return false; } throw e; } toast('Layout cloned'); refresh(); } });
+}
+
+/* ---------- layout builder ---------- */
+const dirty = () => JSON.stringify(B.d) !== B.snap;
+function pBuilder(id) {
+  let d; try { d = SM.layout(id); } catch (e) { notFound(); return; }
+  B = { d, snap: JSON.stringify(d), sel: null, tab: 'new', preview: false, collapsed: new Set(), err: null };
+  setTitle(`Edit layout · ${d.name}`);
+  main.innerHTML = `<div class="bld"><div class="bcrumb">${crumbs(['Modules', 'Projects', ['Layouts', '#/projects/layouts'], d.name])}</div>
+  <div class="bbar" role="toolbar" aria-label="Layout actions"><label class="sr" for="lname">Layout name</label><input class="lname" id="lname" data-lname value="${E(d.name)}" aria-label="Layout name">
+   <span class="dirty clean" id="dirty" aria-live="polite">No changes</span><span class="sp"></span>
+   <button class="btn" data-act="preview" aria-pressed="false" id="pvbtn">Preview</button>
+   <button class="btn primary" data-act="save">Save</button><button class="btn" data-act="saveclose">Save and close</button><button class="btn" data-act="cancel">Cancel</button></div>
+  <div class="bprob" id="bprob"></div>
+  <div class="bcols" id="bcols"><aside class="pal" id="pal" data-drop="unused" aria-label="Field palette"></aside><section class="cv" id="cv" aria-label="Layout canvas"></section><aside class="props" id="props" aria-label="Field properties"></aside></div></div>`;
+  renderB();
+}
+function renderB() { renderPalette(); renderCanvas(); renderProps(); chrome(); }
+function chrome() {
+  const el = $('#dirty'); if (!el) return;
+  const dt = dirty(); el.textContent = dt ? '● Unsaved changes' : 'No changes'; el.classList.toggle('clean', !dt);
+  const pr = SM.draft.problem(B.d), msg = pr || B.err;
+  $('#bprob').innerHTML = msg ? `<div class="alert err" role="alert">${ic('close')}<span>${E(msg)}</span></div>` : '';
+}
+function secOptions(skip, withUnused = true) {
+  return B.d.sections.filter((s) => s.id !== skip).map((s) => `<option value="${E(s.id)}" data-sid="${E(s.id)}">${E(s.name || '(untitled)')}</option>`).join('') + (withUnused ? '<option value="unplaced">Unused fields</option>' : '');
+}
+function renderPalette() {
+  const un = SM.draft.unplaced(B.d), p = $('#pal');
+  p.innerHTML = `<div class="tabs" role="tablist"><button role="tab" data-act="ptab" data-tab="new" class="${B.tab === 'new' ? 'on' : ''}" aria-selected="${B.tab === 'new'}">New fields</button><button role="tab" data-act="ptab" data-tab="unused" class="${B.tab === 'unused' ? 'on' : ''}" aria-selected="${B.tab === 'unused'}">Unused fields (${un.length})</button></div>` +
+    (B.tab === 'new'
+      ? `<div class="pl">${SM.TYPES.map(([v, l]) => `<div class="pi" draggable="true" data-drag="new" data-type="${v}"><span class="ti" aria-hidden="true">${TYPE_ICON[v]}</span><span class="nm">${E(l)}</span>${iconBtn('addnew', 'plus', `Add a ${l} field to the first section`, `data-type="${v}"`)}</div>`).join('')}</div><p class="phint">Drag a field type onto a section, or use the plus button.</p>`
+      : `<div class="pl">${un.map((f) => `<div class="pi col" draggable="true" data-drag="field" data-key="${E(f.key)}"><div class="r1">${ic('grip')}<span class="nm" title="${E(f.label)}">${E(f.label)}</span>${f.status !== 'ACTIVE' ? chip('Inactive', 'amber') : ''}</div><div class="mu" style="font-size:12px">${E(SM.typeLabel(f.type))}</div><select data-addto="${E(f.key)}" aria-label="Add ${E(f.label)} to section"><option value="">Add to…</option>${secOptions(null, false)}</select></div>`).join('') || '<p class="phint">Every field is on this layout.</p>'}</div><p class="phint">Drag a field card here to remove it from this layout. Fields not on a layout are hidden on projects, and their answers are kept.</p>`);
+}
+function cardHTML(s, p) {
+  const f = SM.field(p.key), eff = SM.draft.effective(B.d, p.key), others = B.d.sections.length;
+  return `<div class="fc ${SPAN2(f.type) ? 'span2' : ''} ${B.sel === p.key ? 'sel' : ''}" draggable="true" data-drag="field" data-card="${E(p.key)}" data-key="${E(p.key)}">
+   <div class="fc-main" role="button" tabindex="0" aria-pressed="${B.sel === p.key}" aria-label="Select ${E(f.label)}">${ic('grip', 'grip')}<span class="lab">${E(f.label)}${eff.mandatory ? ' <span class="req">*</span>' : ''}</span><span class="ty">${E(SM.typeLabel(f.type))}</span></div>
+   <div class="chips">${p.readOnly ? chip('Read-only') : ''}${p.mandatory === true && !f.mandatory ? chip('Required here', 'red') : ''}${p.mandatory === false && f.mandatory ? chip('Optional here', 'amber') : ''}${f.unique ? chip('Unique', 'blue') : ''}${f.status !== 'ACTIVE' ? chip('Inactive', 'amber') : ''}</div>
+   <div class="fc-act"><select data-move="${E(p.key)}" aria-label="Move ${E(f.label)} to"><option value="">Move to…</option>${secOptions(s.id)}</select>${iconBtn('fup', 'up', `Move ${f.label} up`, `data-key="${E(p.key)}"`)}${iconBtn('fdown', 'down', `Move ${f.label} down`, `data-key="${E(p.key)}"`)}</div></div>`;
+}
+function renderCanvas() {
+  const cv = $('#cv'), d = B.d;
+  if (B.preview) {
+    cv.innerHTML = `<div class="pform" aria-label="Form preview"><p class="mu" style="margin-bottom:0">Preview of the project form with the layout "${E(d.name)}".</p>${d.sections.map((s) => `<h3>${E(s.name)}</h3><div class="pg">${s.fields.map((p) => { const e = SM.draft.effective(d, p.key); return `<div class="${SPAN2(e.type) ? 'span2' : ''}">${SM.control(e, e)}</div>`; }).join('') || '<p class="mu">No fields in this section.</p>'}</div>`).join('')}</div>`;
+    return;
+  }
+  cv.innerHTML = d.sections.map((s, i) => `<section class="sec ${B.collapsed.has(s.id) ? 'col' : ''}" data-sec="${E(s.id)}"><div class="sec-h">
+    <button type="button" class="icon" data-act="collapse" data-id="${E(s.id)}" aria-expanded="${!B.collapsed.has(s.id)}" aria-label="Collapse or expand section ${E(s.name)}"><span class="chv">${ic('chev')}</span></button>
+    <label class="sec-t"><span class="sr">Section title</span><input class="sec-name" data-sec-name="${E(s.id)}" value="${E(s.name)}" aria-label="Section title" placeholder="Section title">${ic('pencil')}</label>
+    <span class="cnt">${s.fields.length} field${s.fields.length === 1 ? '' : 's'}</span>
+    ${iconBtn('sup', 'up', 'Move section up', `data-i="${i}" ${i === 0 ? 'disabled' : ''}`)}${iconBtn('sdown', 'down', 'Move section down', `data-i="${i}" ${i === d.sections.length - 1 ? 'disabled' : ''}`)}${iconBtn('sdel', 'trash', 'Delete section', `data-id="${E(s.id)}"`)}</div>
+    <div class="sec-b" data-drop="zone" data-zone="${E(s.id)}">${s.fields.map((p) => cardHTML(s, p)).join('') || '<div class="empty">Drop fields here</div>'}</div></section>`).join('') +
+    `<button class="btn addsec" data-act="sadd">${ic('plus')} Add section</button>`;
+}
+function renderProps() {
+  const el = $('#props'), at = B.sel && SM.draft.find(B.d, B.sel);
+  if (!at) { B.sel = null; el.innerHTML = '<h3>Field properties</h3><p class="none">Select a field in the canvas to change how it behaves in this layout.</p>'; return; }
+  const f = SM.field(B.sel), p = at.placement, dv = p.defaultValue ?? '';
+  let def = '';
+  if (!f.unique && f.type !== 'USER' && f.type !== 'MULTI_PICKLIST') {
+    const c = f.type === 'CHECKBOX' ? `<label class="chk"><input type="checkbox" data-ov="default" ${dv ? 'checked' : ''}> Ticked by default</label>`
+      : f.type === 'PICKLIST' ? `<select data-ov="default"><option value="">None</option>${f.options.map((o) => `<option ${o === dv ? 'selected' : ''}>${E(o)}</option>`).join('')}</select>`
+      : f.type === 'LONG_TEXT' ? `<textarea rows="3" data-ov="default">${E(dv)}</textarea>`
+      : `<input data-ov="default" type="${f.type === 'NUMBER' || f.type === 'DECIMAL' ? 'number' : f.type === 'DATE' ? 'date' : 'text'}" value="${E(dv)}">`;
+    def = f.type === 'CHECKBOX' ? c : `<label class="fl">Default value${c}</label>`;
+  }
+  el.innerHTML = `<h3>Field properties</h3>
+   <label class="fl">Label<input value="${E(f.label)}" readonly></label><label class="fl">Type<input value="${E(SM.typeLabel(f.type))}" readonly></label>
+   <label class="fl">Required<select data-ov="mandatory"><option value="" ${p.mandatory === null ? 'selected' : ''}>Same as field (${f.mandatory ? 'required' : 'optional'})</option><option value="true" ${p.mandatory === true ? 'selected' : ''}>Required</option><option value="false" ${p.mandatory === false ? 'selected' : ''}>Optional</option></select></label>
+   <label class="chk"><input type="checkbox" data-ov="readOnly" ${p.readOnly ? 'checked' : ''}> Read-only</label>${def}
+   ${f.unique ? '<p class="mu">Unique fields cannot have a default value.</p>' : ''}
+   <button class="btn" data-act="remove">Remove from layout</button><p class="mu">Settings here apply to this layout only.</p>`;
+}
+function applyOv(el) {
+  const k = el.dataset.ov, key = B.sel; if (!key) return;
+  if (k === 'mandatory') SM.draft.override(B.d, key, { mandatory: el.value === '' ? null : el.value === 'true' });
+  else if (k === 'readOnly') SM.draft.override(B.d, key, { readOnly: el.checked });
+  else SM.draft.override(B.d, key, { defaultValue: el.type === 'checkbox' ? (el.checked ? 'true' : null) : (el.value === '' ? null : el.value) });
+}
+function moveField(key, to, before = null) {
+  try { SM.draft.move(B.d, key, to, before); } catch (e) { toast(e.message, 'error'); return; }
+  if (to === 'unplaced') { B.tab = 'unused'; if (B.sel === key) B.sel = null; }
+  renderB();
+}
+function newFieldDlg(type, secId, before = null) {
+  openDlg({ title: 'New field', ok: 'Add field', body: `<label class="fl">Field label <span class="req">*</span><input name="label" required></label><label class="fl">Type<input value="${E(SM.typeLabel(type))}" readonly></label>
+   <label class="fl">Add to section<select name="sec">${B.d.sections.map((s) => `<option value="${E(s.id)}" ${s.id === secId ? 'selected' : ''}>${E(s.name)}</option>`).join('')}</select></label>`,
+    onOk: (f) => { const nf = SM.createField({ label: f.label.value, type }); SM.draft.move(B.d, nf.key, f.sec.value, f.sec.value === secId ? before : null); B.sel = nf.key; renderB(); toast(`Field "${nf.label}" created and added`); } });
+}
+function save(close) {
+  const pr = SM.draft.problem(B.d);
+  if (pr) { B.err = pr; chrome(); toast(pr, 'error'); return; }
+  try { SM.saveLayout(B.d); } catch (e) { B.err = e.message; chrome(); toast(e.message, 'error'); return; }
+  B.err = null; B.snap = JSON.stringify(B.d); chrome(); toast('Layout saved');
+  if (close) go('#/projects/layouts');
+}
+
+/* drag and drop */
+let DR = null;
+const clearOver = () => $$('.over').forEach((x) => x.classList.remove('over'));
+document.addEventListener('dragstart', (e) => {
+  const t = e.target.closest?.('[data-drag]'); if (!t || !B) return;
+  DR = { kind: t.dataset.drag, key: t.dataset.key, type: t.dataset.type };
+  e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', DR.key || DR.type);
+  setTimeout(() => t.classList.add('dragging'), 0);
+});
+document.addEventListener('dragend', () => { DR = null; clearOver(); $$('.dragging').forEach((x) => x.classList.remove('dragging')); });
+document.addEventListener('dragover', (e) => {
+  const z = e.target.closest?.('[data-drop]'); if (!z || !DR || !B) return;
+  if (z.dataset.drop === 'unused' && DR.kind !== 'field') return;
+  e.preventDefault(); e.dataTransfer.dropEffect = 'move'; if (!z.classList.contains('over')) { clearOver(); z.classList.add('over'); }
+});
+document.addEventListener('drop', (e) => {
+  const z = e.target.closest?.('[data-drop]'); if (!z || !DR || !B) return;
+  e.preventDefault(); const dr = DR; DR = null; clearOver();
+  if (z.dataset.drop === 'unused') { if (dr.kind === 'field' && SM.draft.find(B.d, dr.key)) moveField(dr.key, 'unplaced'); return; }
+  const card = e.target.closest('[data-card]'), before = card && card.dataset.card !== dr.key ? card.dataset.card : null, sec = z.dataset.zone;
+  if (dr.kind === 'field') { if (card && card.dataset.card === dr.key) return; moveField(dr.key, sec, before); } else newFieldDlg(dr.type, sec, before);
+});
+
+/* ---------- events ---------- */
+const guard = (fn) => { if (B && dirty()) confirmDlg('Discard changes?', 'This layout has unsaved changes. If you leave now they will be lost.', 'Discard changes', fn); else fn(); };
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('a[href^="#"]');
+  if (a && B && dirty() && a.getAttribute('href') !== location.hash) { e.preventDefault(); const h = a.getAttribute('href'); confirmDlg('Discard changes?', 'This layout has unsaved changes. If you leave now they will be lost.', 'Discard changes', () => { B.snap = JSON.stringify(B.d); go(h); }); return; }
+  if (a && !a.dataset.back) document.body.classList.remove('nav-open');
+  const t = e.target.closest('[data-act]');
+  if (t && !t.disabled) { act(t.dataset.act, t, e); return; }
+  const card = e.target.closest('[data-card]');
+  if (card && B && !e.target.closest('select,button')) selectCard(card.dataset.card);
+});
+document.addEventListener('keydown', (e) => {
+  const m = e.target.closest?.('.fc-main'); if (m && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); selectCard(m.closest('[data-card]').dataset.card); }
+});
+function selectCard(key) { B.sel = key; $$('.fc').forEach((c) => { const on = c.dataset.card === key; c.classList.toggle('sel', on); $('.fc-main', c).setAttribute('aria-pressed', on); }); renderProps(); }
+function act(name, t) {
+  switch (name) {
+    case 'nav': { const o = document.body.classList.toggle('nav-open'); $('#burger').setAttribute('aria-expanded', o); break; }
+    case 'dclose': $('#dlg').close(); break;
+    case 'grp': navOpen[t.dataset.g] = !navOpen[t.dataset.g]; renderNav(); break;
+    case 'invite': case 'soon-tpl': toast('This is a design sample: not wired up'); break;
+    case 'new-field': newFieldDrawer(); break;
+    case 'toggle-field': { const f = SM.field(t.dataset.key); f.status = f.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'; toast(`${f.label} ${f.status === 'ACTIVE' ? 'activated' : 'deactivated'}`); refresh(); break; }
+    case 'new-layout': newLayoutDlg(); break;
+    case 'clone': cloneDlg(t.dataset.id); break;
+    case 'default': try { SM.setDefault(t.dataset.id); toast('Default layout changed'); refresh(); } catch (e) { layoutErr(e); } break;
+    case 'toggle-layout': try { SM.setActive(t.dataset.id, t.dataset.on === '1'); toast(t.dataset.on === '1' ? 'Layout activated' : 'Layout deactivated'); refresh(); } catch (e) { layoutErr(e); } break;
+    /* builder */
+    case 'save': save(false); break;
+    case 'saveclose': save(true); break;
+    case 'cancel': guard(() => { if (B) B.snap = JSON.stringify(B.d); go('#/projects/layouts'); }); break;
+    case 'preview': B.preview = !B.preview; t.setAttribute('aria-pressed', B.preview); $('#bcols').classList.toggle('preview', B.preview); renderCanvas(); break;
+    case 'ptab': B.tab = t.dataset.tab; renderPalette(); break;
+    case 'collapse': B.collapsed.has(t.dataset.id) ? B.collapsed.delete(t.dataset.id) : B.collapsed.add(t.dataset.id); renderCanvas(); break;
+    case 'sup': SM.draft.shiftSection(B.d, +t.dataset.i, -1); renderB(); break;
+    case 'sdown': SM.draft.shiftSection(B.d, +t.dataset.i, 1); renderB(); break;
+    case 'sdel': try { SM.draft.removeSection(B.d, t.dataset.id); renderB(); toast('Section deleted. Its fields moved to Unused fields.'); } catch (e) { toast(e.message, 'error'); } break;
+    case 'sadd': { let n = 'New section', i = 2; while (B.d.sections.some((s) => s.name === n)) n = `New section ${i++}`; const s = SM.draft.addSection(B.d, n); renderB(); const inp = $(`[data-sec-name="${s.id}"]`); inp.focus(); inp.select(); break; }
+    case 'fup': SM.draft.shiftField(B.d, t.dataset.key, -1); renderB(); break;
+    case 'fdown': SM.draft.shiftField(B.d, t.dataset.key, 1); renderB(); break;
+    case 'remove': moveField(B.sel, 'unplaced'); break;
+    case 'addnew': newFieldDlg(t.dataset.type, B.d.sections[0].id); break;
+  }
+}
+document.addEventListener('input', (e) => {
+  const t = e.target; if (!B) return;
+  if (t.matches('[data-lname]')) { B.d.name = t.value; chrome(); }
+  else if (t.matches('[data-sec-name]')) {
+    const s = B.d.sections.find((x) => x.id === t.dataset.secName); s.name = t.value; chrome();
+    $$(`option[data-sid="${s.id}"]`).forEach((o) => { o.textContent = s.name || '(untitled)'; });
+  } else if (t.matches('[data-ov]') && t.matches('input:not([type=checkbox]),textarea')) { applyOv(t); chrome(); }
+});
+document.addEventListener('change', (e) => {
+  const t = e.target;
+  if (t.matches('[data-pref]')) { prefs[t.dataset.pref] = t.checked; toast('Preference saved'); return; }
+  if (!B) return;
+  if (t.matches('[data-ov]')) { applyOv(t); chrome(); if (t.dataset.ov !== 'default') renderCanvas(); }
+  else if (t.matches('[data-move]') && t.value) moveField(t.dataset.move, t.value);
+  else if (t.matches('[data-addto]') && t.value) { const k = t.dataset.addto; B.sel = k; moveField(k, t.value); }
+});
+document.addEventListener('submit', (e) => {
+  const f = e.target.closest('[data-form]'); if (!f) return; e.preventDefault();
+  if (f.dataset.form === 'portal') { if (!f.name.value.trim()) { toast('Name the portal.', 'error'); return; } Object.assign(SM.portal, { name: f.name.value.trim(), timeZone: f.timeZone.value, dateFormat: f.dateFormat.value, currency: f.currency.value, weekStart: f.weekStart.value }); toast('Portal profile saved'); }
+  if (f.dataset.form === 'status') { try { SM.addStatus(f.name.value); toast('Status added'); refresh(); } catch (err) { const p = $('.derr', f); p.textContent = err.message; p.hidden = false; } }
+});
+$('#navsearch').addEventListener('input', (e) => { navQuery = e.target.value; renderNav(); });
+window.addEventListener('beforeunload', (e) => { if (B && dirty()) { e.preventDefault(); e.returnValue = ''; } });
+window.addEventListener('hashchange', route);
+route();
+})();
+</script>
+</body>
+</html>

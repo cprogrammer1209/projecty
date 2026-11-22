@@ -1,0 +1,755 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Settings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&display=swap">
+<style>
+:root{
+  --bg:#fcfcfd;--side:#f6f6f8;--card:#fff;--bd:#e6e6ea;--bd2:#d6d6dc;--tx:#1f2023;--tx2:#44464d;--mut:#6b6f76;--mut2:#8e9199;
+  --hover:rgba(20,20,30,.045);--sel:rgba(94,106,210,.11);--acc:#5e6ad2;--acc-t:#4d59c0;--danger:#cf4238;--ok:#2f9e6f;
+  --pop-sh:0 12px 36px rgba(20,20,40,.14),0 2px 6px rgba(20,20,40,.06);--r:6px;--toast:#26262b;--toast-t:#f5f5f7;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#141517;--side:#191a1d;--card:#1c1d20;--bd:#2b2c31;--bd2:#3a3b41;--tx:#ececef;--tx2:#c4c6cc;--mut:#9a9da6;--mut2:#7a7d86;
+  --hover:rgba(255,255,255,.055);--sel:rgba(124,134,232,.16);--acc:#6e79dc;--acc-t:#9aa3f0;--danger:#ef6b61;--ok:#4cc08e;
+  --pop-sh:0 14px 40px rgba(0,0,0,.55),0 2px 6px rgba(0,0,0,.3);--toast:#ececef;--toast-t:#1c1d20;
+}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{color-scheme:light dark}
+body{margin:0;background:var(--bg);color:var(--tx);font:400 13px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+h1,h2,h3,p{margin:0}
+.ic{flex:none;display:block}
+kbd{font:500 10.5px/1 Inter,sans-serif;border:1px solid var(--bd2);border-bottom-width:2px;border-radius:4px;padding:2px 5px;color:var(--mut);background:var(--card);margin:0 1px}
+
+/* shell */
+.app{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;height:100vh;overflow:auto;background:var(--side);border-right:1px solid var(--bd);padding:10px 8px 24px;z-index:40}
+.back{display:flex;align-items:center;gap:8px;height:30px;padding:0 8px;border-radius:var(--r);color:var(--tx2);font-weight:500}
+.back:hover{background:var(--hover)}
+.sbtn{display:flex;align-items:center;gap:8px;width:100%;height:30px;margin:6px 0 4px;padding:0 8px;border:1px solid var(--bd);border-radius:var(--r);background:var(--card);color:var(--mut);cursor:pointer;text-align:left}
+.sbtn:hover{border-color:var(--bd2)}
+.sbtn span{flex:1}
+.gl{font-size:11px;font-weight:500;color:var(--mut2);padding:16px 8px 4px}
+.ni{display:flex;align-items:center;gap:8px;height:28px;padding:0 8px;border-radius:var(--r);color:var(--tx2);cursor:pointer}
+.ni:hover{background:var(--hover);color:var(--tx)}
+.ni .ic{color:var(--mut)}
+.ni[aria-current=page]{background:var(--sel);color:var(--acc-t);font-weight:500}
+.ni[aria-current=page] .ic{color:var(--acc-t)}
+.ni.dim{color:var(--mut)}
+.soon{margin-left:auto;font-size:10.5px;line-height:15px;color:var(--mut2);border:1px solid var(--bd);border-radius:8px;padding:0 6px}
+.sub{margin:2px 0 4px 15px;padding-left:6px;border-left:1px solid var(--bd)}
+.topbar{display:none}
+.scrim{display:none}
+main{min-width:0}
+.col{max-width:720px;margin:0 auto;padding:56px 32px 140px}
+.col.wide{max-width:1040px}
+.crumb{font-size:12px;color:var(--mut2);margin-bottom:6px}
+.ph{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px}
+.ph h1{font-size:22px;font-weight:600;letter-spacing:-.02em;line-height:1.25}
+.ph p{color:var(--mut);margin-top:4px;max-width:520px}
+
+/* controls */
+.btn{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:1px solid var(--bd);border-radius:var(--r);background:var(--card);cursor:pointer;white-space:nowrap;font-weight:500;color:var(--tx2)}
+.btn:hover{border-color:var(--bd2);color:var(--tx)}
+.btn.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.primary[disabled]{opacity:.45;cursor:not-allowed;filter:none}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.ghost:hover{background:var(--hover)}
+.ibtn{display:inline-grid;place-items:center;width:24px;height:24px;border:0;border-radius:5px;background:transparent;color:var(--mut);cursor:pointer;padding:0}
+.ibtn:hover{background:var(--hover);color:var(--tx)}
+.in{height:28px;border:1px solid var(--bd);border-radius:var(--r);padding:0 8px;background:var(--card);min-width:0}
+.in:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px rgba(94,106,210,.2)}
+textarea.in{height:auto;padding:6px 8px}
+.sw{display:inline-flex;align-items:center;gap:8px;cursor:pointer;color:var(--mut)}
+.sw input{appearance:none;-webkit-appearance:none;margin:0;width:26px;height:15px;border-radius:8px;background:var(--bd2);position:relative;cursor:pointer;transition:background .12s;flex:none}
+.sw input::after{content:"";position:absolute;top:2px;left:2px;width:11px;height:11px;border-radius:50%;background:#fff;transition:transform .12s}
+.sw input:checked{background:var(--acc)}
+.sw input:checked::after{transform:translateX(11px)}
+.chip{display:inline-flex;align-items:center;height:18px;padding:0 6px;border:1px solid var(--bd);border-radius:9px;font-size:11px;font-weight:450;color:var(--mut);white-space:nowrap;background:transparent}
+.chip.acc{color:var(--acc-t);border-color:rgba(94,106,210,.45)}
+.chip.warn{color:#b9741a;border-color:rgba(200,130,30,.45)}
+.chip.ok{color:var(--ok);border-color:rgba(47,158,111,.4)}
+.chips{display:inline-flex;gap:4px;flex-wrap:wrap;align-items:center}
+.notice{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;border:1px solid var(--bd);background:var(--side);border-radius:var(--r);padding:8px 10px;color:var(--tx2);margin-bottom:16px}
+.notice.err{border-color:rgba(207,66,56,.35);color:var(--danger);background:transparent}
+.notice button{border:0;background:none;cursor:pointer;color:var(--mut);padding:0 2px}
+.muted{color:var(--mut)}
+.mono{font-family:var(--mono);font-size:12px}
+
+/* groups and rows */
+.group{border:1px solid var(--bd);border-radius:8px;background:var(--card);overflow:hidden}
+.group>*+*{border-top:1px solid var(--bd)}
+.gt{font-size:12px;font-weight:500;color:var(--mut);margin:28px 0 8px}
+.gt:first-child{margin-top:0}
+.srow{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:12px 16px}
+.srow .l{min-width:0}
+.srow .l b{font-weight:500;display:block}
+.srow .l span{color:var(--mut);display:block}
+.srow .r{flex:none;display:flex;gap:8px;align-items:center}
+.lrow{position:relative;display:flex;align-items:center;gap:8px;padding:0 8px 0 0}
+.lrow:hover{background:var(--hover)}
+.lmain{flex:1;min-width:0;display:block;padding:12px 8px 12px 16px}
+.lmain .t{display:flex;align-items:center;gap:8px;font-weight:500;flex-wrap:wrap}
+.lmain .d{color:var(--mut);margin-top:2px}
+.lmain .m{color:var(--mut2);font-size:12px;margin-top:2px}
+.lrow.off .lmain .t{color:var(--mut)}
+.lrow .more{opacity:0}
+.lrow:hover .more,.lrow:focus-within .more,.more[aria-expanded=true]{opacity:1}
+.foot{margin-top:10px;color:var(--mut2);font-size:12px}
+.tblwrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-weight:500;font-size:12px;color:var(--mut);text-align:left;padding:8px 12px;border-bottom:1px solid var(--bd);white-space:nowrap}
+.tbl td{padding:9px 12px;border-bottom:1px solid var(--bd);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tbody tr:hover{background:var(--hover)}
+.tbl tr.off td:not(:last-child){color:var(--mut)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;flex:none}
+.irow{display:flex;align-items:center;gap:10px;padding:8px 16px}
+.irow .in{flex:1}
+.avatar{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--sel);color:var(--acc-t);font-size:10.5px;font-weight:600;margin-right:8px;vertical-align:middle}
+.grey{opacity:.5}
+.grey .srow{cursor:not-allowed}
+
+/* popovers, dialogs, toasts */
+.pop{position:fixed;z-index:70;min-width:200px;max-width:calc(100vw - 16px);background:var(--card);border:1px solid var(--bd);border-radius:8px;box-shadow:var(--pop-sh);padding:4px}
+.pop-h{font-size:11.5px;color:var(--mut2);padding:6px 8px 4px}
+.pop .in{width:100%;margin:2px 0 4px}
+.pop ul{list-style:none;margin:0;padding:0;max-height:240px;overflow:auto}
+.mi,.pop li{display:flex;align-items:center;gap:8px;width:100%;min-height:28px;padding:0 8px;border:0;border-radius:5px;background:transparent;text-align:left;cursor:pointer;color:var(--tx2)}
+.mi:hover,.pop li:hover,.pop li.act,.pal li.act{background:var(--sel);color:var(--tx)}
+.mi.danger{color:var(--danger)}
+.mi.soft{color:var(--mut2)}
+.pop li .cur{margin-left:auto;font-size:11px;color:var(--mut2)}
+.pf{padding:8px;display:grid;gap:6px}
+.pf label.k{font-size:12px;color:var(--mut)}
+.seg{display:flex;border:1px solid var(--bd);border-radius:var(--r);overflow:hidden}
+.seg label{flex:1;text-align:center;cursor:pointer;padding:4px 6px;font-size:12px;color:var(--mut);position:relative;border-left:1px solid var(--bd)}
+.seg label:first-child{border-left:0}
+.seg input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.seg label:has(input:checked){background:var(--sel);color:var(--acc-t);font-weight:500}
+.seg label:has(input:focus-visible){outline:2px solid var(--acc);outline-offset:-2px}
+dialog{color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:10px;box-shadow:var(--pop-sh);padding:0}
+dialog::backdrop{background:rgba(15,15,25,.32)}
+.dlg{width:min(420px,calc(100vw - 24px))}
+.dlg form{padding:18px;display:grid;gap:12px}
+.dlg h2{font-size:15px;font-weight:600}
+.dlg label.fl{display:grid;gap:4px;color:var(--mut);font-size:12px}
+.dlg label.fl .in{height:30px;font-size:13px;color:var(--tx)}
+.dlg .opt{display:flex;gap:8px;align-items:center;color:var(--tx2)}
+.dlg .err{color:var(--danger);font-size:12px}
+.dlg-f{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+.pal{width:min(560px,calc(100vw - 24px));margin:12vh auto auto;overflow:hidden}
+.pal input{width:100%;height:46px;border:0;border-bottom:1px solid var(--bd);padding:0 16px;font-size:14px;background:transparent}
+.pal input:focus{outline:none}
+.pal ul{list-style:none;margin:0;padding:6px;max-height:340px;overflow:auto}
+.pal li{display:flex;align-items:center;gap:10px;height:34px;padding:0 10px;border-radius:6px;cursor:pointer;color:var(--tx2)}
+.pal li .ic{color:var(--mut)}
+.pal li small{margin-left:auto;color:var(--mut2);font-size:11.5px}
+.pal .none{padding:16px;color:var(--mut)}
+.pal .ph2{display:flex;gap:12px;padding:8px 14px;border-top:1px solid var(--bd);color:var(--mut2);font-size:11.5px}
+#toasts{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;z-index:90;pointer-events:none;width:max-content;max-width:calc(100vw - 24px)}
+.toast{background:var(--toast);color:var(--toast-t);padding:8px 14px;border-radius:8px;box-shadow:var(--pop-sh);font-weight:500}
+.toast.err{background:var(--danger);color:#fff}
+#bar{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--bd2);border-radius:10px;box-shadow:var(--pop-sh);padding:6px 6px 6px 14px;max-width:calc(100vw - 24px)}
+#bar .tx{color:var(--tx2);margin-right:8px}
+
+/* builder */
+.builder{display:block}
+.bdoc{min-width:0}
+.btop{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:18px;color:var(--mut2);font-size:12px}
+.btop a:hover{color:var(--tx)}
+.btitle{display:block;width:100%;font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.25;border:0;border-radius:var(--r);background:transparent;padding:2px 6px;margin-left:-6px;color:var(--tx)}
+.bdesc{display:block;width:100%;border:0;border-radius:var(--r);background:transparent;padding:2px 6px;margin:2px 0 0 -6px;color:var(--mut)}
+.btitle:hover,.bdesc:hover,.sec-name:hover{background:var(--hover)}
+.btitle:focus,.bdesc:focus,.sec-name:focus{outline:none;background:var(--card);box-shadow:0 0 0 2px var(--acc)}
+.bmeta{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+#problem{margin-top:14px;color:var(--danger);display:flex;gap:6px;align-items:center}
+.sec{margin-top:30px;border-radius:8px}
+.sec.over{background:var(--sel);outline:1px dashed var(--acc);outline-offset:4px}
+.sec-h{display:flex;align-items:center;gap:10px;height:38px;border-bottom:1px solid var(--bd)}
+.sec-name{flex:1;min-width:0;font-size:15px;font-weight:600;border:0;border-radius:var(--r);background:transparent;padding:3px 6px;margin-left:-6px;color:var(--tx)}
+.sec-tools{display:flex;opacity:0}
+.sec-h:hover .sec-tools,.sec-h:focus-within .sec-tools{opacity:1}
+.cnt{color:var(--mut2);font-size:12px;white-space:nowrap}
+.sec-h .sw{font-size:12px}
+.sec.hid .sec-h{border-bottom-style:dashed}
+.sec.hid h3{font-size:15px;font-weight:600;color:var(--tx2);flex:1}
+.rows{padding:4px 0;min-height:36px}
+.frow{display:flex;align-items:center;gap:8px;min-height:32px;padding:0 6px 0 4px;border-radius:var(--r);position:relative}
+.frow:hover{background:var(--hover)}
+.frow.sel{background:var(--sel);box-shadow:inset 2px 0 0 var(--acc)}
+.frow:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+.frow.dragging{opacity:.35}
+.frow.ins-before{box-shadow:0 -2px 0 var(--acc)}
+.frow.ins-after{box-shadow:0 2px 0 var(--acc)}
+.grip{color:var(--mut2);opacity:0;cursor:grab;display:grid;place-items:center;width:16px}
+.frow:hover .grip,.frow.sel .grip{opacity:1}
+.flabel{font-weight:500;white-space:nowrap}
+.ftype{color:var(--mut);white-space:nowrap}
+.frow .chips{margin-left:4px}
+.rowtools{margin-left:auto;display:flex;opacity:0}
+.frow:hover .rowtools,.frow.sel .rowtools,.frow:focus-within .rowtools{opacity:1}
+.frow.inactive .flabel{color:var(--mut)}
+.empty{padding:8px 6px;color:var(--mut2)}
+.badd{display:flex;gap:8px;margin-top:20px}
+.hints{margin-top:36px;padding-top:14px;border-top:1px solid var(--bd);color:var(--mut2);font-size:12px;display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center}
+.hints span{display:inline-flex;align-items:center;gap:2px}
+.hints span em{font-style:normal;margin-left:4px}
+.bpreview{display:none}
+.pvbox{border:1px solid var(--bd);border-radius:8px;background:var(--card);padding:14px 16px}
+.pv-h{display:flex;justify-content:space-between;align-items:baseline;font-weight:500;margin-bottom:10px}
+.pv-h span{color:var(--mut2);font-weight:400;font-size:12px}
+.pv-sec{margin:0 0 14px}
+.pv-sec>summary,.pv-sec>h3{font-size:11.5px;font-weight:600;color:var(--mut);letter-spacing:.01em;margin-bottom:8px;cursor:pointer;list-style:none}
+.pv-sec>h3{cursor:default}
+.pv-sec>summary::-webkit-details-marker{display:none}
+.pv-empty{color:var(--mut2);font-size:12px}
+.builder.show-prev .bpreview{display:block;margin-top:24px}
+.togprev{display:inline-flex}
+.sm-ctl{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.sm-lab{font-size:12px;color:var(--mut)}
+.sm-req{color:var(--danger)}
+.sm-ro{font-size:10.5px;border:1px solid var(--bd);border-radius:8px;padding:0 5px;margin-left:4px}
+.sm-ctl input:not([type=checkbox]),.sm-ctl select,.sm-ctl textarea{width:100%;border:1px solid var(--bd);border-radius:var(--r);padding:0 8px;height:28px;background:var(--card);min-width:0}
+.sm-ctl textarea{height:auto;padding:6px 8px;resize:none}
+.sm-ctl :disabled{background:var(--side);color:var(--mut)}
+.sm-check{display:flex;gap:6px;align-items:center;color:var(--tx);font-size:13px}
+.sm-multi{display:flex;flex-wrap:wrap;gap:4px 12px}
+@media (min-width:1180px){
+  .builder{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:48px;align-items:start}
+  .bpreview{display:block;position:sticky;top:28px;max-height:calc(100vh - 56px);overflow:auto;margin-top:0}
+  .builder.show-prev .bpreview{margin-top:0}
+  .togprev{display:none}
+}
+@media (hover:none){.rowtools,.sec-tools,.lrow .more,.grip{opacity:1}}
+
+/* responsive */
+@media (max-width:799px){
+  .app{display:block}
+  .side{position:fixed;left:0;top:0;bottom:0;width:260px;transform:translateX(-102%);transition:transform .18s}
+  body.drawer .side{transform:none;box-shadow:var(--pop-sh)}
+  body.drawer .scrim{display:block;position:fixed;inset:0;background:rgba(15,15,25,.3);z-index:35}
+  .topbar{display:flex;align-items:center;gap:8px;height:44px;padding:0 10px;border-bottom:1px solid var(--bd);background:var(--bg);position:sticky;top:0;z-index:20}
+  .col{padding:24px 16px 140px}
+  .ph{flex-wrap:wrap}
+  .srow{flex-wrap:wrap;gap:8px}
+  .hide-sm{display:none}
+  .frow{flex-wrap:wrap;padding:4px 6px}
+  .frow .chips{margin-left:0}
+  .ftype{font-size:12px}
+  .lmain{padding-left:12px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side" aria-label="Settings navigation">
+    <a class="back" href="../m1/step7/prototype.html" id="back"></a>
+    <button class="sbtn" data-act="palette" aria-label="Search settings" id="sbtn"></button>
+    <nav id="nav" aria-label="Settings"></nav>
+  </aside>
+  <div class="scrim" data-act="drawer" aria-hidden="true"></div>
+  <div>
+    <div class="topbar"><button class="ibtn" data-act="drawer" aria-label="Open settings menu" id="menubtn"></button><b id="tbtitle">Settings</b></div>
+    <main id="main" tabindex="-1"></main>
+  </div>
+</div>
+<div id="bar" role="region" aria-label="Unsaved changes" hidden>
+  <span class="tx">Unsaved changes</span>
+  <button class="btn ghost" data-act="discard">Discard</button>
+  <button class="btn primary" data-act="save" id="savebtn">Save changes</button>
+</div>
+<div id="toasts" role="status" aria-live="polite"></div>
+<dialog class="pal" id="pal" aria-label="Jump to a settings page">
+  <input id="pal-q" type="text" placeholder="Jump to a settings page…" autocomplete="off" aria-label="Search settings pages">
+  <ul id="pal-l" role="listbox"></ul>
+  <div class="ph2"><span><kbd>↑</kbd><kbd>↓</kbd> navigate</span><span><kbd>↵</kbd> open</span><span><kbd>Esc</kbd> close</span></div>
+</dialog>
+
+<script src="settings-model.js"></script>
+<script>
+(() => {
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const E = SM.esc;
+const MOD = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl';
+const P = {
+  portal: '<rect x="2.5" y="3" width="11" height="10.5" rx="1.5"/><path d="M2.5 6.5h11M6 3v3.5"/>',
+  users: '<circle cx="6" cy="5.5" r="2.2"/><path d="M2 13c.4-2.2 2-3.4 4-3.4s3.6 1.2 4 3.4M10.5 3.6a2.2 2.2 0 0 1 0 3.8M12 9.9c1.2.5 1.9 1.5 2.1 3"/>',
+  audit: '<path d="M3 4h10M3 8h10M3 12h6"/>',
+  prefs: '<path d="M3 5h5M11 5h2M3 11h2M8 11h5"/><circle cx="9.5" cy="5" r="1.5"/><circle cx="6.5" cy="11" r="1.5"/>',
+  projects: '<path d="M2 4.5A1.5 1.5 0 0 1 3.5 3h2.8l1.4 1.5h4.8A1.5 1.5 0 0 1 14 6v5.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 11.5z"/>',
+  tasks: '<rect x="2.5" y="2.5" width="11" height="11" rx="2"/><path d="M5.5 8.2l1.8 1.8 3.2-3.6"/>',
+  issues: '<circle cx="8" cy="8" r="5.5"/><path d="M8 5v3.5M8 10.8v.1"/>',
+  documents: '<path d="M4 2.5h5l3 3v8H4z"/><path d="M9 2.5v3h3"/>',
+  time: '<circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.2"/>',
+  fields: '<rect x="2.5" y="3" width="11" height="3" rx="1"/><rect x="2.5" y="9" width="11" height="3" rx="1"/>',
+  layouts: '<rect x="2.5" y="2.5" width="11" height="11" rx="1.5"/><path d="M2.5 6.5h11M7 6.5v7"/>',
+  statuses: '<circle cx="8" cy="8" r="5.5"/><path d="M8 4.5a3.5 3.5 0 0 1 0 7z" fill="currentColor"/>',
+  templates: '<rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 3.5h-6a1 1 0 0 0-1 1v6"/>',
+  plus: '<path d="M8 3v10M3 8h10"/>',
+  grip: '<g fill="currentColor" stroke="none"><circle cx="6" cy="4" r="1"/><circle cx="10" cy="4" r="1"/><circle cx="6" cy="8" r="1"/><circle cx="10" cy="8" r="1"/><circle cx="6" cy="12" r="1"/><circle cx="10" cy="12" r="1"/></g>',
+  more: '<g fill="currentColor" stroke="none"><circle cx="3.5" cy="8" r="1.1"/><circle cx="8" cy="8" r="1.1"/><circle cx="12.5" cy="8" r="1.1"/></g>',
+  up: '<path d="M4 9.5L8 5.5l4 4"/>', down: '<path d="M4 6.5l4 4 4-4"/>',
+  trash: '<path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8h5.8l.6-8"/>',
+  back: '<path d="M9.5 3.5L5 8l4.5 4.5"/>', search: '<circle cx="7" cy="7" r="4"/><path d="M10 10l3 3"/>',
+  menu: '<path d="M3 4.5h10M3 8h10M3 11.5h10"/>', move: '<path d="M3 8h10M9.5 4.5L13 8l-3.5 3.5"/>',
+  eye: '<path d="M1.5 8S4 3.5 8 3.5 14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z"/><circle cx="8" cy="8" r="2"/>',
+  check: '<path d="M3.5 8.5l3 3 6-6.5"/>', x: '<path d="M4 4l8 8M12 4l-8 8"/>',
+};
+P.folders = P.projects; P.rules = P.prefs;
+const ico = (n, s = 14) => `<svg class="ic" width="${s}" height="${s}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n] || ''}</svg>`;
+
+/* ---------- pages ---------- */
+const PORTAL_PAGES = [['portal', 'Portal profile', 'portal'], ['users', 'Users & profiles', 'users'], ['audit', 'Audit log', 'audit'], ['preferences', 'My preferences', 'prefs']];
+const mods = () => SM.modules;
+const projMod = () => mods().find((m) => m.live);
+const ENTRIES = () => [
+  ...PORTAL_PAGES.map(([id, l, ic]) => ({ label: l, hint: 'Portal', href: '#/' + id, ic })),
+  ...projMod().tabs.map(([id, l]) => ({ label: 'Projects › ' + l, hint: 'Projects', href: '#/projects/' + id, ic: id })),
+  ...mods().filter((m) => !m.live).map((m) => ({ label: m.name, hint: 'Soon', href: '#/' + m.id, ic: m.id })),
+];
+const TITLES = { portal: 'Portal profile', users: 'Users & profiles', audit: 'Audit log', preferences: 'My preferences' };
+
+const ui = { ln: null };
+const prefs = { keyboard: true, digest: true, reduce: false, last: false };
+let B = null; // builder state
+
+/* ---------- helpers ---------- */
+const head = (t, d = '', a = '', crumb = '') => `<header class="ph"><div>${crumb ? `<div class="crumb">${crumb}</div>` : ''}<h1>${t}</h1>${d ? `<p>${d}</p>` : ''}</div>${a}</header>`;
+const chip = (t, c = '') => `<span class="chip ${c}">${E(t)}</span>`;
+function toast(msg, kind = '') {
+  const t = document.createElement('div'); t.className = 'toast ' + kind; t.textContent = msg; $('#toasts').appendChild(t);
+  setTimeout(() => t.remove(), kind ? 4200 : 2400);
+}
+const typing = (el) => !!el && (el.isContentEditable || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || (el.tagName === 'INPUT' && !['radio', 'checkbox', 'button'].includes(el.type)));
+
+/* ---------- popover ---------- */
+let pop = null, popKind = '', popClose = null;
+function closePop() { if (!pop) return; pop.remove(); pop = null; const f = popClose; popClose = null; popKind = ''; if (f) f(); }
+function openPop(anchor, html, { kind = '', alignRight = false, offset = 0, onClose = null } = {}) {
+  closePop();
+  pop = document.createElement('div'); pop.className = 'pop'; pop.innerHTML = html; pop.style.visibility = 'hidden'; popKind = kind; popClose = onClose;
+  document.body.appendChild(pop);
+  const r = anchor.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+  let left = alignRight ? r.right - w : r.left + offset; left = Math.min(Math.max(8, left), innerWidth - w - 8);
+  let top = r.bottom + 4; if (top + h > innerHeight - 8) top = Math.max(8, r.top - h - 4);
+  pop.style.left = left + 'px'; pop.style.top = top + 'px'; pop.style.visibility = '';
+  return pop;
+}
+document.addEventListener('mousedown', (e) => { if (pop && !pop.contains(e.target)) closePop(); }, true);
+function setAct(ul, i) {
+  const items = [...ul.children].filter((li) => !li.hidden); items.forEach((li) => li.classList.remove('act'));
+  if (!items.length) return; i = (i + items.length) % items.length; items[i].classList.add('act'); items[i].scrollIntoView({ block: 'nearest' }); return i;
+}
+function listNav(input, ul, pick) {
+  let i = 0; setAct(ul, 0);
+  input.addEventListener('input', () => { i = 0; setAct(ul, 0); });
+  input.addEventListener('keydown', (e) => {
+    const items = [...ul.children].filter((li) => !li.hidden);
+    if (e.key === 'ArrowDown') { e.preventDefault(); i = setAct(ul, i + 1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); i = setAct(ul, i - 1); }
+    else if (e.key === 'Enter') { e.preventDefault(); if (items[i]) pick(items[i]); }
+  });
+}
+
+/* ---------- dialog ---------- */
+function dialog(title, body, submit, onSubmit) {
+  const prev = document.activeElement;
+  const d = document.createElement('dialog'); d.className = 'dlg'; d.setAttribute('aria-label', title);
+  d.innerHTML = `<form novalidate><h2>${title}</h2>${body}<p class="err" role="alert" hidden></p><div class="dlg-f"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary">${submit}</button></div></form>`;
+  document.body.appendChild(d);
+  const err = $('.err', d);
+  d.addEventListener('close', () => { d.remove(); if (prev && prev.isConnected) prev.focus({ preventScroll: true }); });
+  $('[data-close]', d).onclick = () => d.close();
+  $('form', d).onsubmit = (e) => {
+    e.preventDefault();
+    const msg = onSubmit(e.target, d);
+    if (msg) { err.textContent = msg; err.hidden = false; } else d.close();
+  };
+  d.showModal(); const f = $('input,select', d); if (f) f.focus();
+  return d;
+}
+const typeOpts = () => SM.TYPES.map(([v, l]) => `<option value="${v}">${E(l)}</option>`).join('');
+function fieldDialog(after) {
+  dialog('New field', `<label class="fl">Label<input class="in" name="label" autocomplete="off" placeholder="e.g. Region"></label>
+    <label class="fl">Type<select class="in" name="type">${typeOpts()}</select></label>
+    <label class="opt"><input type="checkbox" name="req"> Required by default</label>`, 'Create field', (f) => {
+    try { const fld = SM.createField({ label: f.label.value, type: f.type.value, mandatory: f.req.checked }); after(fld); } catch (e) { return e.message; }
+  });
+}
+function layoutDialog(cloneId = null) {
+  const ls = SM.layouts();
+  const src = cloneId ? ls.find((l) => l.id === cloneId) : null;
+  dialog(cloneId ? 'Clone layout' : 'New layout', `<label class="fl">Name<input class="in" name="name" autocomplete="off" value="${src ? E('Copy of ' + src.name) : ''}" placeholder="e.g. Client onboarding"></label>
+    <fieldset style="border:0;padding:0;margin:0;display:grid;gap:8px"><label class="opt"><input type="radio" name="start" value="blank" ${src ? '' : 'checked'}> Start blank</label>
+    <label class="opt"><input type="radio" name="start" value="copy" ${src ? 'checked' : ''}> Start from a copy of <select class="in" name="from" aria-label="Layout to copy">${ls.map((l) => `<option value="${l.id}" ${src && src.id === l.id ? 'selected' : ''}>${E(l.name)}</option>`).join('')}</select></label></fieldset>`,
+    cloneId ? 'Clone' : 'Create layout', (f, d) => {
+      try { SM.createLayout({ name: f.name.value, cloneFrom: f.start.value === 'copy' ? f.from.value : null }); toast('Layout created'); setTimeout(route, 0); }
+      catch (e) { if (/at most/.test(e.message)) { ui.ln = { text: e.message, kind: 'err' }; setTimeout(route, 0); return; } return e.message; }
+    });
+}
+
+/* ---------- nav ---------- */
+function renderNav(p) {
+  const cur = p[0] === 'projects' ? 'projects/' + (p[1] || 'layouts') : p[0];
+  const item = (href, ic, label, id, extra = '', dim = '') => `<a class="ni ${dim}" href="${href}" ${cur === id ? 'aria-current="page"' : ''}>${ico(ic)}<span>${label}</span>${extra}</a>`;
+  $('#nav').innerHTML = `<div class="gl">Portal</div>` + PORTAL_PAGES.map(([id, l, ic]) => item('#/' + id, ic, l, id)).join('') +
+    `<div class="gl">Modules</div>` + mods().map((m) => m.live
+      ? `<a class="ni" href="#/projects/layouts" ${p[0] === 'projects' && false ? '' : ''} style="color:var(--tx);font-weight:500">${ico(m.id)}<span>${m.name}</span></a><div class="sub">${m.tabs.map(([id, l]) => item('#/projects/' + id, id, l, 'projects/' + id)).join('')}</div>`
+      : item('#/' + m.id, m.id, m.name, m.id, '<span class="soon">Soon</span>', 'dim')).join('');
+}
+
+/* ---------- views ---------- */
+function viewPortal() {
+  const p = SM.portal;
+  const sel = (k, opts) => `<select class="in" data-pk="${k}" aria-label="${k}">${opts.map((o) => `<option ${o === p[k] ? 'selected' : ''}>${E(o)}</option>`).join('')}</select>`;
+  const row = (l, d, c) => `<div class="srow"><div class="l"><b>${l}</b><span>${d}</span></div><div class="r">${c}</div></div>`;
+  return head('Portal profile', 'How your portal looks and behaves for everyone in it.') + `<div class="group">
+    ${row('Portal name', 'Shown in the app header and in emails.', `<input class="in" data-pk="name" value="${E(p.name)}" aria-label="Portal name" style="width:220px">`)}
+    ${row('Portal address', 'The short name in your portal link. Fixed once created.', `<input class="in mono" value="${E(p.slug)}" readonly aria-label="Portal address" style="width:220px">`)}
+    ${row('Time zone', 'Used for due dates and reports.', sel('timeZone', ['Asia/Kolkata', 'Europe/London', 'America/New_York', 'America/Los_Angeles', 'Australia/Sydney']))}
+    ${row('Date format', 'How dates are written.', sel('dateFormat', ['MMM d, yyyy', 'dd/MM/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd']))}
+    ${row('Currency', 'Used for budgets and costs.', sel('currency', ['USD', 'EUR', 'GBP', 'INR']))}
+    ${row('Week starts on', 'For calendars and timesheets.', sel('weekStart', ['Monday', 'Sunday', 'Saturday']))}
+  </div>`;
+}
+function viewUsers() {
+  return head('Users & profiles', 'Who is in the portal, and what each profile may do.', `<button class="btn primary" data-act="toast" data-msg="Invitations are not part of this sample">${ico('plus')} Invite user</button>`) +
+    `<div class="gt">Users</div><div class="group tblwrap"><table class="tbl"><thead><tr><th>Name</th><th>Profile</th><th>Status</th><th class="hide-sm">Last active</th></tr></thead><tbody>${SM.users.map((u) => `<tr class="${u.status !== 'Active' ? 'off' : ''}"><td><span class="avatar" aria-hidden="true">${E(u.name.split(' ').map((x) => x[0]).join(''))}</span><b style="font-weight:500">${E(u.name)}</b> ${u.owner ? chip('Owner', 'acc') : ''}<div class="muted" style="margin-left:30px">${E(u.email)}</div></td><td>${E(u.profile)}</td><td>${chip(u.status, u.status === 'Active' ? 'ok' : '')}</td><td class="hide-sm muted">${E(u.last)}</td></tr>`).join('')}</tbody></table></div>
+    <div class="gt">Profiles</div><div class="group">${SM.profiles.map((p) => `<div class="srow"><div class="l"><b>${E(p.name)}</b><span>${E(p.note)}</span></div><div class="r muted">${p.people} ${p.people === 1 ? 'person' : 'people'}</div></div>`).join('')}</div>`;
+}
+function viewAudit() {
+  return head('Audit log', 'Every change to portal settings, newest first.') + `<div class="group tblwrap"><table class="tbl"><thead><tr><th>When</th><th>Who</th><th>What</th><th class="hide-sm">Detail</th></tr></thead><tbody>${SM.audit.map((a) => `<tr><td class="muted" style="white-space:nowrap">${E(a.when)}</td><td>${E(a.who)}</td><td>${E(a.what)}</td><td class="hide-sm muted">${E(a.detail)}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function viewPrefs() {
+  const row = (k, l, d) => `<div class="srow"><div class="l"><b>${l}</b><span>${d}</span></div><div class="r"><label class="sw"><input type="checkbox" data-pref="${k}" aria-label="${l}" ${prefs[k] ? 'checked' : ''}></label></div></div>`;
+  return head('My preferences', 'Only for you. Nobody else in the portal sees these.') + `<div class="group">
+    ${row('keyboard', 'Keyboard shortcuts', 'Use single-key shortcuts such as M and O in the layout builder.')}
+    ${row('digest', 'Daily email digest', 'A morning summary of what changed.')}
+    ${row('last', 'Open where I left off', 'Return to the last page you used when you sign in.')}
+    ${row('reduce', 'Reduce motion', 'Turn off transitions and animations.')}</div>`;
+}
+function viewFields() {
+  const fs = SM.fields();
+  return head('Fields', 'Custom fields you can place on the project form.', `<button class="btn primary" data-act="new-field-page">${ico('plus')} New field</button>`, 'Projects') +
+    `<div class="group tblwrap"><table class="tbl"><thead><tr><th>Label</th><th class="hide-sm">Key</th><th>Type</th><th class="hide-sm">Rules</th><th class="hide-sm">Used by</th><th>Status</th><th></th></tr></thead><tbody>${fs.map((f) => {
+      const on = f.status === 'ACTIVE';
+      return `<tr class="${on ? '' : 'off'}"><td><b style="font-weight:500">${E(f.label)}</b></td><td class="hide-sm mono muted">${E(f.key)}</td><td class="muted">${E(SM.typeLabel(f.type))}</td><td class="hide-sm"><span class="chips">${f.mandatory ? chip('Required') : ''}${f.unique ? chip('Unique') : ''}${f.sensitive ? chip('Sensitive', 'warn') : ''}</span></td><td class="hide-sm muted">${f.usage} ${f.usage === 1 ? 'project' : 'projects'}</td><td>${chip(on ? 'Active' : 'Inactive', on ? 'ok' : '')}</td><td style="text-align:right"><button class="btn ghost" data-act="field-toggle" data-key="${E(f.key)}">${on ? 'Deactivate' : 'Activate'}</button></td></tr>`;
+    }).join('')}</tbody></table></div><p class="foot">${fs.length} of ${SM.MAX_FIELDS} fields.</p>`;
+}
+function viewLayouts() {
+  const ls = SM.layouts();
+  const notice = ui.ln ? `<div class="notice ${ui.ln.kind}" role="alert" id="lnotice"><span>${E(ui.ln.text)}</span><button data-act="notice-close" aria-label="Dismiss">${ico('x', 12)}</button></div>` : '';
+  return head('Layouts', 'Layouts decide which fields appear on the project form, and how they are grouped.', `<button class="btn primary" data-act="new-layout">${ico('plus')} New layout</button>`, 'Projects') + notice +
+    `<div class="group" id="llist">${ls.map((l) => `<div class="lrow ${l.active ? '' : 'off'}" data-id="${l.id}"><a class="lmain" href="#/projects/layouts/${l.id}"><div class="t">${E(l.name)} ${l.isDefault ? chip('Default', 'acc') : ''}${l.active ? '' : chip('Inactive')}</div><div class="d">${E(l.description || 'No description')}</div><div class="m">${l.sectionCount} ${l.sectionCount === 1 ? 'section' : 'sections'} · ${l.fieldCount} ${l.fieldCount === 1 ? 'field' : 'fields'} · used by ${l.usage} ${l.usage === 1 ? 'project' : 'projects'}</div></a><button class="ibtn more" data-act="layout-menu" data-id="${l.id}" aria-label="Actions for ${E(l.name)}" aria-haspopup="menu">${ico('more')}</button></div>`).join('')}</div>
+    <p class="foot">${ls.length} of ${SM.MAX_LAYOUTS} layouts. Layouts are deactivated, never deleted.</p>`;
+}
+function viewStatuses() {
+  const types = ['Active', 'On hold', 'Completed', 'Cancelled'], all = SM.statuses();
+  return head('Statuses', 'The stages a project moves through, grouped by what they mean.', '', 'Projects') + types.map((t) => `<div class="gt">${t}</div><div class="group">${all.filter((s) => s.type === t).map((s) => `<div class="srow" style="padding:9px 16px"><div class="l" style="display:flex;align-items:center;gap:10px"><span class="dot" style="background:${s.color}"></span><b>${E(s.name)}</b></div></div>`).join('')}${t === 'Active' ? `<form class="irow" data-form="status"><input class="in" name="n" placeholder="Add a status…" aria-label="New status name" autocomplete="off"><button class="btn">Add</button></form>` : ''}</div>`).join('');
+}
+function viewTemplates() {
+  return head('Templates', 'Starting points for new projects.', '', 'Projects') + `<div class="group">${SM.templates().map((t) => `<div class="srow"><div class="l"><b>${E(t.name)}</b><span>${E(t.description)}</span></div><div class="r muted">Used ${t.uses} times</div></div>`).join('')}</div>`;
+}
+function viewSoon(m) {
+  return head(m.name, '', `<span class="chip">Soon</span>`, 'Modules') + `<div class="notice">Settings for ${E(m.name)} will appear here when the module arrives.${m.note ? ' ' + E(m.note) + '.' : ''}</div>
+    <div class="group grey" aria-disabled="true">${m.tabs.map(([id, l]) => `<div class="srow"><div class="l" style="display:flex;gap:10px;align-items:center">${ico(id)}<b>${E(l)}</b></div><div class="r muted">Not available yet</div></div>`).join('')}</div>`;
+}
+
+/* ---------- builder ---------- */
+const dirty = () => JSON.stringify(B.d) !== B.orig;
+function rowHTML(key, hidden) {
+  const f = SM.field(key), at = SM.draft.find(B.d, key); let c = '';
+  if (at) {
+    const p = at.placement;
+    if (p.mandatory === true) c += chip('Required here', 'acc'); else if (p.mandatory === false) c += chip('Optional here', 'acc');
+    if (p.readOnly) c += chip('Read-only', 'acc');
+    if (p.defaultValue != null && p.defaultValue !== '') c += chip('Default: ' + p.defaultValue, 'acc');
+  }
+  if (hidden && f.status !== 'ACTIVE') c += chip('Inactive', 'warn');
+  const sel = B.sel === key;
+  return `<div class="frow ${sel ? 'sel' : ''} ${hidden && f.status !== 'ACTIVE' ? 'inactive' : ''}" role="listitem" data-act="row-select" data-key="${E(key)}" draggable="true" tabindex="${sel ? 0 : -1}">
+    <span class="grip" aria-hidden="true">${ico('grip', 12)}</span><span class="flabel">${E(f.label)}</span><span class="ftype">${E(SM.typeLabel(f.type))}</span><span class="chips">${c}</span>
+    <span class="rowtools">${hidden ? '' : `<button class="ibtn" data-act="row-ovr" data-key="${E(key)}" aria-label="Overrides for ${E(f.label)}" title="Overrides (O)">${ico('prefs')}</button>`}<button class="ibtn" data-act="row-move" data-key="${E(key)}" aria-label="Move ${E(f.label)} to another section" title="Move to… (M)">${ico('move')}</button></span></div>`;
+}
+function builderInner() {
+  const d = B.d, un = SM.draft.unplaced(d), lay = SM.layouts().find((l) => l.id === d.id);
+  const secs = d.sections.map((s, i) => `<section class="sec" data-sec="${s.id}" data-drop="${s.id}" aria-label="Section ${E(s.name)}">
+    <div class="sec-h"><input class="sec-name" value="${E(s.name)}" placeholder="Section name" aria-label="Section name">
+      <label class="sw"><input type="checkbox" class="sec-coll" ${s.collapsible ? 'checked' : ''}> Collapsible</label>
+      <span class="cnt">${s.fields.length} ${s.fields.length === 1 ? 'field' : 'fields'}</span>
+      <span class="sec-tools"><button class="ibtn" data-act="sec-up" aria-label="Move section up" ${i === 0 ? 'disabled style="opacity:.3"' : ''}>${ico('up')}</button><button class="ibtn" data-act="sec-down" aria-label="Move section down" ${i === d.sections.length - 1 ? 'disabled style="opacity:.3"' : ''}>${ico('down')}</button><button class="ibtn" data-act="sec-del" aria-label="Delete section">${ico('trash')}</button></span></div>
+    <div class="rows" role="list">${s.fields.map((p) => rowHTML(p.key, false)).join('') || '<div class="empty">No fields. Drag one here, or press M on a field.</div>'}</div></section>`).join('');
+  return `<div class="bdoc">
+    <div class="btop"><span><a href="#/projects/layouts">Layouts</a> / ${E(d.name || 'Untitled')}</span><button class="btn togprev" data-act="prev-toggle" aria-pressed="${B.prev}">${ico('eye')} Preview</button></div>
+    <input class="btitle" value="${E(d.name)}" placeholder="Layout name" aria-label="Layout name">
+    <input class="bdesc" value="${E(d.description || '')}" placeholder="Add a description…" aria-label="Layout description">
+    <div class="bmeta">${d.isDefault ? chip('Default', 'acc') : ''}${d.active ? '' : chip('Inactive')}${chip('Used by ' + d.usage + (d.usage === 1 ? ' project' : ' projects'))}</div>
+    <div id="problem" role="alert" hidden></div>
+    ${secs}
+    <section class="sec hid" data-drop="unplaced" aria-label="Hidden fields"><div class="sec-h"><h3>Hidden fields</h3><span class="cnt">${un.length}</span></div>
+      <p class="muted" style="margin:8px 0 0">Not on the project form. Answers already entered are kept.</p>
+      <div class="rows" role="list">${un.map((f) => rowHTML(f.key, true)).join('') || '<div class="empty">Every field is on the form.</div>'}</div></section>
+    <div class="badd"><button class="btn" data-act="b-add-section">${ico('plus')} Add section</button><button class="btn" data-act="b-new-field">${ico('plus')} New field</button></div>
+    <div class="hints" aria-label="Keyboard shortcuts"><span><kbd>↑</kbd><kbd>↓</kbd><em>select</em></span><span><kbd>M</kbd><em>move to…</em></span><span><kbd>${MOD}</kbd><kbd>↑</kbd><kbd>↓</kbd><em>reorder</em></span><span><kbd>O</kbd><em>overrides</em></span><span><kbd>Del</kbd><em>hide</em></span><span><kbd>${MOD}</kbd><kbd>K</kbd><em>jump to</em></span></div>
+  </div>
+  <aside class="bpreview" aria-label="Form preview"><div class="pvbox"><div class="pv-h">Preview <span>Project form</span></div><div id="pv"></div></div></aside>`;
+}
+function pvHTML() {
+  return B.d.sections.map((s) => {
+    const items = s.fields.map((p) => { const e = SM.draft.effective(B.d, p.key); return SM.control(e, e); }).join('') || '<p class="pv-empty">No fields</p>';
+    const t = E(s.name || 'Untitled section');
+    return s.collapsible ? `<details class="pv-sec" open><summary>${t}</summary>${items}</details>` : `<div class="pv-sec"><h3>${t}</h3>${items}</div>`;
+  }).join('');
+}
+function refreshAux() {
+  if (!B || !$('#pv')) return;
+  const pr = SM.draft.problem(B.d), pe = $('#problem');
+  pe.hidden = !pr; pe.textContent = pr || '';
+  $('#pv').innerHTML = pvHTML();
+  const dr = dirty(); $('#bar').hidden = !dr; $('#savebtn').disabled = !!pr;
+  const t = $('.btop span'); if (t) t.innerHTML = `<a href="#/projects/layouts">Layouts</a> / ${E(B.d.name || 'Untitled')}`;
+  $$('.sec[data-sec]').forEach((el) => { const s = B.d.sections.find((x) => x.id === el.dataset.sec); if (s) $('.cnt', el).textContent = `${s.fields.length} ${s.fields.length === 1 ? 'field' : 'fields'}`; });
+}
+function rb(focus = true) {
+  $('#bwrap').innerHTML = builderInner(); $('#bwrap').classList.toggle('show-prev', B.prev); refreshAux();
+  if (focus && B.sel) focusSel();
+}
+const rowEl = (k) => $$('.frow').find((r) => r.dataset.key === k);
+function focusSel() { const r = rowEl(B.sel); if (r) { r.focus({ preventScroll: true }); r.scrollIntoView({ block: 'nearest' }); } }
+function select(key, focus = true) {
+  B.sel = key; $$('.frow').forEach((r) => { const on = r.dataset.key === key; r.classList.toggle('sel', on); r.tabIndex = on ? 0 : -1; });
+  if (focus) focusSel();
+}
+function viewBuilder(id) {
+  if (!B || B.id !== id) { const d = SM.layout(id); B = { id, d, orig: JSON.stringify(d), sel: null, prev: false }; }
+  return `<div class="builder ${B.prev ? 'show-prev' : ''}" id="bwrap">${builderInner()}</div>`;
+}
+function openMove(key) {
+  const f = SM.field(key), at = SM.draft.find(B.d, key), cur = at ? at.section.id : 'unplaced';
+  const opts = [...B.d.sections.map((s) => ({ id: s.id, label: s.name || 'Untitled section' })), { id: 'unplaced', label: 'Hidden fields' }];
+  const p = openPop(rowEl(key) || $('#main'), `<div class="pop-h">Move “${E(f.label)}” to…</div><input class="in" placeholder="Search sections…" aria-label="Search sections" autocomplete="off"><ul role="listbox" aria-label="Sections">${opts.map((o) => `<li role="option" data-act="do-move" data-to="${o.id}" data-label="${E(o.label.toLowerCase())}">${ico(o.id === 'unplaced' ? 'eye' : 'layouts')}<span>${E(o.label)}</span>${o.id === cur ? '<span class="cur">Current</span>' : ''}</li>`).join('')}</ul>`, { kind: 'move', offset: 28, onClose: () => { if (B && B.sel && rowEl(B.sel)) focusSel(); } });
+  const q = $('input', p), ul = $('ul', p);
+  q.addEventListener('input', () => { const v = q.value.toLowerCase(); $$('li', ul).forEach((li) => { li.hidden = !li.dataset.label.includes(v); }); setAct(ul, 0); });
+  listNav(q, ul, (li) => li.click());
+  p.dataset.key = key; q.focus();
+}
+function openOvr(key) {
+  const at = SM.draft.find(B.d, key);
+  if (!at) { toast('Place the field in a section first (press M).'); return; }
+  const f = SM.field(key), p = at.placement;
+  const showDef = !f.unique && f.type !== 'USER' && f.type !== 'MULTI_PICKLIST';
+  const mand = p.mandatory === true ? 'true' : p.mandatory === false ? 'false' : '';
+  let defCtl = '';
+  if (showDef) {
+    if (f.type === 'CHECKBOX') defCtl = `<label class="sw"><input type="checkbox" name="def" ${p.defaultValue ? 'checked' : ''}> Checked by default</label>`;
+    else if (f.type === 'PICKLIST') defCtl = `<select class="in" name="def" aria-label="Default value"><option value="">None</option>${f.options.map((o) => `<option ${o === p.defaultValue ? 'selected' : ''}>${E(o)}</option>`).join('')}</select>`;
+    else defCtl = `<input class="in" name="def" type="${f.type === 'DATE' ? 'date' : ['NUMBER', 'DECIMAL'].includes(f.type) ? 'number' : 'text'}" value="${E(p.defaultValue ?? '')}" aria-label="Default value" placeholder="No default">`;
+  }
+  const pp = openPop(rowEl(key), `<form class="pf" style="width:260px" onsubmit="return false"><div class="pop-h" style="padding:0">Overrides for “${E(f.label)}” <span class="muted">(this layout only)</span></div>
+    <label class="k">Required</label><div class="seg" role="radiogroup" aria-label="Required"><label><input type="radio" name="req" value="" ${mand === '' ? 'checked' : ''}>Same as field (${f.mandatory ? 'required' : 'optional'})</label><label><input type="radio" name="req" value="true" ${mand === 'true' ? 'checked' : ''}>Required here</label><label><input type="radio" name="req" value="false" ${mand === 'false' ? 'checked' : ''}>Optional here</label></div>
+    <label class="sw" style="justify-content:space-between;color:var(--tx2)">Read-only<input type="checkbox" name="ro" ${p.readOnly ? 'checked' : ''}></label>
+    ${showDef ? `<label class="k">Default value</label>${defCtl}` : `<p class="muted" style="font-size:12px">${f.unique ? 'Unique fields cannot have a default value.' : 'This field type cannot have a default value.'}</p>`}</form>`, { kind: 'ovr', offset: 28, onClose: () => { if (B && B.sel && rowEl(B.sel)) focusSel(); } });
+  const apply = () => {
+    const form = $('form', pp), r = form.req.value, o = { mandatory: r === '' ? null : r === 'true', readOnly: form.ro.checked, defaultValue: null };
+    if (showDef && form.def) { const v = form.def.type === 'checkbox' ? (form.def.checked ? 'true' : '') : form.def.value; o.defaultValue = v === '' ? null : v; }
+    SM.draft.override(B.d, key, o);
+    const r2 = rowEl(key); if (r2) { const w = document.createElement('div'); w.innerHTML = rowHTML(key, false); r2.replaceWith(w.firstElementChild); }
+    refreshAux();
+  };
+  pp.addEventListener('change', apply); pp.addEventListener('input', apply);
+  const first = $('input:checked', pp) || $('input', pp); first.focus();
+}
+
+/* ---------- router ---------- */
+function route() {
+  closePop();
+  const p = (location.hash.replace(/^#\/?/, '') || 'projects/layouts').split('/'), [a, b, c] = p;
+  const isB = a === 'projects' && b === 'layouts' && c;
+  if (B && !(isB && c === B.id)) { if (dirty()) toast('Unsaved changes discarded'); B = null; }
+  let html = '', title = 'Settings', wide = false;
+  try {
+    if (TITLES[a] && !b) {
+      title = TITLES[a]; html = { portal: viewPortal, users: viewUsers, audit: viewAudit, preferences: viewPrefs }[a]();
+    } else if (a === 'projects') {
+      const t = b || 'layouts';
+      if (isB) { title = 'Edit layout · Projects'; html = viewBuilder(c); wide = true; }
+      else if (t === 'fields') { title = 'Fields · Projects'; html = viewFields(); }
+      else if (t === 'layouts') { title = 'Layouts · Projects'; html = viewLayouts(); }
+      else if (t === 'statuses') { title = 'Statuses · Projects'; html = viewStatuses(); }
+      else if (t === 'templates') { title = 'Templates · Projects'; html = viewTemplates(); }
+      else html = head('Page not found', 'This settings page does not exist.');
+    } else if (mods().find((m) => m.id === a && !m.live)) {
+      const m = mods().find((x) => x.id === a); title = m.name + ' · Soon'; html = viewSoon(m);
+    } else html = head('Page not found', 'This settings page does not exist.');
+  } catch (e) { html = head('Not found', E(e.message)); B = null; }
+  $('#main').innerHTML = `<div class="col ${wide ? 'wide' : ''}">${html}</div>`;
+  document.title = title + ' · Settings'; $('#tbtitle').textContent = title.split(' · ')[0];
+  renderNav(p); document.body.classList.remove('drawer');
+  if (B) refreshAux(); else $('#bar').hidden = true;
+}
+window.addEventListener('hashchange', () => { ui.ln = null; route(); window.scrollTo(0, 0); });
+
+/* ---------- palette ---------- */
+function palRender() {
+  const q = $('#pal-q').value.trim().toLowerCase(), items = ENTRIES().filter((e) => (e.label + ' ' + e.hint).toLowerCase().includes(q));
+  $('#pal-l').innerHTML = items.length ? items.map((e) => `<li role="option" data-href="${e.href}">${ico(e.ic)}<span>${E(e.label)}</span><small>${E(e.hint)}</small></li>`).join('') : '<li class="none" style="cursor:default">No matching page</li>';
+  setAct($('#pal-l'), 0);
+}
+function openPalette() { const d = $('#pal'); closePop(); if (!d.open) d.showModal(); $('#pal-q').value = ''; palRender(); $('#pal-q').focus(); }
+(() => {
+  const q = $('#pal-q'), ul = $('#pal-l'); let i = 0;
+  const go = (li) => { if (!li.dataset.href) return; $('#pal').close(); location.hash = li.dataset.href; };
+  q.addEventListener('input', () => { palRender(); i = 0; });
+  q.addEventListener('keydown', (e) => {
+    const items = [...ul.children].filter((li) => li.dataset.href);
+    if (e.key === 'ArrowDown') { e.preventDefault(); i = setAct(ul, i + 1); } else if (e.key === 'ArrowUp') { e.preventDefault(); i = setAct(ul, i - 1); }
+    else if (e.key === 'Enter') { e.preventDefault(); if (items[i]) go(items[i]); }
+  });
+  ul.addEventListener('click', (e) => { const li = e.target.closest('li'); if (li) go(li); });
+  $('#pal').addEventListener('mousedown', (e) => { if (e.target === $('#pal')) $('#pal').close(); });
+  $('#pal').addEventListener('close', () => { i = 0; });
+})();
+
+/* ---------- actions ---------- */
+const acts = {
+  palette: openPalette,
+  drawer: () => { document.body.classList.toggle('drawer'); },
+  toast: (t) => toast(t.dataset.msg),
+  'notice-close': () => { ui.ln = null; route(); },
+  'new-layout': () => layoutDialog(),
+  'layout-menu': (t) => {
+    const l = SM.layouts().find((x) => x.id === t.dataset.id), id = l.id;
+    t.setAttribute('aria-expanded', 'true');
+    openPop(t, `<div role="menu"><button class="mi" role="menuitem" data-act="m-edit" data-id="${id}">${ico('layouts')} Edit</button><button class="mi" role="menuitem" data-act="m-clone" data-id="${id}">${ico('templates')} Clone…</button>
+      <button class="mi ${l.isDefault || !l.active ? 'soft' : ''}" role="menuitem" data-act="m-default" data-id="${id}">${ico('check')} Make default</button>
+      <button class="mi ${l.isDefault ? 'soft' : l.active ? 'danger' : ''}" role="menuitem" data-act="m-toggle" data-id="${id}">${ico(l.active ? 'x' : 'plus')} ${l.active ? 'Deactivate' : 'Activate'}</button></div>`, { kind: 'menu', alignRight: true, onClose: () => t.removeAttribute('aria-expanded') });
+    $('.mi', pop).focus();
+  },
+  'm-edit': (t) => { closePop(); location.hash = '#/projects/layouts/' + t.dataset.id; },
+  'm-clone': (t) => { closePop(); layoutDialog(t.dataset.id); },
+  'm-default': (t) => { closePop(); const l = SM.layouts().find((x) => x.id === t.dataset.id); if (l.isDefault) ui.ln = { text: `${l.name} is already the default layout.`, kind: '' }; else try { SM.setDefault(l.id); ui.ln = null; toast('Default layout changed'); } catch (e) { ui.ln = { text: e.message, kind: 'err' }; } route(); },
+  'm-toggle': (t) => { closePop(); const l = SM.layouts().find((x) => x.id === t.dataset.id); try { SM.setActive(l.id, !l.active); ui.ln = null; toast(l.active ? 'Layout deactivated' : 'Layout activated'); } catch (e) { ui.ln = { text: e.message, kind: 'err' }; } route(); },
+  'new-field-page': () => fieldDialog((f) => { toast('Field created'); setTimeout(route, 0); }),
+  'field-toggle': (t) => { const f = SM.field(t.dataset.key); f.status = f.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'; toast(f.status === 'ACTIVE' ? 'Field activated' : 'Field deactivated'); route(); },
+  /* builder */
+  'row-select': (t, e) => { if (B) select(t.dataset.key, false); },
+  'row-move': (t) => { select(t.dataset.key, false); openMove(t.dataset.key); },
+  'row-ovr': (t) => { select(t.dataset.key, false); openOvr(t.dataset.key); },
+  'do-move': (t) => {
+    const key = pop.dataset.key, to = t.dataset.to, at = SM.draft.find(B.d, key);
+    const same = (at ? at.section.id : 'unplaced') === to; closePop();
+    if (!same) { SM.draft.move(B.d, key, to); B.sel = key; rb(); const s = to === 'unplaced' ? 'Hidden fields' : B.d.sections.find((x) => x.id === to).name; toast(`Moved to ${s}`); }
+  },
+  'sec-up': (t) => secMove(t, -1), 'sec-down': (t) => secMove(t, 1),
+  'sec-del': (t) => {
+    const id = t.closest('[data-sec]').dataset.sec, s = B.d.sections.find((x) => x.id === id), n = s.fields.length;
+    try { SM.draft.removeSection(B.d, id); rb(false); if (n) toast(`${n} ${n === 1 ? 'field' : 'fields'} moved to Hidden`); } catch (e) { toast(e.message, 'err'); }
+  },
+  'b-add-section': () => { const s = SM.draft.addSection(B.d, ''); rb(false); const el = $(`[data-sec="${s.id}"] .sec-name`); el.focus(); el.scrollIntoView({ block: 'center' }); },
+  'b-new-field': () => fieldDialog((f) => { B.sel = f.key; rb(false); toast('Field added to Hidden fields. Press M to place it.'); setTimeout(() => { select(f.key, true); }, 0); }),
+  'prev-toggle': () => { B.prev = !B.prev; $('#bwrap').classList.toggle('show-prev', B.prev); $('.togprev').setAttribute('aria-pressed', B.prev); },
+  discard: () => { const d = SM.layout(B.id); B.d = d; B.orig = JSON.stringify(d); rb(false); toast('Changes discarded'); },
+  save: () => { try { SM.saveLayout(B.d); B.orig = JSON.stringify(B.d); refreshAux(); toast('Layout saved'); } catch (e) { toast(e.message, 'err'); } },
+};
+function secMove(t, delta) {
+  const id = t.closest('[data-sec]').dataset.sec, i = B.d.sections.findIndex((s) => s.id === id); SM.draft.shiftSection(B.d, i, delta); rb(false);
+  const el = $(`[data-sec="${id}"] [data-act="${delta < 0 ? 'sec-up' : 'sec-down'}"]`); if (el && !el.disabled) el.focus();
+}
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-act]'); if (!t) return;
+  if (t.matches('a')) return;
+  const f = acts[t.dataset.act]; if (f) { f(t, e); }
+});
+$('#back').innerHTML = ico('back') + '<span>Back to app</span>';
+$('#sbtn').innerHTML = ico('search') + `<span>Search settings</span><kbd>${MOD}K</kbd>`;
+$('#menubtn').innerHTML = ico('menu', 16);
+
+document.addEventListener('change', (e) => {
+  const t = e.target;
+  if (t.dataset.pk) { SM.portal[t.dataset.pk] = t.value.trim() || SM.portal[t.dataset.pk]; toast('Portal profile saved'); }
+  else if (t.dataset.pref) { prefs[t.dataset.pref] = t.checked; toast('Preference saved'); }
+  else if (B && t.classList.contains('sec-coll')) { B.d.sections.find((s) => s.id === t.closest('[data-sec]').dataset.sec).collapsible = t.checked; refreshAux(); }
+});
+document.addEventListener('input', (e) => {
+  const t = e.target; if (!B) return;
+  if (t.classList.contains('btitle')) { B.d.name = t.value; refreshAux(); }
+  else if (t.classList.contains('bdesc')) { B.d.description = t.value; refreshAux(); }
+  else if (t.classList.contains('sec-name')) { B.d.sections.find((s) => s.id === t.closest('[data-sec]').dataset.sec).name = t.value; refreshAux(); }
+});
+document.addEventListener('submit', (e) => {
+  if (e.target.dataset.form === 'status') {
+    e.preventDefault(); try { SM.addStatus(e.target.n.value); toast('Status added'); route(); $('[data-form=status] input').focus(); } catch (err) { toast(err.message, 'err'); }
+  }
+});
+
+/* ---------- drag and drop ---------- */
+const clearMarks = () => $$('.over,.ins-before,.ins-after,.dragging').forEach((x) => x.classList.remove('over', 'ins-before', 'ins-after', 'dragging'));
+document.addEventListener('dragstart', (e) => {
+  const r = e.target.closest && e.target.closest('.frow'); if (!r || !B) return;
+  B.drag = r.dataset.key; e.dataTransfer.setData('text/plain', B.drag); e.dataTransfer.effectAllowed = 'move'; r.classList.add('dragging'); select(B.drag, false);
+});
+document.addEventListener('dragover', (e) => {
+  if (!B || !B.drag) return; const z = e.target.closest('[data-drop]'); if (!z) return;
+  e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+  $$('.over,.ins-before,.ins-after').forEach((x) => x.classList.remove('over', 'ins-before', 'ins-after')); z.classList.add('over');
+  const r = e.target.closest('.frow'); if (r && r.dataset.key !== B.drag && z.dataset.drop !== 'unplaced') { const b = r.getBoundingClientRect(); r.classList.add(e.clientY < b.top + b.height / 2 ? 'ins-before' : 'ins-after'); }
+});
+document.addEventListener('drop', (e) => {
+  if (!B || !B.drag) return; const z = e.target.closest('[data-drop]'); if (!z) return; e.preventDefault();
+  const key = B.drag, to = z.dataset.drop; let before = null;
+  const r = e.target.closest('.frow');
+  if (r && to !== 'unplaced') {
+    if (r.dataset.key === key) { B.drag = null; clearMarks(); return; }
+    const b = r.getBoundingClientRect(), rows = $$('.frow', z).filter((x) => x.dataset.key !== key), i = rows.indexOf(r);
+    before = e.clientY < b.top + b.height / 2 ? r.dataset.key : (rows[i + 1] ? rows[i + 1].dataset.key : null);
+  }
+  B.drag = null; clearMarks(); SM.draft.move(B.d, key, to, before); B.sel = key; rb();
+});
+document.addEventListener('dragend', () => { if (B) B.drag = null; clearMarks(); });
+
+/* ---------- keyboard ---------- */
+document.addEventListener('keydown', (e) => {
+  const mod = e.metaKey || e.ctrlKey, k = e.key;
+  if (mod && k.toLowerCase() === 'k') { e.preventDefault(); if ($('#pal').open) $('#pal').close(); else openPalette(); return; }
+  if (k === 'Escape') {
+    if (pop) { e.preventDefault(); closePop(); return; }
+    if (document.body.classList.contains('drawer')) { document.body.classList.remove('drawer'); return; }
+    if (B && typing(e.target) && !$('dialog[open]')) { e.target.blur(); if (B.sel) focusSel(); }
+    return;
+  }
+  if ($('dialog[open]')) return;
+  const tp = typing(e.target);
+  if (k === '/' && !tp && !mod) { e.preventDefault(); openPalette(); return; }
+  const inB = B && $('#bwrap');
+  if (!inB || tp || !prefs.keyboard) return;
+  if (popKind === 'ovr' && (k === 'o' || k === 'O') && !mod) { e.preventDefault(); closePop(); return; }
+  if (pop) return;
+  const rows = $$('.frow');
+  if (k === 'ArrowDown' || k === 'ArrowUp') {
+    e.preventDefault(); if (!rows.length) return; const d = k === 'ArrowDown' ? 1 : -1, i = rows.findIndex((r) => r.dataset.key === B.sel);
+    if (mod) { const at = B.sel && SM.draft.find(B.d, B.sel); if (at) { SM.draft.shiftField(B.d, B.sel, d); rb(); } return; }
+    const n = i < 0 ? (d > 0 ? 0 : rows.length - 1) : Math.min(rows.length - 1, Math.max(0, i + d)); select(rows[n].dataset.key);
+    return;
+  }
+  if (!B.sel || mod || e.altKey) return;
+  if (k === 'm' || k === 'M') { e.preventDefault(); openMove(B.sel); }
+  else if (k === 'o' || k === 'O' || k === 'Enter') { if (e.target.closest && e.target.closest('button') && k === 'Enter') return; e.preventDefault(); openOvr(B.sel); }
+  else if (k === 'Delete' || k === 'Backspace') { e.preventDefault(); if (SM.draft.find(B.d, B.sel)) { SM.draft.move(B.d, B.sel, 'unplaced'); rb(); toast('Moved to Hidden fields'); } }
+});
+
+if (!location.hash) history.replaceState(null, '', '#/projects/layouts');
+route();
+})();
+</script>
+</body>
+</html>

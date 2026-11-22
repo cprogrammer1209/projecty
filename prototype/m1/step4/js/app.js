@@ -44,7 +44,7 @@
    * @param crumb    breadcrumb text
    * @param permission optional permission the route needs (permissionGuard); otherwise back to portal home
    */
-  function portalRoute(path, title, { nav, crumb, mount, permission }) {
+  function portalRoute(path, title, { nav, crumb, mount, permission, fluid = false }) {
     Router.add(path, (ctx) => {
       if (!authed(ctx)) return;
       const opened = Store.openPortal(ctx.params.slug);
@@ -57,16 +57,16 @@
       };
       if (permission && !pctx.can(permission)) return Router.navigate(`/p/${ctx.params.slug}`, { replace: true });
       setTitle(title);
-      Shell.render(root, pctx, { nav, crumb, mount });
+      Shell.render(root, pctx, { nav, crumb, mount, fluid });
     });
   }
 
   portalRoute('/p/:slug', 'Home', { nav: 'home', crumb: 'Home', mount: Home.mount });
-  portalRoute('/p/:slug/projects', 'Projects', { nav: 'projects', crumb: 'Projects', mount: Projects.list, permission: 'PROJECTS_VIEW' });
+  portalRoute('/p/:slug/projects', 'Projects', { nav: 'projects', crumb: 'Projects', mount: Projects.list, fluid: true, permission: 'PROJECTS_VIEW' });
   portalRoute('/p/:slug/projects/new', 'New project', { nav: 'projects', crumb: 'Projects / New', mount: Projects.create, permission: 'PROJECTS_CREATE' });
-  portalRoute('/p/:slug/projects/trash', 'Project trash', { nav: 'projects', crumb: 'Projects / Trash', mount: Projects.trash, permission: 'PROJECTS_VIEW' });
+  portalRoute('/p/:slug/projects/trash', 'Project trash', { nav: 'projects', crumb: 'Projects / Trash', mount: Projects.trash, fluid: true, permission: 'PROJECTS_VIEW' });
   portalRoute('/p/:slug/projects/:id/edit', 'Edit project', { nav: 'projects', crumb: 'Projects / Edit', mount: Projects.edit, permission: 'PROJECTS_VIEW' });
-  portalRoute('/p/:slug/projects/:id', 'Project', { nav: 'projects', crumb: 'Projects', mount: Projects.overview, permission: 'PROJECTS_VIEW' });
+  portalRoute('/p/:slug/projects/:id', 'Project', { nav: 'projects', crumb: 'Projects', mount: Projects.overview, fluid: true, permission: 'PROJECTS_VIEW' });
   portalRoute('/p/:slug/settings', 'Settings', { nav: 'settings', crumb: 'Settings', mount: Settings.portal });
   portalRoute('/p/:slug/settings/portal', 'Settings', { nav: 'settings', crumb: 'Settings', mount: Settings.portal });
   portalRoute('/p/:slug/settings/users', 'Settings', { nav: 'settings', crumb: 'Users', mount: Settings.users, permission: 'USERS_VIEW' });

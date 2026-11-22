@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Inline editing: HubSpot, Zoho and Linear style · ProjectY</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../m1/step7/css/tokens.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--py-surface-1, #f6f7f9); color: var(--py-ink); font: 400 14px/20px var(--py-font-ui); padding: 28px 24px 60px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+.page { max-width: 1480px; margin: 0 auto; }
+h1 { font: 600 24px/1.2 var(--py-font-ui); letter-spacing: -.03em; }
+.lead { margin: 6px 0 22px; color: var(--py-ink-muted); max-width: 80ch; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px; align-items: start; }
+.col > h2 { font: 600 16px/24px var(--py-font-ui); }
+.col > ul { margin: 6px 0 14px 18px; color: var(--py-ink-muted); font-size: 12.5px; line-height: 1.55; }
+.card { background: var(--py-surface-0); border: 1px solid var(--py-border); border-radius: 10px; padding: 18px 20px 22px; position: relative; }
+.card .key { display: inline-block; font: 500 11px/1 ui-monospace, monospace; padding: 5px 7px; border-radius: 5px; background: var(--py-surface-2, #eceef2); margin-bottom: 8px; }
+.muted { color: var(--py-ink-muted); }
+.err { color: var(--py-status-blocked, #c62828); font-size: 12px; margin-top: 4px; }
+.saved { color: var(--py-status-done, #2e7d32); font-size: 12px; white-space: nowrap; }
+input[type=text], input[type=number], input[type=date], select, textarea {
+  width: 100%; font: 400 14px/20px var(--py-font-ui); color: var(--py-ink); background: var(--py-surface-0);
+  border: 1px solid var(--py-brand); border-radius: 6px; padding: 5px 9px; box-shadow: 0 0 0 2px color-mix(in srgb, var(--py-brand) 22%, transparent); outline: 0; }
+textarea { resize: vertical; min-height: 70px; }
+.chk { display: flex; align-items: center; gap: 8px; padding: 3px 0; cursor: pointer; }
+.chk input { width: 16px; height: 16px; accent-color: var(--py-brand); }
+.tag { display: inline-block; padding: 1px 8px; border-radius: 99px; background: var(--py-surface-2, #eceef2); font-size: 12px; margin-right: 4px; }
+.card.hs-head, .hs .name { font: 600 20px/28px var(--py-font-ui); letter-spacing: -.02em; }
+
+/* ---------- HubSpot ---------- */
+.hs .row { display: grid; grid-template-columns: 1fr; gap: 3px; padding: 9px 0; border-top: 1px solid var(--py-border); }
+.hs .lab { font-size: 12px; color: var(--py-ink-muted); display: flex; gap: 10px; align-items: center; min-height: 16px; }
+.hs .val { position: relative; padding: 5px 30px 5px 8px; margin: 0 -8px; border-radius: 6px; cursor: pointer; min-height: 30px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.hs .val:hover { background: color-mix(in srgb, var(--py-brand) 8%, var(--py-surface-0)); }
+.hs .val::after { content: '✎'; position: absolute; right: 9px; top: 5px; color: var(--py-brand); opacity: 0; font-size: 13px; }
+.hs .val:hover::after { opacity: 1; }
+.hs .name.val { padding-left: 8px; font: 600 20px/28px var(--py-font-ui); }
+.hs .editor { padding: 2px 0; }
+
+/* ---------- Zoho ---------- */
+.zo .row { display: grid; grid-template-columns: 130px 1fr; gap: 12px; padding: 8px 0; border-top: 1px solid var(--py-border); align-items: start; }
+.zo .lab { color: var(--py-ink-muted); font-size: 13px; padding-top: 6px; }
+.zo .val { position: relative; display: flex; align-items: flex-start; gap: 6px; padding: 6px 8px; margin: 0 -8px; border-bottom: 1px dashed transparent; cursor: pointer; min-height: 32px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.zo .val:hover { background: var(--py-surface-1, #f6f7f9); border-bottom-color: var(--py-border); }
+.zo .val .pen { margin-left: auto; opacity: 0; color: var(--py-ink-muted); font-size: 13px; }
+.zo .val:hover .pen { opacity: 1; }
+.zo .editor { display: flex; gap: 6px; align-items: flex-start; }
+.zo .editor > .ctl { flex: 1; min-width: 0; }
+.zo .sq { width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--py-border); background: var(--py-surface-0); font-size: 14px; flex-shrink: 0; }
+.zo .sq.ok { background: var(--py-brand); border-color: var(--py-brand); color: #fff; }
+.zo .name { display: block; font: 600 20px/28px var(--py-font-ui); letter-spacing: -.02em; }
+.zo .nameblock { margin-bottom: 10px; }
+
+/* ---------- Linear ---------- */
+.ln .title { width: 100%; border: 0; background: none; box-shadow: none; padding: 4px 0; font: 600 22px/30px var(--py-font-ui); letter-spacing: -.02em; border-radius: 4px; }
+.ln .title:focus, .ln .desc:focus { box-shadow: none; border: 0; }
+.ln .desc { width: 100%; border: 0; background: none; box-shadow: none; padding: 4px 0; min-height: 56px; resize: none; color: var(--py-ink); border-radius: 4px; }
+.ln .title::placeholder, .ln .desc::placeholder { color: var(--py-ink-muted); }
+.ln .autosave { height: 16px; font-size: 11px; color: var(--py-ink-muted); margin-bottom: 6px; }
+.ln .props { margin-top: 12px; border-top: 1px solid var(--py-border); padding-top: 10px; display: grid; grid-template-columns: 120px 1fr; gap: 4px 12px; align-items: center; }
+.ln .lab { color: var(--py-ink-muted); font-size: 13px; }
+.ln .cell { position: relative; min-height: 30px; display: flex; align-items: center; }
+.ln .pill { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 4px 9px; border: 1px solid transparent; border-radius: 6px; background: none; text-align: left; }
+.ln .pill:hover, .ln .pill.open { background: var(--py-surface-2, #eceef2); }
+.ln .pill.empty { color: var(--py-ink-muted); }
+.ln .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--py-brand); flex-shrink: 0; }
+.ln .av { width: 18px; height: 18px; border-radius: 50%; background: var(--py-brand); color: #fff; font-size: 9px; line-height: 18px; text-align: center; flex-shrink: 0; }
+.ln .inl { width: 100%; }
+.ln .pop { position: absolute; z-index: 20; left: 0; top: calc(100% + 4px); min-width: 230px; background: var(--py-surface-0); border: 1px solid var(--py-border); border-radius: 10px; box-shadow: var(--py-shadow-lg, 0 12px 32px rgba(0,0,0,.16)); padding: 6px; }
+.ln .pop input[type=text] { border: 0; border-bottom: 1px solid var(--py-border); border-radius: 0; box-shadow: none; padding: 7px 8px; margin-bottom: 4px; }
+.ln .opt { display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 8px; border: 0; background: none; border-radius: 6px; text-align: left; }
+.ln .opt:hover { background: var(--py-surface-2, #eceef2); }
+.ln .opt .tick { margin-left: auto; color: var(--py-brand); }
+.ln .opt .box { width: 15px; height: 15px; border: 1px solid var(--py-border); border-radius: 4px; display: grid; place-items: center; font-size: 10px; color: #fff; flex-shrink: 0; }
+.ln .opt .box.on { background: var(--py-brand); border-color: var(--py-brand); }
+.ln .cal { width: 252px; padding: 6px; }
+.ln .cal-h { display: flex; align-items: center; justify-content: space-between; padding: 2px 4px 8px; font-weight: 500; }
+.ln .cal-h button { border: 0; background: none; width: 26px; height: 26px; border-radius: 6px; }
+.ln .cal-h button:hover { background: var(--py-surface-2, #eceef2); }
+.ln .cal-g { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; font-size: 12px; }
+.ln .cal-g span.dow { color: var(--py-ink-muted); padding: 4px 0; }
+.ln .cal-g button { border: 0; background: none; height: 30px; border-radius: 6px; font-size: 12px; }
+.ln .cal-g button:hover { background: var(--py-surface-2, #eceef2); }
+.ln .cal-g button.sel { background: var(--py-brand); color: #fff; }
+.ln .cal-g button.today { box-shadow: inset 0 0 0 1px var(--py-brand); }
+.ln .hint { font-size: 11px; color: var(--py-ink-muted); padding: 6px 8px 2px; border-top: 1px solid var(--py-border); margin-top: 4px; }
+.fields-note { margin-top: 28px; font-size: 12.5px; color: var(--py-ink-muted); max-width: 90ch; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Inline editing: three styles</h1>
+  <p class="lead">The same project and the same fields, edited the way HubSpot, Zoho and Linear do it. Everything here is live: click the values. Nothing is saved anywhere, and this page is not part of the Step 7 prototype. Try a wrong value (letters or a negative budget, a contract number longer than 12 characters) to see how each style reports an error.</p>
+  <div class="cols">
+    <section class="col"><h2>HubSpot style</h2>
+      <ul><li>Hover shows a pencil; click turns the value into an input in place.</li><li>No buttons. Saves on Enter or when you click away; Esc puts the old value back.</li><li>Dropdowns and the checkbox save the moment you choose; Pick several saves when you click away.</li></ul>
+      <div class="card hs" id="hs"></div></section>
+    <section class="col"><h2>Zoho style</h2>
+      <ul><li>Hover shows a pencil and a dotted underline; click opens the input with a tick and a cross beside it.</li><li>Saves only with the tick or Enter; the cross or Esc cancels. Clicking away leaves it open.</li><li>Same for every type, including dropdowns and Pick several.</li></ul>
+      <div class="card zo" id="zo"></div></section>
+    <section class="col"><h2>Linear style</h2>
+      <ul><li>Name and description are always editable text and autosave as you type.</li><li>Each property is a quiet button; choices open a small popover with search and save when you pick.</li><li>Pick several stays open and saves every tick; the date is a calendar popover; Esc closes.</li></ul>
+      <div class="card ln" id="ln"></div></section>
+  </div>
+  <p class="fields-note">Fields shown: name, description (long text), budget (number), contract number (text, max 12), customer tier (pick one), channels (pick several), go-live (date), VIP (checkbox), account manager (person).</p>
+</div>
+
+<script>
+const OPTS = {
+  tier: [['gold', 'Gold'], ['silver', 'Silver'], ['bronze', 'Bronze']],
+  channels: [['web', 'Web'], ['ios', 'iOS'], ['android', 'Android'], ['print', 'Print']],
+  person: [['u1', 'Priya Nair'], ['u2', 'Ravi Kumar'], ['u3', 'Sara Lopez'], ['u5', 'Maya Chen']],
+};
+const FIELDS = [
+  { k: 'title', label: 'Project name', type: 'title' },
+  { k: 'desc', label: 'Description', type: 'long' },
+  { k: 'budget', label: 'Budget', type: 'number' },
+  { k: 'contract', label: 'Contract number', type: 'text' },
+  { k: 'tier', label: 'Customer tier', type: 'select', opts: 'tier' },
+  { k: 'channels', label: 'Channels', type: 'multi', opts: 'channels' },
+  { k: 'golive', label: 'Go-live', type: 'date' },
+  { k: 'vip', label: 'VIP', type: 'check' },
+  { k: 'owner', label: 'Account manager', type: 'select', opts: 'person' },
+];
+const F = Object.fromEntries(FIELDS.map((f) => [f.k, f]));
+const seed = () => ({ title: 'Website Redesign', desc: 'New marketing site: content models, design system and launch.', budget: 12000, contract: 'C-2026-001', tier: 'gold', channels: ['web', 'ios'], golive: '2026-12-01', vip: true, owner: 'u1' });
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const label = (f, id) => (OPTS[f.opts] || []).find(([v]) => v === id)?.[1] ?? '';
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const fmtDate = (iso) => { if (!iso) return ''; const [y, m, d] = iso.split('-').map(Number); return `${MON[m - 1]} ${d}, ${y}`; };
+const initials = (n) => n.split(' ').map((w) => w[0]).join('');
+const NOT_SET = '<span class="muted">Not set</span>';
+
+function show(f, v) {
+  if (v == null || v === '' || (Array.isArray(v) && !v.length)) return NOT_SET;
+  switch (f.type) {
+    case 'number': return esc(Number(v).toLocaleString('en-US'));
+    case 'date': return esc(fmtDate(v));
+    case 'check': return v ? 'Yes' : 'No';
+    case 'select': return esc(label(f, v));
+    case 'multi': return v.map((id) => `<span class="tag">${esc(label(f, id))}</span>`).join('');
+    default: return esc(v);
+  }
+}
+/** The same rules for every style, so only the way of editing differs. */
+function check(f, v) {
+  if (f.k === 'title' && !String(v).trim()) return 'Name the project.';
+  if (f.type === 'number') { if (v === '' || v == null) return null; const n = Number(v); if (!Number.isFinite(n)) return 'Enter a number.'; if (n < 0) return 'Must be at least 0.'; }
+  if (f.k === 'contract' && String(v).length > 12) return 'Use 12 characters or fewer.';
+  return null;
+}
+const clean = (f, raw) => (f.type === 'number' ? (raw === '' ? null : Number(raw)) : f.type === 'date' || f.type === 'text' || f.type === 'long' ? (raw === '' ? null : raw) : raw);
+
+/** Shared state and saving. `render` repaints one style's card. */
+function makeBase(root, render) {
+  const st = { v: seed(), editing: null, err: null, flash: null, pop: null, draft: null, cal: null, q: '' };
+  let t;
+  st.flashed = (k) => { st.flash = k; clearTimeout(t); t = setTimeout(() => { st.flash = null; render(); }, 1600); };
+  st.commit = (k, val) => {
+    const f = F[k], v = clean(f, val), msg = check(f, v);
+    if (msg) { st.err = { k, msg }; render(); return false; }
+    st.err = null;
+    const same = JSON.stringify(st.v[k] ?? null) === JSON.stringify(v ?? null);
+    st.v[k] = v; st.editing = null; st.pop = null;
+    if (!same) st.flashed(k);
+    render(); return true;
+  };
+  st.cancel = () => { st.editing = null; st.err = null; st.pop = null; render(); };
+  return st;
+}
+/** The control shown while editing (HubSpot and Zoho). */
+function editorFor(f, st, value) {
+  const id = 'ed-' + f.k, ft = 'data-focus';
+  switch (f.type) {
+    case 'long': return `<textarea id="${id}" ${ft}>${esc(value ?? '')}</textarea>`;
+    case 'number': return `<input id="${id}" ${ft} type="number" step="any" value="${esc(value ?? '')}">`;
+    case 'date': return `<input id="${id}" ${ft} type="date" value="${esc(value ?? '')}">`;
+    case 'select': return `<select id="${id}" ${ft}><option value="">None</option>${OPTS[f.opts].map(([v, l]) => `<option value="${v}" ${v === value ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+    case 'multi': return `<div id="${id}" ${ft} tabindex="-1" data-multi>${OPTS[f.opts].map(([v, l]) => `<label class="chk"><input type="checkbox" value="${v}" ${(value || []).includes(v) ? 'checked' : ''}><span>${esc(l)}</span></label>`).join('')}</div>`;
+    default: return `<input id="${id}" ${ft} type="text" value="${esc(value ?? '')}">`;
+  }
+}
+const readEditor = (f, scope) => {
+  const el = scope.querySelector(`#ed-${f.k}`);
+  if (f.type === 'multi') return [...el.querySelectorAll('input:checked')].map((x) => x.value);
+  return el.value;
+};
+const focusEditor = (root) => { const el = root.querySelector('[data-focus]'); if (el) { el.focus(); if (el.select && el.tagName !== 'SELECT') try { el.select(); } catch (e) {} } };
+const errLine = (st, k) => (st.err?.k === k ? `<p class="err">${esc(st.err.msg)}</p>` : '');
+
+/* =========================== HubSpot =========================== */
+(() => {
+  const root = document.getElementById('hs'); let st;
+  const row = (f) => {
+    const flash = st.flash === f.k ? '<span class="saved">✓ Saved</span>' : '';
+    const editing = st.editing === f.k;
+    const body = editing
+      ? `<div class="editor" data-k="${f.k}">${editorFor(f, st, st.v[f.k])}${errLine(st, f.k)}</div>`
+      : f.type === 'check'
+        ? `<label class="chk val" data-toggle="${f.k}" style="cursor:pointer"><input type="checkbox" ${st.v[f.k] ? 'checked' : ''} tabindex="-1"><span>${st.v[f.k] ? 'Yes' : 'No'}</span></label>`
+        : `<div class="val" data-edit="${f.k}" tabindex="0" role="button" aria-label="Edit ${esc(f.label)}">${show(f, st.v[f.k])}</div>`;
+    return `<div class="row"><div class="lab">${esc(f.label)} ${flash}</div>${body}</div>`;
+  };
+  const render = () => {
+    const t = F.title;
+    root.innerHTML = `<span class="key">WEB</span>
+      <div>${st.editing === 'title' ? `<div class="editor" data-k="title">${editorFor(t, st, st.v.title)}${errLine(st, 'title')}</div>` : `<div class="name val" data-edit="title" tabindex="0">${esc(st.v.title)}</div>`}${st.flash === 'title' ? '<span class="saved">✓ Saved</span>' : ''}</div>
+      <div style="margin-top:8px">${FIELDS.filter((f) => f.k !== 'title').map(row).join('')}</div>`;
+    focusEditor(root);
+  };
+  st = makeBase(root, render);
+  const finish = (k) => { if (st.editing !== k) return; const f = F[k]; st.commit(k, readEditor(f, root)); };
+  root.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-edit],[data-toggle]'); if (!t) return;
+    if (t.dataset.toggle) { e.preventDefault(); st.v.vip = !st.v.vip; st.flashed('vip'); return render(); }
+    if (st.editing && st.editing !== t.dataset.edit) finish(st.editing);
+    if (st.editing === null || st.err === null) { st.editing = t.dataset.edit; st.err = null; render(); }
+  });
+  root.addEventListener('keydown', (e) => {
+    const ed = e.target.closest('.editor'); const k = ed?.dataset.k;
+    if (!ed && e.key === 'Enter' && e.target.dataset?.edit) { st.editing = e.target.dataset.edit; render(); return; }
+    if (!k) return;
+    if (e.key === 'Escape') { st.editing = null; st.err = null; render(); }
+    else if (e.key === 'Enter' && (e.target.tagName !== 'TEXTAREA' || e.ctrlKey || e.metaKey)) { e.preventDefault(); finish(k); }
+  });
+  root.addEventListener('change', (e) => { const ed = e.target.closest('.editor'); if (ed && (e.target.tagName === 'SELECT' || (F[ed.dataset.k].type === 'date'))) finish(ed.dataset.k); });
+  root.addEventListener('focusout', (e) => {
+    const ed = e.target.closest('.editor'); if (!ed) return;
+    setTimeout(() => { const k = ed.dataset.k; if (st.editing === k && !root.querySelector(`.editor[data-k="${k}"]`)?.contains(document.activeElement)) finish(k); }, 0);
+  });
+  render();
+})();
+
+/* =========================== Zoho =========================== */
+(() => {
+  const root = document.getElementById('zo'); let st;
+  const control = (f) => `<div class="editor" data-k="${f.k}"><div class="ctl">${editorFor(f, st, st.v[f.k])}${errLine(st, f.k)}</div>
+      <button class="sq ok" type="button" data-ok="${f.k}" aria-label="Save">✓</button><button class="sq" type="button" data-no="${f.k}" aria-label="Cancel">✕</button></div>`;
+  const row = (f) => {
+    const flash = st.flash === f.k ? '<span class="saved">✓ Saved</span>' : '';
+    const val = st.editing === f.k ? control(f)
+      : `<div class="val" data-edit="${f.k}" tabindex="0" role="button" aria-label="Edit ${esc(f.label)}"><span>${show(f, st.v[f.k])}</span><span class="pen">✎</span></div>`;
+    return `<div class="row"><div class="lab">${esc(f.label)}</div><div>${val}${flash}</div></div>`;
+  };
+  const render = () => {
+    root.innerHTML = `<span class="key">WEB</span><div class="nameblock">${st.editing === 'title' ? control(F.title) : `<div class="val" data-edit="title" tabindex="0" style="padding-left:8px"><span class="name">${esc(st.v.title)}</span><span class="pen">✎</span></div>${st.flash === 'title' ? '<span class="saved">✓ Saved</span>' : ''}`}</div>
+      ${FIELDS.filter((f) => f.k !== 'title').map(row).join('')}`;
+    focusEditor(root);
+  };
+  st = makeBase(root, render);
+  root.addEventListener('click', (e) => {
+    const ok = e.target.closest('[data-ok]'), no = e.target.closest('[data-no]'), ed = e.target.closest('[data-edit]');
+    if (ok) return st.commit(ok.dataset.ok, readEditor(F[ok.dataset.ok], root));
+    if (no) return st.cancel();
+    if (ed && st.editing !== ed.dataset.edit) { st.editing = ed.dataset.edit; st.err = null; render(); }
+  });
+  root.addEventListener('keydown', (e) => {
+    const ed = e.target.closest('.editor');
+    if (!ed && e.key === 'Enter' && e.target.dataset?.edit) { st.editing = e.target.dataset.edit; render(); return; }
+    if (!ed) return;
+    if (e.key === 'Escape') st.cancel();
+    else if (e.key === 'Enter' && (e.target.tagName !== 'TEXTAREA' || e.ctrlKey || e.metaKey)) { e.preventDefault(); st.commit(ed.dataset.k, readEditor(F[ed.dataset.k], root)); }
+  });
+  render();
+})();
+
+/* =========================== Linear =========================== */
+(() => {
+  const root = document.getElementById('ln'); let st, timer;
+  const today = new Date();
+  const props = FIELDS.filter((f) => f.k !== 'title' && f.k !== 'desc');
+  const optionList = (f) => {
+    const q = st.q.trim().toLowerCase(), cur = st.v[f.k];
+    return OPTS[f.opts].filter(([, l]) => l.toLowerCase().includes(q)).map(([v, l]) => {
+      if (f.type === 'multi') { const on = (cur || []).includes(v); return `<button class="opt" type="button" data-opt="${v}"><span class="box ${on ? 'on' : ''}">${on ? '✓' : ''}</span>${esc(l)}</button>`; }
+      const lead = f.opts === 'person' ? `<span class="av">${esc(initials(l))}</span>` : `<span class="dot"></span>`;
+      return `<button class="opt" type="button" data-opt="${v}">${lead}${esc(l)}${cur === v ? '<span class="tick">✓</span>' : ''}</button>`;
+    }).join('') || '<div class="hint" style="border:0">No match</div>';
+  };
+  const calendar = (f) => {
+    const { y, m } = st.cal, first = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate(), cur = st.v[f.k];
+    const cells = [...Array(first).fill('<span></span>'), ...Array.from({ length: days }, (_, i) => {
+      const d = i + 1, iso = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const isToday = today.getFullYear() === y && today.getMonth() === m && today.getDate() === d;
+      return `<button type="button" data-day="${iso}" class="${cur === iso ? 'sel' : ''} ${isToday ? 'today' : ''}">${d}</button>`;
+    })];
+    return `<div class="pop cal"><div class="cal-h"><button type="button" data-nav="-1" aria-label="Previous month">‹</button><span>${MONTHS[m]} ${y}</span><button type="button" data-nav="1" aria-label="Next month">›</button></div>
+      <div class="cal-g">${['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d) => `<span class="dow">${d}</span>`).join('')}${cells.join('')}</div>
+      ${cur ? '<div class="hint"><button class="opt" type="button" data-day="">Clear date</button></div>' : ''}</div>`;
+  };
+  const cell = (f) => {
+    const v = st.v[f.k], flash = st.flash === f.k ? '<span class="saved" style="margin-left:8px">✓ Saved</span>' : '';
+    if (f.type === 'check') return `<button class="pill" type="button" data-toggle="${f.k}"><span class="box opt-box" style="display:inline-grid;width:15px;height:15px;border:1px solid var(--py-border);border-radius:4px;place-items:center;font-size:10px;color:#fff;${v ? 'background:var(--py-brand);border-color:var(--py-brand)' : ''}">${v ? '✓' : ''}</span>${v ? 'Yes' : 'No'}</button>${flash}`;
+    if (st.editing === f.k) return `<div class="inl editor" data-k="${f.k}">${editorFor(f, st, v)}${errLine(st, f.k)}</div>`;
+    const open = st.pop === f.k, popup = !open ? '' : f.type === 'date' ? calendar(f)
+      : `<div class="pop"><input type="text" data-search placeholder="${f.type === 'multi' ? 'Pick channels…' : 'Search…'}" data-focus value="${esc(st.q)}"><div class="ln-list">${optionList(f)}</div>${f.type === 'multi' ? '<div class="hint">Each tick saves. Esc to close.</div>' : ''}</div>`;
+    let inner;
+    if (f.type === 'select') inner = v ? `${f.opts === 'person' ? `<span class="av">${esc(initials(label(f, v)))}</span>` : '<span class="dot"></span>'}${esc(label(f, v))}` : 'Set ' + f.label.toLowerCase();
+    else if (f.type === 'multi') inner = (v || []).length ? v.map((id) => `<span class="tag" style="margin:0">${esc(label(f, id))}</span>`).join('') : 'Add channels';
+    else if (f.type === 'date') inner = v ? esc(fmtDate(v)) : 'Set date';
+    else inner = v != null && v !== '' ? show(f, v) : 'Set ' + f.label.toLowerCase();
+    const attr = f.type === 'number' || f.type === 'text' ? `data-edit="${f.k}"` : `data-pop="${f.k}"`;
+    return `<button class="pill ${open ? 'open' : ''} ${v == null || v === '' || (Array.isArray(v) && !v.length) ? 'empty' : ''}" type="button" ${attr}>${inner}</button>${flash}${popup}`;
+  };
+  const render = () => {
+    const had = document.activeElement;
+    root.innerHTML = `<span class="key" style="margin-bottom:4px">WEB</span>
+      <input class="title" id="ln-title" type="text" value="${esc(st.v.title)}" aria-label="Project name" placeholder="Project name">
+      <textarea class="desc" id="ln-desc" rows="2" aria-label="Description" placeholder="Add a description…">${esc(st.v.desc ?? '')}</textarea>
+      <div class="autosave" id="ln-auto">${st.saving || ''}</div>
+      <div class="props">${props.map((f) => `<div class="lab">${esc(f.label)}</div><div class="cell" data-cell="${f.k}">${cell(f)}</div>`).join('')}</div>`;
+    focusEditor(root);
+    const ta = root.querySelector('#ln-desc'); ta.style.height = 'auto'; ta.style.height = Math.max(56, ta.scrollHeight) + 'px';
+  };
+  st = makeBase(root, render);
+  const status = (t) => { const n = root.querySelector('#ln-auto'); if (n) n.textContent = t; st.saving = t; };
+  const type = (k, node) => {
+    st.v[k] = node.value; status('Saving…'); clearTimeout(timer);
+    timer = setTimeout(() => { if (k === 'title' && !node.value.trim()) return status('The name can\'t be empty'); status('Saved'); setTimeout(() => { if (st.saving === 'Saved') status(''); }, 1400); }, 600);
+  };
+  root.addEventListener('input', (e) => {
+    if (e.target.id === 'ln-title') type('title', e.target);
+    else if (e.target.id === 'ln-desc') { type('desc', e.target); e.target.style.height = 'auto'; e.target.style.height = Math.max(56, e.target.scrollHeight) + 'px'; }
+    else if (e.target.matches('[data-search]')) { st.q = e.target.value; root.querySelector('.ln-list').innerHTML = optionList(F[st.pop]); }
+  });
+  const openPop = (k) => { st.pop = k; st.q = ''; st.editing = null; st.err = null; if (F[k].type === 'date') { const d = st.v[k] ? new Date(st.v[k] + 'T00:00:00') : today; st.cal = { y: d.getFullYear(), m: d.getMonth() }; } render(); };
+  root.addEventListener('click', (e) => {
+    const T = (s) => e.target.closest(s);
+    if (T('[data-toggle]')) { const k = T('[data-toggle]').dataset.toggle; st.v[k] = !st.v[k]; st.flashed(k); return render(); }
+    if (T('[data-pop]')) { const k = T('[data-pop]').dataset.pop; return st.pop === k ? (st.pop = null, render()) : openPop(k); }
+    if (T('[data-edit]')) { st.pop = null; st.editing = T('[data-edit]').dataset.edit; st.err = null; return render(); }
+    if (T('[data-opt]')) {
+      const f = F[st.pop], id = T('[data-opt]').dataset.opt;
+      if (f.type === 'multi') { const cur = new Set(st.v[f.k] || []); cur.has(id) ? cur.delete(id) : cur.add(id); st.v[f.k] = [...cur]; st.flashed(f.k); const keep = st.q; render(); root.querySelector('[data-search]')?.setAttribute('value', keep); return; }
+      return st.commit(f.k, id);
+    }
+    if (T('[data-day]') !== null && T('[data-day]')) return st.commit(st.pop, T('[data-day]').dataset.day);
+    if (T('[data-nav]')) { const n = +T('[data-nav]').dataset.nav; let { y, m } = st.cal; m += n; if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; } st.cal = { y, m }; return render(); }
+  });
+  root.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { if (st.pop || st.editing) { st.cancel(); } return; }
+    const ed = e.target.closest('.editor');
+    if (ed && e.key === 'Enter') { e.preventDefault(); st.commit(ed.dataset.k, readEditor(F[ed.dataset.k], root)); }
+  });
+  root.addEventListener('focusout', (e) => {
+    const ed = e.target.closest('.editor'); if (!ed) return;
+    setTimeout(() => { const k = ed.dataset.k; if (st.editing === k && !root.querySelector('.editor')?.contains(document.activeElement)) st.commit(k, readEditor(F[k], root)); }, 0);
+  });
+  document.addEventListener('click', (e) => { if (st.pop && e.target.isConnected && !root.contains(e.target)) { st.pop = null; render(); } });
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Settings page samples · ProjectY</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font: 400 14px/20px Inter, system-ui, sans-serif; color: #1b2230; background: #f6f7f9; padding: 40px 24px 60px; }
+.page { max-width: 1040px; margin: 0 auto; }
+h1 { font: 600 26px/1.2 Inter, sans-serif; letter-spacing: -.03em; }
+.lead { margin: 8px 0 26px; color: #5b6578; max-width: 75ch; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+a.card { display: block; background: #fff; border: 1px solid #dfe3ea; border-radius: 12px; padding: 18px; color: inherit; text-decoration: none; transition: box-shadow .12s, transform .12s; }
+a.card:hover { box-shadow: 0 8px 24px rgba(20, 30, 50, .1); transform: translateY(-2px); }
+.sw { height: 74px; border-radius: 8px; margin-bottom: 14px; display: flex; overflow: hidden; border: 1px solid #e6e9ef; }
+.sw i { display: block; height: 100%; }
+a.card h2 { font: 600 16px/24px Inter, sans-serif; }
+a.card p { color: #5b6578; font-size: 13px; margin-top: 4px; }
+.note { margin-top: 26px; font-size: 13px; color: #5b6578; max-width: 80ch; line-height: 1.6; }
+.note b { color: #1b2230; font-weight: 500; }
+</style>
+</head>
+<body><div class="page">
+  <h1>Settings page: four styles to choose from</h1>
+  <p class="lead">The same module-wise Settings (Portal, then Modules → Projects: Fields, Layouts, Statuses, Templates) built four ways. Open each one and try the Layouts page, which holds the project layout builder.</p>
+  <div class="grid">
+    <a class="card" href="settings-zoho.html"><div class="sw"><i style="width:22%;background:#f0f2f5"></i><i style="flex:1;background:#fff"></i><i style="width:20%;background:#eef4fd"></i></div><h2>Zoho style</h2><p>Setup sidebar, three-panel layout editor: new fields and unused fields on the left, canvas in the middle, properties on the right.</p></a>
+    <a class="card" href="settings-hubspot.html"><div class="sw"><i style="width:100%;height:18%;background:#2d3e50;position:absolute"></i><i style="width:22%;background:#f5f8fa"></i><i style="flex:1;background:#fff5f2"></i></div><h2>HubSpot style</h2><p>Objects tree, property-group cards you drag fields between, available properties on the right, edit and preview.</p></a>
+    <a class="card" href="settings-linear.html"><div class="sw"><i style="width:22%;background:#f6f6f8"></i><i style="flex:1;background:#fcfcfd"></i></div><h2>Linear style</h2><p>Quiet, keyboard-first. A document-like builder with a move popover, command palette and a live preview column.</p></a>
+    <a class="card" href="settings-jira.html"><div class="sw"><i style="width:22%;background:#fff;border-right:1px solid #dcdfe4"></i><i style="flex:1;background:#f7f8f9"></i><i style="width:26%;background:#e9f2ff"></i></div><h2>Jira style</h2><p>Project-settings sidebar with a module switcher, issue-layout groups, hidden fields and preview tabs.</p></a>
+  </div>
+  <p class="note"><b>What is the same in all four:</b> the module-wise structure (future modules such as Tasks and Issues already have a place), the layout rules (up to 3 layouts, unique section names, hidden fields keep their answers, the default layout can't be deactivated), overrides per field (required, read-only, default), drag and drop with a keyboard alternative, and a live preview. Data lives in memory (reload resets it).</p>
+</div></body></html>

@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Settings · ProjectY</title>
+<style>
+:root{--bg:#f5f8fa;--card:#fff;--bd:#cbd6e2;--bd2:#dfe3eb;--tx:#33475b;--tx2:#516f90;--tx3:#7c98b6;--or:#ff7a59;--or2:#ff8f73;--ord:#e8613f;--tint:#fff1ee;--lk:#0091ae;--navy:#2d3e50;--side:#fff;--ok:#00a38d;--err:#f2545b;--warn:#f5c26b;--blue:#eaf0f6;--r:6px;--top:52px}
+*{box-sizing:border-box}
+html{scroll-padding-top:120px}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 "Avenir Next","Segoe UI","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{margin:0;font-weight:600;color:#2d3e50;line-height:1.25}
+h1{font-size:24px}h2{font-size:18px}h3{font-size:15px}h4{font-size:14px}
+p{margin:0}
+a{color:var(--lk);text-decoration:none}a:hover{text-decoration:underline}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid #00a4bd;outline-offset:2px;border-radius:4px}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* top bar */
+.top{position:sticky;top:0;z-index:50;height:var(--top);background:var(--navy);color:#fff;display:flex;align-items:center;gap:14px;padding:0 16px}
+.logo{font-weight:700;font-size:18px;letter-spacing:.2px;color:#fff}
+.logo i{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--or);margin-right:6px}
+.top .sep{width:1px;height:22px;background:#516f90}
+.top .lab{font-size:14px;color:#cbd6e2}
+.burger{display:none;background:none;border:0;color:#fff;font-size:22px;cursor:pointer;padding:4px 8px}
+.search{position:relative;margin-left:auto;width:320px;max-width:40vw}
+.search input{width:100%;height:34px;border-radius:17px;border:1px solid #516f90;background:#3a4d63;color:#fff;padding:0 14px}
+.search input::placeholder{color:#b0c1d4}
+.search input:focus{background:#fff;color:var(--tx);outline:2px solid #00a4bd}
+.sres{position:absolute;top:40px;left:0;right:0;background:#fff;border:1px solid var(--bd);border-radius:var(--r);box-shadow:0 6px 20px rgba(45,62,80,.2);padding:6px;color:var(--tx)}
+.sres a{display:block;padding:7px 10px;border-radius:4px;color:var(--tx)}
+.sres a small{display:block;color:var(--tx3)}
+.sres a:hover,.sres a.hi{background:var(--blue);text-decoration:none}
+.sres p{padding:8px 10px;color:var(--tx3)}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--or);color:#fff;border:0;font-weight:700;font-size:12px;cursor:pointer}
+/* shell */
+.shell{display:flex;align-items:flex-start;min-height:calc(100vh - var(--top))}
+.side{width:260px;flex:none;background:var(--side);border-right:1px solid var(--bd2);position:sticky;top:var(--top);height:calc(100vh - var(--top));overflow-y:auto;padding:14px 10px}
+.ngh{display:flex;align-items:center;gap:6px;width:100%;background:none;border:0;text-align:left;cursor:pointer;padding:7px 8px;border-radius:4px;font-weight:600;color:#2d3e50}
+.ngh:hover{background:var(--bg)}
+.ngh.l2{font-weight:600;color:var(--tx2);font-size:13px;padding-left:20px}
+.chev{width:7px;height:7px;border-right:2px solid var(--tx2);border-bottom:2px solid var(--tx2);transform:rotate(-45deg);transition:transform .15s;margin:0 4px 0 2px;flex:none}
+.ngh[aria-expanded=true]>.chev{transform:rotate(45deg)}
+.ngb{padding:2px 0 8px}
+.nl{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:7px 10px 7px 28px;margin:1px 0;border-radius:4px;color:var(--tx);border-left:3px solid transparent}
+.ngb .ngb .nl{padding-left:42px}
+.nl:hover{background:var(--bg);text-decoration:none}
+.nl.cur{background:var(--blue);border-left-color:var(--or);font-weight:600;color:#2d3e50}
+.soon{font-size:11px;font-weight:600;background:#eaf0f6;color:var(--tx2);border-radius:10px;padding:0 8px}
+.backdrop{display:none}
+.main{flex:1;min-width:0;padding:20px 32px 60px}
+.crumbs{font-size:13px;color:var(--tx2);margin-bottom:10px;display:flex;flex-wrap:wrap;gap:6px}
+.crumbs span+span:before{content:"/";margin-right:6px;color:var(--tx3)}
+.page{max-width:1180px}
+.phead{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+.phead p{color:var(--tx2);margin-top:4px;max-width:640px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--bd);margin:14px 0 20px;overflow-x:auto}
+.tabs a,.tabs span{padding:10px 16px;color:var(--tx2);border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap;font-weight:500}
+.tabs a:hover{color:#2d3e50;text-decoration:none}
+.tabs a.cur{color:#2d3e50;border-bottom-color:var(--or);font-weight:600}
+.tabs span{color:#a9bbcf;cursor:not-allowed}
+/* components */
+.btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;border-radius:var(--r);border:1px solid #516f90;background:#fff;color:#2d3e50;cursor:pointer;font-weight:600;white-space:nowrap}
+.btn:hover{background:var(--bg)}
+.btn.pri{background:var(--or);border-color:var(--or);color:#fff}
+.btn.pri:hover{background:var(--or2)}
+.btn.dng{background:var(--err);border-color:var(--err);color:#fff}
+.btn.sm{height:30px;padding:0 12px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.link{background:none;border:0;color:var(--lk);cursor:pointer;padding:0;font-weight:500}
+.link:hover{text-decoration:underline}
+.ib{width:30px;height:30px;border-radius:4px;border:0;background:none;cursor:pointer;color:var(--tx2);font-size:16px;line-height:1;display:inline-grid;place-items:center}
+.ib:hover{background:var(--blue);color:#2d3e50}
+.ib:disabled{opacity:.35;cursor:not-allowed}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:8px}
+.pill{display:inline-block;border-radius:12px;padding:1px 10px;font-size:12px;font-weight:600;background:var(--blue);color:var(--tx2);white-space:nowrap}
+.pill.ok{background:#e5f8f6;color:#00826f}
+.pill.off{background:#eaf0f6;color:#7c98b6}
+.pill.or{background:var(--tint);color:#c4482a}
+.pill.dflt{background:#e5f5f8;color:#00758d}
+.chip{display:inline-block;border-radius:12px;padding:0 9px;font-size:12px;background:#eaf0f6;color:var(--tx2);white-space:nowrap}
+.chip.o{background:var(--tint);color:#c4482a}
+.chip.w{background:#fef3dc;color:#8a5a00}
+.tw{position:relative;background:#fff;border:1px solid var(--bd);border-radius:8px;overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{background:var(--bg);text-align:left;font-size:12px;font-weight:600;color:var(--tx2);padding:10px 14px;border-bottom:1px solid var(--bd);white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--bd2);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:#fafcfd}
+td .sub{color:var(--tx3);font-size:12px}
+.num{text-align:right}
+.toolbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
+.inp,.sel{height:36px;border:1px solid var(--bd);border-radius:var(--r);padding:0 12px;background:#fff;min-width:0}
+textarea.inp{height:auto;padding:8px 12px}
+.inp:hover,.sel:hover{border-color:#99aebe}
+.inp:focus,.sel:focus{outline:2px solid #00a4bd;outline-offset:0;border-color:#00a4bd}
+.note{color:var(--tx2);font-size:13px}
+.mwrap{position:relative;display:inline-block}
+.menu{position:fixed;z-index:80;background:#fff;border:1px solid var(--bd);border-radius:var(--r);box-shadow:0 6px 24px rgba(45,62,80,.22);padding:6px;min-width:170px}
+.menu button{display:block;width:100%;text-align:left;background:none;border:0;padding:8px 12px;border-radius:4px;cursor:pointer;color:var(--tx)}
+.menu button:hover{background:var(--blue)}
+.menu button.d{color:var(--err)}
+.menu button:disabled{opacity:.4;cursor:not-allowed}
+.alert{border-radius:var(--r);padding:10px 14px;margin:0 0 14px;border:1px solid;display:flex;gap:10px;align-items:flex-start}
+.alert.err{background:#fdedee;border-color:#f2545b;color:#8f1d24}
+.alert.warn{background:#fef8f0;border-color:var(--warn);color:#6b4a00}
+.form{max-width:640px;padding:24px;display:grid;gap:16px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.fl{display:grid;gap:6px;font-weight:600;color:#2d3e50}
+.fl .inp,.fl .sel{font-weight:400;width:100%}
+.fl small{font-weight:400;color:var(--tx3)}
+.chk{display:flex;align-items:center;gap:8px;font-weight:400}
+.chk input{width:16px;height:16px;accent-color:var(--or)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:200;display:grid;gap:8px;justify-items:center;pointer-events:none}
+.toast div{background:var(--navy);color:#fff;padding:10px 18px;border-radius:var(--r);box-shadow:0 6px 20px rgba(0,0,0,.25);border-left:4px solid var(--ok);max-width:90vw}
+.toast div.err{border-left-color:var(--err)}
+dialog.dlg{border:0;border-radius:8px;padding:0;width:min(480px,calc(100vw - 24px));box-shadow:0 12px 48px rgba(45,62,80,.4);color:var(--tx)}
+dialog.dlg::backdrop{background:rgba(45,62,80,.55)}
+dialog.dlg header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;background:var(--navy);color:#fff;border-radius:8px 8px 0 0}
+dialog.dlg header h2{color:#fff;font-size:16px}
+dialog.dlg header .ib{color:#fff}
+.dlg-b{padding:20px;display:grid;gap:14px}
+dialog.dlg footer{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--bd2);background:var(--bg);border-radius:0 0 8px 8px}
+.dlg-err{color:#8f1d24;background:#fdedee;border-radius:4px;padding:8px 12px}
+.radios{display:grid;gap:8px}
+/* builder */
+.bhead{position:sticky;top:var(--top);z-index:30;background:#fff;border:1px solid var(--bd);border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;box-shadow:0 2px 8px rgba(45,62,80,.08)}
+.bhead .nm{font-size:18px;font-weight:600;border:1px solid transparent;border-radius:var(--r);padding:4px 10px;min-width:0;flex:1 1 200px;max-width:380px;background:transparent;color:#2d3e50}
+.bhead .nm:hover{border-color:var(--bd)}
+.bhead .nm:focus{border-color:#00a4bd;background:#fff}
+.bhead .sp{flex:1}
+.dirty{color:#c4482a;font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.dirty:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--or)}
+.seg{display:inline-flex;border:1px solid #516f90;border-radius:var(--r);overflow:hidden}
+.seg button{border:0;background:#fff;padding:0 16px;height:34px;cursor:pointer;font-weight:600;color:var(--tx2)}
+.seg button[aria-pressed=true]{background:var(--navy);color:#fff}
+.bgrid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start}
+.sec{margin-bottom:16px;transition:box-shadow .15s,border-color .15s}
+.sec.over,.avail.over{border-color:var(--lk);box-shadow:0 0 0 3px rgba(0,145,174,.18)}
+.sec-h{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--bd2);flex-wrap:wrap}
+.sec-name{font-weight:600;font-size:15px;border:1px solid transparent;border-radius:var(--r);padding:5px 8px;flex:1 1 160px;min-width:0;background:transparent;color:#2d3e50}
+.sec-name:hover{border-color:var(--bd)}
+.sec-name:focus{border-color:#00a4bd;background:#fff}
+.tg{display:inline-flex;align-items:center;gap:6px;color:var(--tx2);font-size:13px;cursor:pointer}
+.tg input{accent-color:var(--or);width:16px;height:16px}
+.sec-b{padding:12px;min-height:64px;display:grid;gap:8px;align-content:start}
+.empty{border:2px dashed var(--bd);border-radius:var(--r);color:var(--tx3);text-align:center;padding:16px;font-size:13px}
+.fitem{border:1px solid var(--bd2);border-radius:var(--r);background:#fff}
+.fitem.open{border-color:var(--lk)}
+.frow{display:flex;align-items:center;gap:10px;padding:8px 10px;cursor:grab;flex-wrap:wrap}
+.frow:active{cursor:grabbing}
+.frow.dragging{opacity:.55;box-shadow:0 8px 20px rgba(45,62,80,.25)}
+.grip{color:var(--tx3);letter-spacing:-2px;font-size:16px;user-select:none}
+.fmain{flex:1 1 150px;min-width:0;background:none;border:0;text-align:left;cursor:pointer;padding:2px 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fmain b{font-weight:600;color:#2d3e50}
+.fmain .ty{color:var(--tx3);font-size:12px}
+.chips{display:inline-flex;gap:4px;flex-wrap:wrap}
+.mv{height:30px;font-size:12px;max-width:150px;border:1px solid var(--bd);border-radius:4px;background:#fff;padding:0 6px}
+.fedit{border-top:1px solid var(--bd2);background:#fafcfd;padding:14px 16px;display:grid;gap:12px;border-radius:0 0 6px 6px}
+.fedit .fl{font-weight:500}
+.addsec{width:100%;border:2px dashed var(--bd);background:transparent;border-radius:8px;padding:18px;color:var(--lk);font-weight:600;cursor:pointer}
+.addsec:hover{background:#fff;border-color:var(--lk)}
+.avail{position:sticky;top:calc(var(--top) + 84px);padding:16px;display:grid;gap:12px}
+.avlist{display:grid;gap:8px;max-height:52vh;overflow-y:auto;padding:2px}
+.avail .frow{padding:7px 9px}
+.prev{display:grid;gap:16px;max-width:860px}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;padding:16px}
+.sm-ctl{display:grid;gap:6px}
+.sm-lab{font-weight:600;color:#2d3e50;font-size:13px}
+.sm-req{color:var(--err)}
+.sm-ro{font-weight:500;font-size:11px;background:#eaf0f6;color:var(--tx2);border-radius:10px;padding:0 7px;margin-left:4px}
+.sm-ctl input[type=text],.sm-ctl input[type=number],.sm-ctl input[type=date],.sm-ctl select,.sm-ctl textarea{border:1px solid var(--bd);border-radius:var(--r);padding:7px 12px;background:#fff;width:100%;min-width:0}
+.sm-ctl input:disabled,.sm-ctl select:disabled,.sm-ctl textarea:disabled{background:#eaf0f6;color:var(--tx2)}
+.sm-check{display:flex;align-items:center;gap:8px;font-weight:400}
+.sm-check input{accent-color:var(--or)}
+.sm-multi{display:flex;flex-wrap:wrap;gap:6px 16px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
+.grp{margin-bottom:20px}
+.grp h3{margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.sw{position:relative;width:40px;height:22px;flex:none}
+.sw input{position:absolute;inset:0;opacity:0;cursor:pointer;margin:0}
+.sw i{position:absolute;inset:0;background:#cbd6e2;border-radius:11px;transition:.15s;pointer-events:none}
+.sw i:after{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.15s}
+.sw input:checked+i{background:var(--ok)}
+.sw input:checked+i:after{left:21px}
+.sw input:focus-visible+i{outline:2px solid #00a4bd;outline-offset:2px}
+.pref{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 20px;border-bottom:1px solid var(--bd2)}
+.pref:last-child{border-bottom:0}
+.pref p{color:var(--tx2);font-size:13px}
+.ph{padding:40px 24px;text-align:center;color:var(--tx2);display:grid;gap:8px;justify-items:center}
+.cards3{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.cards3 .card{padding:16px}
+@media(max-width:1000px){.bgrid{grid-template-columns:1fr}.avail{position:static}}
+@media(max-width:800px){
+ .burger{display:block}.top .lab,.top .sep{display:none}.search{width:auto;flex:1;max-width:none}
+ .side{position:fixed;left:0;top:var(--top);bottom:0;height:auto;z-index:70;transform:translateX(-102%);transition:transform .2s;}
+ .side.open{transform:none;box-shadow:6px 0 24px rgba(0,0,0,.2)}
+ .backdrop.open{display:block;position:fixed;inset:var(--top) 0 0 0;background:rgba(45,62,80,.45);z-index:60}
+ .main{padding:16px 14px 60px}
+ .row2,.pgrid{grid-template-columns:1fr}
+ h1{font-size:21px}
+ .bhead .nm{max-width:none}
+}
+</style>
+</head>
+<body>
+<header class="top">
+ <button class="burger" data-act="drawer" aria-label="Open navigation" aria-expanded="false">&#9776;</button>
+ <a class="logo" href="#/projects/layouts"><i></i>ProjectY</a>
+ <span class="sep"></span><span class="lab">Settings</span>
+ <div class="search" role="search">
+  <input id="gs" type="search" placeholder="Search settings" aria-label="Search settings" autocomplete="off">
+  <div class="sres" id="sres" hidden></div>
+ </div>
+ <button class="avatar" aria-label="Account menu for Priya Nair">PN</button>
+</header>
+<div class="shell">
+ <nav class="side" id="side" aria-label="Settings navigation"></nav>
+ <div class="backdrop" id="bd" data-act="drawer"></div>
+ <main class="main" id="main">
+  <div class="crumbs" id="crumbs" aria-label="Breadcrumb"></div>
+  <div class="page" id="view"></div>
+ </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="settings-model.js"></script>
+<script>
+const h = SM.esc, $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const view = $('#view');
+const S = { open: { account: true, data: true, modules: true }, B: null, ignore: false, fq: '', prefs: { digest: true, mentions: true, compact: false, beta: false } };
+const MODS = () => SM.modules;
+const PAGES = [
+  { t: 'Portal profile', k: 'name time zone currency date format', h: '#/portal', g: 'Account Setup' },
+  { t: 'Users & profiles', k: 'people invite roles permissions', h: '#/users', g: 'Account Setup' },
+  { t: 'Audit log', k: 'history changes activity', h: '#/audit', g: 'Account Setup' },
+  { t: 'My preferences', k: 'notifications toggles', h: '#/preferences', g: 'Account Setup' },
+  { t: 'Projects: Fields', k: 'properties custom', h: '#/projects/fields', g: 'Modules' },
+  { t: 'Projects: Layouts', k: 'layout builder sections record', h: '#/projects/layouts', g: 'Modules' },
+  { t: 'Projects: Statuses', k: 'status', h: '#/projects/statuses', g: 'Modules' },
+  { t: 'Projects: Templates', k: 'template', h: '#/projects/templates', g: 'Modules' },
+  { t: 'Tasks', k: 'soon', h: '#/tasks', g: 'Modules' }, { t: 'Issues', k: 'soon bugs', h: '#/issues', g: 'Modules' },
+  { t: 'Documents', k: 'soon files', h: '#/documents', g: 'Modules' }, { t: 'Time tracking', k: 'soon timesheets', h: '#/time', g: 'Modules' },
+];
+const DEFAULT = '#/projects/layouts';
+
+/* ---------- helpers ---------- */
+function toast(msg, err) {
+  const d = document.createElement('div'); if (err) d.className = 'err'; d.textContent = msg; $('#toast').append(d);
+  setTimeout(() => d.remove(), err ? 5000 : 3200);
+}
+function dlg({ title, body, ok = 'Save', danger = false, cancel = 'Cancel', onOk }) {
+  const d = document.createElement('dialog'); d.className = 'dlg';
+  d.setAttribute('aria-label', title);
+  d.innerHTML = `<form method="dialog" novalidate><header><h2>${h(title)}</h2><button type="button" class="ib" data-close aria-label="Close dialog">&#10005;</button></header><div class="dlg-b">${body}<p class="dlg-err" role="alert" hidden></p></div><footer><button type="button" class="btn" data-close>${h(cancel)}</button><button type="submit" class="btn ${danger ? 'dng' : 'pri'}">${h(ok)}</button></footer></form>`;
+  document.body.append(d); d.showModal();
+  d.addEventListener('close', () => d.remove());
+  $$('[data-close]', d).forEach((b) => b.onclick = () => d.close());
+  $('form', d).onsubmit = (e) => {
+    e.preventDefault();
+    const err = onOk($('form', d), d);
+    if (err) { const p = $('.dlg-err', d); p.textContent = err; p.hidden = false; } else d.close();
+  };
+  const f = $('input:not([type=radio]),select', d); if (f) f.focus();
+  return d;
+}
+const confirmDlg = (title, text, ok, onOk, danger = true) => dlg({ title, body: `<p>${h(text)}</p>`, ok, danger, onOk: () => { onOk(); } });
+const typeOpts = () => SM.TYPES.map(([v, l]) => `<option value="${v}">${h(l)}</option>`).join('');
+function menuHtml(label, items) {
+  return `<div class="mwrap"><button class="ib" data-menu aria-haspopup="menu" aria-expanded="false" aria-label="${h(label)}">&#8943;</button><div class="menu" role="menu" hidden>${items.map((i) => `<button role="menuitem" class="${i.d ? 'd' : ''}" ${i.dis ? 'disabled' : ''} ${i.attrs}>${h(i.t)}</button>`).join('')}</div></div>`;
+}
+const closeMenus = () => $$('.menu').forEach((m) => { m.hidden = true; m.previousElementSibling?.setAttribute('aria-expanded', 'false'); });
+
+/* ---------- routing ---------- */
+function parse() {
+  const p = (location.hash || '').replace(/^#\/?/, '').split('/').filter(Boolean);
+  const a = p[0];
+  if (['portal', 'users', 'audit', 'preferences'].includes(a) && p.length === 1) return { key: a, page: a };
+  const m = MODS().find((x) => x.id === a);
+  if (m && m.live) {
+    const tab = p[1] || 'layouts';
+    if (m.tabs.some(([t]) => t === tab)) return { key: 'mod:' + a, page: 'module', mod: m, tab, id: tab === 'layouts' ? p[2] : null };
+  } else if (m && p.length === 1) return { key: 'mod:' + a, page: 'future', mod: m };
+  return null;
+}
+function crumbsFor(r) {
+  const acct = { portal: 'Portal profile', users: 'Users & profiles', audit: 'Audit log', preferences: 'My preferences' };
+  const c = [['Settings', DEFAULT]];
+  if (acct[r.page]) return [...c, ['Account Setup'], [acct[r.page]]];
+  c.push(['Data Management'], ['Modules', r.mod.live ? null : null]);
+  if (r.page === 'future') return [...c, [r.mod.name]];
+  c.push([r.mod.name, '#/' + r.mod.id + '/layouts']);
+  const tl = r.mod.tabs.find(([t]) => t === r.tab)[1];
+  if (r.id) return [...c, [tl, '#/projects/layouts'], [S.B ? S.B.d.name || 'Layout' : 'Layout']];
+  return [...c, [tl]];
+}
+function titleFor(r) {
+  const acct = { portal: 'Portal profile', users: 'Users & profiles', audit: 'Audit log', preferences: 'My preferences' };
+  if (acct[r.page]) return acct[r.page];
+  if (r.page === 'future') return r.mod.name;
+  const tl = r.mod.tabs.find(([t]) => t === r.tab)[1];
+  return r.id && S.B ? `${S.B.d.name} · ${r.mod.name} layout` : `${r.mod.name} ${tl}`;
+}
+let curHash = null;
+function route() {
+  if (S.ignore) { S.ignore = false; return; }
+  const r = parse();
+  if (!r) { location.replace(DEFAULT); return; }
+  if (S.B && dirty() && location.hash !== curHash && curHash) {
+    const target = location.hash; S.ignore = true; location.hash = curHash;
+    confirmDlg('Discard unsaved changes?', 'You have unsaved changes to this layout. If you leave now they will be lost.', 'Discard changes', () => { S.B = null; location.hash = target; });
+    return;
+  }
+  curHash = location.hash; S.fq = '';
+  if (r.id) {
+    try { if (!S.B || S.B.id !== r.id) openBuilder(r.id); } catch (e) { toast(e.message, true); S.B = null; location.replace(DEFAULT); return; }
+  } else S.B = null;
+  $('#side').classList.remove('open'); $('#bd').classList.remove('open'); $('[data-act=drawer]').setAttribute('aria-expanded', 'false');
+  renderNav(r); renderCrumbs(r); renderView(r); document.title = `${titleFor(r)} · Settings · ProjectY`;
+  window.scrollTo(0, 0);
+}
+function renderCrumbs(r) {
+  $('#crumbs').innerHTML = crumbsFor(r).map(([l, href]) => `<span>${href ? `<a href="${href}">${h(l)}</a>` : h(l)}</span>`).join('');
+}
+function renderNav(r) {
+  const link = (href, label, cur, extra = '') => `<a class="nl${cur ? ' cur' : ''}" href="${href}" ${cur ? 'aria-current="page"' : ''}>${label}${extra}</a>`;
+  const grp = (id, label, inner, l2) => `<div><button class="ngh ${l2 ? 'l2' : ''}" data-act="grp" data-id="${id}" aria-expanded="${!!S.open[id]}"><span class="chev"></span>${label}</button><div class="ngb" ${S.open[id] ? '' : 'hidden'}>${inner}</div></div>`;
+  const acct = [['portal', 'Portal profile'], ['users', 'Users & profiles'], ['audit', 'Audit log'], ['preferences', 'My preferences']].map(([k, l]) => link('#/' + k, l, r.key === k)).join('');
+  const mods = MODS().map((m) => link(m.live ? '#/' + m.id + '/layouts' : '#/' + m.id, h(m.name), r.key === 'mod:' + m.id, m.live ? '' : '<span class="soon">Soon</span>')).join('');
+  $('#side').innerHTML = grp('account', 'Account Setup', acct) + grp('data', 'Data Management', grp('modules', 'Modules', mods, true));
+}
+
+/* ---------- page parts ---------- */
+const pageHead = (t, d, act = '') => `<div class="phead"><div><h1>${h(t)}</h1>${d ? `<p>${h(d)}</p>` : ''}</div><div>${act}</div></div>`;
+function modTabs(r) {
+  return `<nav class="tabs" aria-label="${h(r.mod.name)} settings">${r.mod.tabs.map(([t, l]) => r.mod.live ? `<a href="#/${r.mod.id}/${t}" class="${t === r.tab ? 'cur' : ''}" ${t === r.tab ? 'aria-current="page"' : ''}>${h(l)}</a>` : `<span aria-disabled="true">${h(l)}</span>`).join('')}</nav>`;
+}
+function renderView(r) {
+  r = r || parse();
+  if (r.page === 'portal') view.innerHTML = portalV();
+  else if (r.page === 'users') view.innerHTML = usersV();
+  else if (r.page === 'audit') view.innerHTML = auditV();
+  else if (r.page === 'preferences') view.innerHTML = prefsV();
+  else if (r.page === 'future') view.innerHTML = futureV(r);
+  else if (r.tab === 'fields') view.innerHTML = fieldsV(r);
+  else if (r.tab === 'layouts') view.innerHTML = r.id ? builderV() : layoutsV(r);
+  else if (r.tab === 'statuses') view.innerHTML = statusesV(r);
+  else view.innerHTML = templatesV(r);
+}
+function futureV(r) {
+  return pageHead(r.mod.name, '', '<span class="pill">Soon</span>') + modTabs(r) +
+    `<div class="card ph"><h2>${h(r.mod.name)} is not available yet</h2><p>Settings for ${h(r.mod.name)} will appear here when the module arrives.</p><p class="note">${h(r.mod.note || '')}. It will use the same tabs and the same layout builder as Projects.</p></div>`;
+}
+
+/* ---------- layouts list ---------- */
+function layoutsV(r) {
+  const ls = SM.layouts();
+  return pageHead('Projects', 'Customize the project record: which properties show, in which sections, and what is required.', '') + modTabs(r) +
+    `<div class="toolbar"><p class="note">${ls.length} of ${SM.MAX_LAYOUTS} layouts used. Layouts are deactivated, never deleted.</p><button class="btn pri" data-act="create-layout">Create layout</button></div>
+    <div class="tw"><table><thead><tr><th>Name</th><th>Description</th><th class="num">Sections</th><th class="num">Fields</th><th class="num">Projects using it</th><th>Status</th><th><span class="sr">Actions</span></th></tr></thead><tbody>${ls.map((l) => `<tr>
+     <td><a href="#/projects/layouts/${l.id}"><b>${h(l.name)}</b></a> ${l.isDefault ? '<span class="pill dflt">Default</span>' : ''}</td>
+     <td>${h(l.description || '')}</td><td class="num">${l.sectionCount}</td><td class="num">${l.fieldCount}</td><td class="num">${l.usage}</td>
+     <td><span class="pill ${l.active ? 'ok' : 'off'}">${l.active ? 'Active' : 'Inactive'}</span></td>
+     <td class="num">${menuHtml('Actions for ' + l.name, [
+       { t: 'Edit', attrs: `data-act="edit-layout" data-id="${l.id}"` }, { t: 'Clone', attrs: `data-act="clone-layout" data-id="${l.id}"` },
+       { t: 'Make default', attrs: `data-act="default-layout" data-id="${l.id}"`, dis: l.isDefault },
+       { t: l.active ? 'Deactivate' : 'Activate', attrs: `data-act="toggle-layout" data-id="${l.id}" data-on="${!l.active}"`, d: l.active }])}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function layoutDialogs(act, id) {
+  const ls = SM.layouts();
+  if (act === 'create-layout') dlg({
+    title: 'Create layout', ok: 'Create',
+    body: `<label class="fl">Layout name<input class="inp" name="name" required></label>
+     <div class="radios" role="radiogroup" aria-label="Start from"><label class="chk"><input type="radio" name="from" value="blank" checked> Start blank</label><label class="chk"><input type="radio" name="from" value="copy"> Start from a copy of</label>
+     <select class="sel" name="src" aria-label="Layout to copy">${ls.map((l) => `<option value="${l.id}">${h(l.name)}</option>`).join('')}</select></div>`,
+    onOk: (f) => { try { SM.createLayout({ name: f.name.value, cloneFrom: f.from.value === 'copy' ? f.src.value : null }); } catch (e) { return e.message; } toast('Layout created'); renderView(); },
+  });
+  else { const src = ls.find((l) => l.id === id); dlg({
+    title: 'Clone layout', ok: 'Clone', body: `<label class="fl">Name for the copy<input class="inp" name="name" value="Copy of ${h(src.name)}"></label>`,
+    onOk: (f) => { try { SM.createLayout({ name: f.name.value, cloneFrom: id }); } catch (e) { return e.message; } toast(`Cloned ${src.name}`); renderView(); },
+  }); }
+}
+
+/* ---------- builder ---------- */
+function openBuilder(id) { const d = SM.layout(id); S.B = { id, d, orig: JSON.stringify(d), mode: 'edit', open: null, error: '', q: '' }; }
+const dirty = () => S.B && JSON.stringify(S.B.d) !== S.B.orig;
+function chipsFor(p, f) {
+  let c = '';
+  if (p.mandatory === true) c += '<span class="chip o">Required here</span>';
+  else if (p.mandatory === false) c += '<span class="chip o">Optional here</span>';
+  else if (f.mandatory) c += '<span class="chip">Required</span>';
+  if (p.readOnly) c += '<span class="chip o">Read-only</span>';
+  if (p.defaultValue) c += `<span class="chip o">Default: ${h(p.defaultValue)}</span>`;
+  if (f.status !== 'ACTIVE') c += '<span class="chip w">Inactive</span>';
+  return c;
+}
+function secOptions(d, cur, placeLabel) {
+  return `<option value="">${placeLabel}</option>` + d.sections.map((s) => `<option value="${s.id}" ${s.id === cur ? 'selected' : ''}>${h(s.name || 'Untitled section')}</option>`).join('') + (cur ? '<option value="__un">Remove (to Available)</option>' : '');
+}
+function fieldItem(key, placed) {
+  const B = S.B, d = B.d, f = SM.field(key), at = SM.draft.find(d, key), p = at ? at.placement : { mandatory: null, readOnly: false, defaultValue: null };
+  const open = placed && B.open === key;
+  const sel = `<select class="mv" data-moveto data-key="${key}" aria-label="${placed ? 'Move ' + h(f.label) + ' to' : 'Add ' + h(f.label) + ' to section'}">${secOptions(d, at ? at.section.id : '', placed ? 'Move to…' : 'Add to…')}</select>`;
+  let ed = '';
+  if (open) {
+    const hideDef = f.unique || f.type === 'USER';
+    ed = `<div class="fedit"><h4>Edit property display</h4>
+     <label class="fl">Required<select class="sel" data-ov="mandatory" data-key="${key}"><option value="">Same as the field (${f.mandatory ? 'Required' : 'Optional'})</option><option value="true" ${p.mandatory === true ? 'selected' : ''}>Required here</option><option value="false" ${p.mandatory === false ? 'selected' : ''}>Optional here</option></select></label>
+     <label class="chk"><input type="checkbox" data-ov="readOnly" data-key="${key}" ${p.readOnly ? 'checked' : ''}> Read-only</label>
+     ${hideDef ? `<p class="note">${f.unique ? 'Unique fields cannot have a default value.' : 'Person fields have no default value.'}</p>` : `<label class="fl">Default value<input class="inp" type="text" data-ov="defaultValue" data-key="${key}" value="${h(p.defaultValue || '')}"></label>`}
+     <div><button class="link" data-act="remove-field" data-key="${key}">Remove from layout</button></div></div>`;
+  }
+  return `<div class="fitem ${open ? 'open' : ''}" data-key="${key}"><div class="frow" draggable="true"><span class="grip" aria-hidden="true">&#8942;&#8942;</span>
+   ${placed ? `<button class="fmain" data-act="toggle-field" data-key="${key}" aria-expanded="${!!open}"><b>${h(f.label)}</b><span class="ty">${h(SM.typeLabel(f.type))}</span><span class="chips">${chipsFor(p, f)}</span></button>`
+     : `<span class="fmain"><b>${h(f.label)}</b><span class="ty">${h(SM.typeLabel(f.type))}</span>${f.status !== 'ACTIVE' ? '<span class="chip w">Inactive</span>' : ''}</span>`}${sel}</div>${ed}</div>`;
+}
+function secCard(s, i) {
+  const d = S.B.d;
+  return `<section class="card sec" data-drop="${s.id}" aria-label="Section ${h(s.name)}"><div class="sec-h">
+   <input class="sec-name" data-sec-name="${s.id}" value="${h(s.name)}" aria-label="Section name" placeholder="Section name">
+   <label class="tg"><input type="checkbox" data-sec-coll="${s.id}" ${s.collapsible ? 'checked' : ''}> Collapsible</label>
+   <button class="ib" data-act="sec-up" data-i="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Move section ${h(s.name)} up">&#8593;</button>
+   <button class="ib" data-act="sec-down" data-i="${i}" ${i === d.sections.length - 1 ? 'disabled' : ''} aria-label="Move section ${h(s.name)} down">&#8595;</button>
+   ${menuHtml('Section actions for ' + s.name, [{ t: 'Rename', attrs: `data-act="sec-rename" data-sec="${s.id}"` }, { t: 'Delete section', d: true, attrs: `data-act="sec-del" data-sec="${s.id}"` }])}
+  </div><div class="sec-b">${s.fields.length ? s.fields.map((p) => fieldItem(p.key, true)).join('') : '<div class="empty">Drag properties here</div>'}</div></section>`;
+}
+function availList() {
+  const q = S.B.q.trim().toLowerCase(), l = SM.draft.unplaced(S.B.d).filter((f) => !q || f.label.toLowerCase().includes(q) || f.key.includes(q));
+  return l.length ? l.map((f) => fieldItem(f.key, false)).join('') : `<div class="empty">${q ? 'No properties match.' : 'Every property is placed in this layout.'}</div>`;
+}
+function availHtml() {
+  return `<aside class="card avail" data-drop="unplaced" aria-label="Available properties"><div><h3>Available properties</h3><p class="note">Properties not placed here are hidden on projects. Their answers are kept.</p></div>
+   <input class="inp" type="search" id="avq" placeholder="Search properties" aria-label="Search available properties" value="${h(S.B.q)}">
+   <div class="avlist" id="avlist">${availList()}</div><button class="link" data-act="new-field" style="text-align:left">+ Create new field</button></aside>`;
+}
+function previewHtml() {
+  const d = S.B.d; let skipped = 0;
+  return `<div class="prev">${d.sections.map((s) => {
+    const act = s.fields.filter((p) => SM.field(p.key).status === 'ACTIVE'); skipped += s.fields.length - act.length;
+    return `<section class="card"><div class="sec-h"><h3>${h(s.name)}</h3>${s.collapsible ? '<span class="chip">Collapsible</span>' : ''}</div>${act.length ? `<div class="pgrid">${act.map((p) => SM.control(SM.field(p.key), SM.draft.effective(d, p.key))).join('')}</div>` : '<div class="sec-b"><div class="empty">No properties in this section.</div></div>'}</section>`;
+  }).join('')}${skipped ? `<p class="note">${skipped} inactive propert${skipped > 1 ? 'ies are' : 'y is'} not shown.</p>` : ''}</div>`;
+}
+function builderV() {
+  const B = S.B, d = B.d, pr = SM.draft.problem(d), msg = B.error || pr;
+  return `<div class="bhead"><a href="#/projects/layouts" aria-label="Back to layouts">&#8592; Layouts</a>
+   <input class="nm" id="bname" value="${h(d.name)}" aria-label="Layout name">
+   <span class="dirty" id="dirty" ${dirty() ? '' : 'hidden'}>Unsaved changes</span><span class="sp"></span>
+   <div class="seg" role="group" aria-label="View"><button data-act="mode" data-m="edit" aria-pressed="${B.mode === 'edit'}">Edit</button><button data-act="mode" data-m="preview" aria-pressed="${B.mode === 'preview'}">Preview</button></div>
+   <button class="btn" data-act="b-cancel">Cancel</button><button class="btn pri" data-act="b-save">Save</button></div>
+   ${msg ? `<div class="alert ${B.error ? 'err' : 'warn'}" role="alert" id="balert"><span>${h(B.error ? msg : 'Fix before saving: ' + msg)}</span></div>` : ''}
+   ${B.mode === 'edit' ? `<div class="bgrid"><div>${d.sections.map(secCard).join('')}<button class="addsec" data-act="add-section">+ Add section</button></div>${availHtml()}</div>` : previewHtml()}`;
+}
+function bRender(err = '', focusSel) {
+  if (!S.B) return; S.B.error = err; view.innerHTML = builderV();
+  renderCrumbs(parse()); document.title = `${S.B.d.name} · ${MODS()[0].name} layout · Settings · ProjectY`;
+  if (focusSel) $(focusSel)?.focus();
+}
+function refreshDirty() {
+  const el = $('#dirty'); if (el) el.hidden = !dirty();
+  const pr = SM.draft.problem(S.B.d), a = $('#balert');
+  if (a && !S.B.error) { if (pr) a.firstElementChild.textContent = 'Fix before saving: ' + pr; else a.remove(); } else if (!a && pr && !S.B.error) bRender();
+}
+function bSave() {
+  const B = S.B, pr = SM.draft.problem(B.d); if (pr) return bRender(pr);
+  try { SM.saveLayout(B.d); } catch (e) { return bRender(e.message); }
+  const n = B.d.name; S.B = null; toast(`Layout "${n}" saved`); curHash = DEFAULT; location.hash = DEFAULT;
+}
+function bCancel() {
+  const go = () => { S.B = null; curHash = DEFAULT; location.hash = DEFAULT; };
+  if (dirty()) confirmDlg('Discard unsaved changes?', 'Your changes to this layout will be lost.', 'Discard changes', go); else go();
+}
+function uniqueSectionName(d, base) { let n = base, i = 2; const names = d.sections.map((s) => s.name.trim().toLowerCase()); while (names.includes(n.toLowerCase())) n = `${base} ${i++}`; return n; }
+function newFieldDialog(done) {
+  dlg({ title: 'Create property', ok: 'Create', body: `<label class="fl">Label<input class="inp" name="label"></label><label class="fl">Type<select class="sel" name="type">${typeOpts()}</select></label><label class="chk"><input type="checkbox" name="req"> Required</label>`,
+    onOk: (f) => { try { const nf = SM.createField({ label: f.label.value, type: f.type.value, mandatory: f.req.checked }); toast(`Property "${nf.label}" created`); done(nf); } catch (e) { return e.message; } } });
+}
+
+/* ---------- fields ---------- */
+function fieldRows() {
+  const q = S.fq.trim().toLowerCase(), l = SM.fields().filter((f) => !q || f.label.toLowerCase().includes(q) || f.key.includes(q));
+  if (!l.length) return '<tr><td colspan="7" class="note">No properties match your search.</td></tr>';
+  return l.map((f) => `<tr><td><b>${h(f.label)}</b>${f.description ? `<div class="sub">${h(f.description)}</div>` : ''}</td><td><code>${h(f.key)}</code></td><td>${h(SM.typeLabel(f.type))}</td>
+   <td><span class="chips">${f.mandatory ? '<span class="chip o">Required</span>' : ''}${f.unique ? '<span class="chip">Unique</span>' : ''}${f.sensitive ? '<span class="chip w">Sensitive</span>' : ''}${!f.mandatory && !f.unique && !f.sensitive ? '<span class="note">None</span>' : ''}</span></td>
+   <td>${f.usage} project${f.usage === 1 ? '' : 's'}</td><td><span class="pill ${f.status === 'ACTIVE' ? 'ok' : 'off'}">${f.status === 'ACTIVE' ? 'Active' : 'Inactive'}</span></td>
+   <td class="num">${menuHtml('Actions for ' + f.label, [{ t: f.status === 'ACTIVE' ? 'Deactivate' : 'Activate', d: f.status === 'ACTIVE', attrs: `data-act="toggle-field-status" data-key="${f.key}"` }])}</td></tr>`).join('');
+}
+function fieldsV(r) {
+  return pageHead('Projects', 'Properties are the fields on every project. Create them once, then place them in layouts.') + modTabs(r) +
+    `<div class="toolbar"><input class="inp" type="search" id="fq" placeholder="Search properties" aria-label="Search properties" style="width:280px;max-width:100%" value="${h(S.fq)}"><button class="btn pri" data-act="create-field">Create property</button></div>
+    <div class="tw"><table><thead><tr><th>Label</th><th>Key</th><th>Type</th><th>Rules</th><th>Used by</th><th>Status</th><th><span class="sr">Actions</span></th></tr></thead><tbody id="frows">${fieldRows()}</tbody></table></div>`;
+}
+
+/* ---------- other pages ---------- */
+function statusesV(r) {
+  const types = ['Active', 'On hold', 'Completed', 'Cancelled'], all = SM.statuses();
+  return pageHead('Projects', 'Statuses describe where a project is. Each belongs to a type that tells reports how to count it.') + modTabs(r) +
+    `<form class="toolbar" data-form="status"><label class="sr" for="stn">New status name</label><div style="display:flex;gap:8px;flex-wrap:wrap"><input class="inp" id="stn" name="n" placeholder="New status name" style="width:260px;max-width:100%"><button class="btn pri" type="submit">Add status</button></div><span class="note">New statuses start in the Active type.</span></form>` +
+    types.map((t) => `<div class="grp"><h3>${t} <span class="pill">${all.filter((s) => s.type === t).length}</span></h3><div class="tw"><table><tbody>${all.filter((s) => s.type === t).map((s) => `<tr><td><span class="dot" style="background:${s.color}"></span>${h(s.name)}</td></tr>`).join('') || '<tr><td class="note">No statuses of this type.</td></tr>'}</tbody></table></div></div>`).join('');
+}
+function templatesV(r) {
+  return pageHead('Projects', 'Templates start a new project with tasks already in place.') + modTabs(r) +
+    `<div class="tw"><table><thead><tr><th>Name</th><th>Description</th><th class="num">Times used</th></tr></thead><tbody>${SM.templates().map((t) => `<tr><td><b>${h(t.name)}</b></td><td>${h(t.description)}</td><td class="num">${t.uses}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function portalV() {
+  const p = SM.portal, o = (list, v) => list.map((x) => `<option ${x === v ? 'selected' : ''}>${h(x)}</option>`).join('');
+  return pageHead('Portal profile', 'The basics of your portal. They apply to everyone in it.') +
+    `<form class="card form" data-form="portal"><label class="fl">Portal name<input class="inp" name="name" value="${h(p.name)}"></label>
+    <label class="fl">Portal address<input class="inp" value="${h(p.slug)}" readonly aria-readonly="true"><small>The address cannot be changed.</small></label>
+    <div class="row2"><label class="fl">Time zone<select class="sel" name="tz">${o(['Asia/Kolkata', 'Europe/London', 'America/New_York', 'America/Los_Angeles', 'Australia/Sydney'], p.timeZone)}</select></label>
+    <label class="fl">Date format<select class="sel" name="df">${o(['MMM d, yyyy', 'dd/MM/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd'], p.dateFormat)}</select></label></div>
+    <div class="row2"><label class="fl">Currency<select class="sel" name="cur">${o(['USD', 'EUR', 'GBP', 'INR', 'AUD'], p.currency)}</select></label>
+    <label class="fl">Week starts on<select class="sel" name="ws">${o(['Monday', 'Sunday', 'Saturday'], p.weekStart)}</select></label></div>
+    <div><button class="btn pri" type="submit">Save</button></div></form>`;
+}
+function usersV() {
+  return pageHead('Users & profiles', 'Who can sign in, and what each profile allows.', '<button class="btn pri" data-act="soon-invite">Invite user</button>') +
+    `<div class="tw"><table><thead><tr><th>Name</th><th>Email</th><th>Profile</th><th>Status</th><th>Last active</th></tr></thead><tbody>${SM.users.map((u) => `<tr><td><b>${h(u.name)}</b> ${u.owner ? '<span class="pill or">Owner</span>' : ''}</td><td>${h(u.email)}</td><td>${h(u.profile)}</td><td><span class="pill ${u.status === 'Active' ? 'ok' : 'off'}">${h(u.status)}</span></td><td>${h(u.last)}</td></tr>`).join('')}</tbody></table></div>
+    <h2 style="margin:28px 0 12px">Profiles</h2><div class="cards3">${SM.profiles.map((p) => `<div class="card"><h3>${h(p.name)}</h3><p class="note" style="margin:6px 0 10px">${h(p.note)}</p><span class="pill">${p.people} ${p.people === 1 ? 'person' : 'people'}</span></div>`).join('')}</div>`;
+}
+function auditV() {
+  return pageHead('Audit log', 'Every change to portal settings, with who did it.') +
+    `<div class="tw"><table><thead><tr><th>When</th><th>Who</th><th>What</th><th>Detail</th></tr></thead><tbody>${SM.audit.map((a) => `<tr><td>${h(a.when)}</td><td>${h(a.who)}</td><td><b>${h(a.what)}</b></td><td>${h(a.detail)}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function prefsV() {
+  const rows = [['digest', 'Daily digest email', 'A morning summary of what changed on your projects.'], ['mentions', 'Notify me when I am mentioned', 'In comments and descriptions.'], ['compact', 'Compact tables', 'Show more rows on screen.'], ['beta', 'Try new features early', 'Opt in to features still being tested.']];
+  return pageHead('My preferences', 'These only change your own view.') +
+    `<div class="card" style="max-width:720px">${rows.map(([k, t, d]) => `<div class="pref"><div><b>${t}</b><p>${d}</p></div><label class="sw"><input type="checkbox" role="switch" data-pref="${k}" ${S.prefs[k] ? 'checked' : ''} aria-label="${t}"><i></i></label></div>`).join('')}</div>`;
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', (e) => {
+  const t = e.target;
+  const mb = t.closest('[data-menu]');
+  if (mb) {
+    const m = mb.nextElementSibling, was = !m.hidden; closeMenus();
+    if (!was) { m.hidden = false; mb.setAttribute('aria-expanded', 'true'); const r = mb.getBoundingClientRect(); m.style.top = (r.bottom + 4) + 'px'; m.style.left = Math.max(8, r.right - m.offsetWidth) + 'px'; }
+    return;
+  }
+  if (!t.closest('.menu')) closeMenus(); else setTimeout(closeMenus);
+  if (!t.closest('.search')) $('#sres').hidden = true;
+  const el = t.closest('[data-act]'); if (!el) return;
+  const a = el.dataset.act, id = el.dataset.id, key = el.dataset.key, B = S.B;
+  switch (a) {
+    case 'drawer': { const o = !$('#side').classList.contains('open'); $('#side').classList.toggle('open', o); $('#bd').classList.toggle('open', o); $('[data-act=drawer]').setAttribute('aria-expanded', o); break; }
+    case 'grp': S.open[id] = !S.open[id]; renderNav(parse()); break;
+    case 'create-layout': case 'clone-layout': layoutDialogs(a, id); break;
+    case 'edit-layout': location.hash = '#/projects/layouts/' + id; break;
+    case 'default-layout': try { SM.setDefault(id); toast('Default layout updated'); } catch (x) { toast(x.message, true); } renderView(); break;
+    case 'toggle-layout': try { SM.setActive(id, el.dataset.on === 'true'); toast(el.dataset.on === 'true' ? 'Layout activated' : 'Layout deactivated'); } catch (x) { toast(x.message, true); } renderView(); break;
+    case 'create-field': newFieldDialog(() => renderView()); break;
+    case 'toggle-field-status': { const f = SM.field(key); f.status = f.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'; toast(`${f.label} ${f.status === 'ACTIVE' ? 'activated' : 'deactivated'}`); renderView(); break; }
+    case 'soon-invite': toast('Inviting users arrives with the Users module'); break;
+    case 'mode': B.mode = el.dataset.m; bRender(); break;
+    case 'b-save': bSave(); break;
+    case 'b-cancel': bCancel(); break;
+    case 'add-section': { const s = SM.draft.addSection(B.d, uniqueSectionName(B.d, 'New section')); bRender(); const i = $(`[data-sec-name="${s.id}"]`); i.focus(); i.select(); break; }
+    case 'sec-up': case 'sec-down': SM.draft.shiftSection(B.d, +el.dataset.i, a === 'sec-up' ? -1 : 1); bRender(); break;
+    case 'sec-rename': { const i = $(`[data-sec-name="${el.dataset.sec}"]`); i.focus(); i.select(); break; }
+    case 'sec-del': {
+      const s = B.d.sections.find((x) => x.id === el.dataset.sec), run = () => { try { SM.draft.removeSection(B.d, s.id); bRender(); toast('Section deleted'); } catch (x) { bRender(x.message); } };
+      if (s.fields.length) confirmDlg('Delete section?', `"${s.name}" has ${s.fields.length} propert${s.fields.length > 1 ? 'ies' : 'y'}. They move back to Available properties.`, 'Delete section', run); else run(); break;
+    }
+    case 'toggle-field': B.open = B.open === key ? null : key; bRender(); $(`[data-key="${key}"] .fmain`)?.focus(); break;
+    case 'remove-field': SM.draft.move(B.d, key, 'unplaced'); if (B.open === key) B.open = null; bRender(); break;
+    case 'new-field': newFieldDialog(() => { $('#avlist').innerHTML = availList(); }); break;
+  }
+});
+document.addEventListener('submit', (e) => {
+  const f = e.target.closest('[data-form]'); if (!f) return; e.preventDefault();
+  if (f.dataset.form === 'status') { try { SM.addStatus(f.n.value); toast('Status added'); renderView(); } catch (x) { toast(x.message, true); } }
+  if (f.dataset.form === 'portal') { const p = SM.portal; Object.assign(p, { name: f.name.value, timeZone: f.tz.value, dateFormat: f.df.value, currency: f.cur.value, weekStart: f.ws.value }); toast('Portal profile saved'); }
+});
+document.addEventListener('input', (e) => {
+  const t = e.target;
+  if (t.id === 'fq') { S.fq = t.value; $('#frows').innerHTML = fieldRows(); }
+  else if (t.id === 'avq') { S.B.q = t.value; $('#avlist').innerHTML = availList(); }
+  else if (t.id === 'bname') { S.B.d.name = t.value; refreshDirty(); }
+  else if (t.id === 'gs') searchGo(t.value);
+});
+document.addEventListener('change', (e) => {
+  const t = e.target, B = S.B;
+  if (t.dataset.pref) { S.prefs[t.dataset.pref] = t.checked; toast('Preference saved'); }
+  if (!B) return;
+  if (t.dataset.secName) {
+    const s = B.d.sections.find((x) => x.id === t.dataset.secName), v = t.value.trim();
+    if (!v) return bRender('A section needs a name.');
+    if (B.d.sections.some((x) => x !== s && x.name.trim().toLowerCase() === v.toLowerCase())) return bRender(`A section called "${v}" already exists. Section names must be unique.`);
+    s.name = v; bRender();
+  } else if (t.dataset.secColl) { B.d.sections.find((x) => x.id === t.dataset.secColl).collapsible = t.checked; refreshDirty(); }
+  else if (t.dataset.moveto !== undefined) {
+    const v = t.value; if (!v) return;
+    SM.draft.move(B.d, t.dataset.key, v === '__un' ? 'unplaced' : v); if (v === '__un' && B.open === t.dataset.key) B.open = null;
+    bRender('', `[data-key="${t.dataset.key}"] [data-moveto]`);
+  } else if (t.dataset.ov) {
+    const k = t.dataset.key, o = t.dataset.ov;
+    if (o === 'mandatory') { SM.draft.override(B.d, k, { mandatory: t.value === '' ? null : t.value === 'true' }); bRender('', `[data-ov=mandatory]`); }
+    else if (o === 'readOnly') { SM.draft.override(B.d, k, { readOnly: t.checked }); bRender('', `[data-ov=readOnly]`); }
+    else { SM.draft.override(B.d, k, { defaultValue: t.value.trim() || null }); const at = SM.draft.find(B.d, k); $(`[data-key="${k}"] .chips`).innerHTML = chipsFor(at.placement, SM.field(k)); refreshDirty(); }
+  }
+  if (t.id === 'bname') refreshDirty();
+});
+/* drag and drop */
+let dragKey = null;
+document.addEventListener('dragstart', (e) => {
+  const row = e.target.closest?.('.frow[draggable]'); if (!row || !S.B) return;
+  dragKey = row.closest('[data-key]').dataset.key; e.dataTransfer.setData('text/plain', dragKey); e.dataTransfer.effectAllowed = 'move'; row.classList.add('dragging');
+});
+document.addEventListener('dragover', (e) => {
+  const z = dragKey && e.target.closest?.('[data-drop]'); if (!z) return;
+  e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+  $$('.over').forEach((x) => x !== z && x.classList.remove('over')); z.classList.add('over');
+});
+document.addEventListener('drop', (e) => {
+  const z = dragKey && e.target.closest?.('[data-drop]'); if (!z) return;
+  e.preventDefault();
+  const to = z.dataset.drop, row = e.target.closest('.fitem'), before = to !== 'unplaced' && row && z.contains(row) && row.dataset.key !== dragKey ? row.dataset.key : null;
+  const k = dragKey; dragKey = null;
+  SM.draft.move(S.B.d, k, to, before); if (to === 'unplaced' && S.B.open === k) S.B.open = null;
+  bRender();
+});
+document.addEventListener('dragend', () => { dragKey = null; $$('.over,.dragging').forEach((x) => x.classList.remove('over', 'dragging')); });
+/* global search */
+function searchGo(q) {
+  const box = $('#sres'); q = q.trim().toLowerCase();
+  if (!q) { box.hidden = true; return; }
+  const l = PAGES.filter((p) => (p.t + ' ' + p.k + ' ' + p.g).toLowerCase().includes(q)).slice(0, 7);
+  box.innerHTML = l.length ? l.map((p, i) => `<a href="${p.h}" class="${i ? '' : 'hi'}">${h(p.t)}<small>${h(p.g)}</small></a>`).join('') : '<p>No settings match.</p>'; box.hidden = false;
+}
+$('#gs').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { const a = $('#sres a'); if (a) { location.hash = a.getAttribute('href'); $('#sres').hidden = true; e.target.value = ''; e.target.blur(); } }
+  if (e.key === 'Escape') $('#sres').hidden = true;
+});
+$('#sres').addEventListener('click', () => { $('#sres').hidden = true; $('#gs').value = ''; });
+addEventListener('hashchange', route);
+if (!location.hash) location.replace(DEFAULT); else route();
+</script>
+</body>
+</html>

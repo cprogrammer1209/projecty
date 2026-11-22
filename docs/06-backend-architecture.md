@@ -80,13 +80,15 @@ session ──SupportSessionExpiredEvent──▶ impersonation
 | Module | Owns | Exposes (`api/`) |
 |---|---|---|
 | `access` | `MemberAccess` (portal, user, profile key, permissions, active), `ProcessedEvent`; the Kafka listener on `projecty.member`; the portal-access port the security filter needs | `MemberAccessLookUpService.findMemberAccess` |
-| `project` | `Project`, `ProjectMember`, `ProjectActivity`; every `/api/work/projects*` and `/api/work/project-statuses` endpoint | — (nothing else needs it yet) |
+| `project` | `Project`, `ProjectMember`, `ProjectActivity`; every `/api/work/projects*` and `/api/work/project-statuses` endpoint; the `custom_values` and `layout_id` columns of `project`; `PUT /api/work/projects/{id}/layout` | — (nothing else needs it yet). Implements `CustomValueHolder` so `customfield` can count and clear its answers and count the projects on a layout |
+| `customfield` | `CustomField`, `CustomFieldOption`, `CustomFieldUniqueValue`, `Layout`, `LayoutSection`, `LayoutField`; every `/api/work/custom-fields*` and `/api/work/layouts*` endpoint; the validator that checks every custom answer (see its README) | `CustomFieldLookUpService` (`findFields`, `validate` (per layout), `changedKeys`), `LayoutLookUpService` (`findActiveLayouts`, `getLayout`, `getDefaultLayoutId`), `CustomFieldWriteService.reserveUniqueValues`, `CustomValueHolder` (implemented by modules that store answers), `CustomFieldResponseDTO` |
 | `outbox` | `OutboxEvent`; the relay that publishes Work's events (copy of Platform's) | `OutboxWriteService.publish` |
 | `shared` | `PermissionConstants` (names Platform grants), `OutboxEventConstants` | — |
 | `external/broker` | Kafka publisher and topic creation (copy of Platform's) | `BrokerPublisher` |
 
 ```
-project ──▶ access.api, outbox.api
+project ──▶ access.api, outbox.api, customfield.api   (field and layout ports)
+customfield ──▶ access.api, outbox.api            (never imports project: it calls the CustomValueHolder that project implements)
 outbox  ──▶ external/broker
 Platform ──projecty.member events──▶ access
 ```
