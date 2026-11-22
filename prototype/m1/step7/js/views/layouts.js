@@ -304,7 +304,8 @@ const Layouts = (() => {
       B.d = { id: fresh.id, name: fresh.name, description: fresh.description, isDefault: fresh.isDefault, active: fresh.active, usage: fresh.usage, sections: fresh.sections.map((x) => ({ ...x, fields: x.fields.map((p) => ({ ...p })) })) };
       B.orig = JSON.stringify(B.d); B.sel = null; B.tab = 'fields'; rb(false); toast('Changes discarded');
     };
-    LSettings.onLeave(() => { if (dirty()) toast('Unsaved changes discarded'); });
+    // Leaving with unsaved changes asks first (the Angular app does the same with a route guard).
+    PY.Router.leaveGuard = () => !dirty() || window.confirm('You have unsaved changes. Leave without saving?');
 
     /* --- drag and drop: a card dropped on a section lands before or after the card under the pointer, or at the end; on the field list it is removed --- */
     const clearMarks = () => $$('.over,.ins-before,.ins-after,.dragging', el).forEach((x) => x.classList.remove('over', 'ins-before', 'ins-after', 'dragging'));

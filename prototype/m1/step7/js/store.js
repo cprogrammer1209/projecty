@@ -513,30 +513,45 @@ const Store = (() => {
       record(portalId, 'PROJECT_CREATED', { target: `${p.key} · ${p.name}`, detail: 'Created project', projectId: p.id });
       return { id: p.id };
     }),
+    /**
+     * Partial by presence, like PATCH /api/work/projects/{id}: only the properties in `f` change; a property left out stays,
+     * and a null clears a date, the description or an answer. The complete Edit form sends them all, a single-field edit one.
+     */
     updateProject: (portalId, id, f) => call(() => {
       const { p, user, m } = needProject(portalId, id);
       if (!canEditProject(p, user, m)) fail('FORBIDDEN', 'Your profile or project role does not allow editing this project.');
-      validateProject(portalId, f, { creating: false });
-      const changes = [];
+      const has = (k) => Object.prototype.hasOwnProperty.call(f, k);
+      let name = p.name;
+      if (has('name')) { name = String(f.name || '').trim(); if (!name) fail('VALIDATION', 'Name the project.'); if (name.length > 100) fail('VALIDATION', 'Use 100 characters or fewer.'); }
+      let description = p.description;
+      if (has('description')) { description = String(f.description || '').trim(); if (description.length > 5000) fail('VALIDATION', 'Use 5000 characters or fewer.'); }
+      let visibility = p.visibility;
+      if (has('visibility')) { if (!f.visibility) fail('VALIDATION', 'Choose who can see the project.'); visibility = f.visibility; }
+      const startDate = has('startDate') ? (f.startDate || null) : p.startDate, endDate = has('endDate') ? (f.endDate || null) : p.endDate;
+      if (startDate && endDate && endDate < startDate) fail('VALIDATION', "The end date can't be before the start date.");
+      const ownerId = has('ownerId') && f.ownerId ? f.ownerId : p.ownerId;
+      if (ownerId !== p.ownerId && !membership(portalId, ownerId)) fail('VALIDATION', 'The owner must be a member of this portal.');
       const oldLayout = projectLayout(portalId, p);
       let layout = oldLayout;
       if (f.layoutId && f.layoutId !== oldLayout.id) {
         layout = layoutById(portalId, f.layoutId);
         if (!layout.active) fail('VALIDATION', 'That layout is inactive.');
       }
-      if (f.customValues) {
-        const next = checkCustomValues(portalId, f.customValues, { existing: p.customValues || {}, creating: false, selfId: p.id, layout });
-        for (const d of layoutFields(portalId, layout)) if (JSON.stringify(next[d.apiName] ?? null) !== JSON.stringify((p.customValues || {})[d.apiName] ?? null)) changes.push(d.label.toLowerCase());
-        p.customValues = next;
+      let nextValues = null;
+      if (has('customValues') && f.customValues) nextValues = checkCustomValues(portalId, f.customValues, { existing: p.customValues || {}, creating: false, selfId: p.id, layout });
+      // everything is valid: apply it
+      const changes = [];
+      const set = (field, value, label) => { if ((p[field] || null) !== (value || null)) { changes.push(label); p[field] = value || (field === 'description' ? '' : null); } };
+      set('name', name, 'name'); set('description', description, 'description'); set('startDate', startDate, 'start date'); set('endDate', endDate, 'end date'); set('visibility', visibility, 'visibility');
+      if (ownerId !== p.ownerId) {
+        addProjMember(p.id, ownerId, 'Manager'); db.projectMembers.find((x) => x.projectId === p.id && x.userId === ownerId).role = 'Manager'; // the old owner stays a member (PRJ-BR-05)
+        p.ownerId = ownerId; changes.push('owner');
+      }
+      if (nextValues) {
+        for (const d of layoutFields(portalId, layout)) if (JSON.stringify(nextValues[d.apiName] ?? null) !== JSON.stringify((p.customValues || {})[d.apiName] ?? null)) changes.push(d.label.toLowerCase());
+        p.customValues = nextValues;
       }
       if (layout.id !== oldLayout.id) { p.layoutId = layout.id; changes.push(`layout (${oldLayout.name} → ${layout.name})`); }
-      const set = (field, value, label) => { if ((p[field] || null) !== (value || null)) { changes.push(label); p[field] = value || (field === 'description' ? '' : null); } };
-      set('name', f.name.trim(), 'name'); set('description', (f.description || '').trim(), 'description'); set('startDate', f.startDate, 'start date'); set('endDate', f.endDate, 'end date'); set('visibility', f.visibility, 'visibility');
-      if (f.ownerId && f.ownerId !== p.ownerId) {
-        if (!membership(portalId, f.ownerId)) fail('VALIDATION', 'The owner must be a member of this portal.');
-        addProjMember(p.id, f.ownerId, 'Manager'); db.projectMembers.find((x) => x.projectId === p.id && x.userId === f.ownerId).role = 'Manager'; // the old owner stays a member (PRJ-BR-05)
-        p.ownerId = f.ownerId; changes.push('owner');
-      }
       if (changes.length) record(portalId, 'PROJECT_UPDATED', { target: `${p.key} · ${p.name}`, detail: `Changed ${changes.join(', ')}`, projectId: p.id });
     }),
     setProjectStatus: (portalId, id, status) => call(() => {

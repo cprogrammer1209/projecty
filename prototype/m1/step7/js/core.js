@@ -156,7 +156,16 @@ const PY = (() => {
       }
       Router.navigate('/sign-in', { replace: true });
     },
-    start() { window.addEventListener('hashchange', Router.resolve); Router.resolve(); },
+    /** A screen with unsaved edits sets this; it returns false to stay (the hash is put back). Cleared once a move is allowed. */
+    leaveGuard: null,
+    start() {
+      let last = location.hash;
+      window.addEventListener('hashchange', () => {
+        if (Router.leaveGuard && !Router.leaveGuard()) { history.replaceState(null, '', last); return; }
+        Router.leaveGuard = null; last = location.hash; Router.resolve();
+      });
+      Router.resolve();
+    },
   };
   const qs = (obj) => { const s = new URLSearchParams(obj).toString(); return s ? '?' + s : ''; };
 

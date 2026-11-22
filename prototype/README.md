@@ -26,6 +26,8 @@ Open a step's `prototype.html` in a browser (double-click is fine, no server or 
 
 The step 7 mock store (`js/store.js`) mirrors the layout API of `work-service` (`GET /layouts/active`, `PUT /layouts/{id}`, `PUT /projects/{id}/layout`), so the Angular port is mechanical.
 
+The Angular app (`frontend/`) has the Step 7 screens (Settings shell, fields, layouts and the layout builder, project form, overview and project settings) and this prototype matches it, including: every project property (name, owner, start and end date, who can see it, description) saves on its own from the overview's "About this project" card, and the Edit form still sends everything (`Store.updateProject` is partial by presence, like `PATCH /api/work/projects/{id}`); leaving the layout builder with unsaved changes asks first; the Fields list has no "Used by" column (the count is in the delete dialog); saved choices of a field cannot be reordered, new ones can. One difference left on purpose: the prototype always shows people's names in person pickers, while the Angular app shows "Unknown member" to people without `USERS_VIEW`.
+
 Demo logins (password `password123`):
 
 | Email | What you get |

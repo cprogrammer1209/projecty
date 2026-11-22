@@ -259,7 +259,17 @@ const Projects = (() => {
   /* ---------- overview ---------- */
   function overview(el, ctx) {
     const id = ctx.params.id;
-    const s = { p: null, people: [], ui: { pop: null, q: '', cal: null, editing: null, error: null, flash: null, off: null }, error: null, notice: takeFlash(), busy: false, addUser: '', addRole: 'Member', missing: false };
+    const s = { p: null, people: [], uiCore: { pop: null, q: '', cal: null, editing: null, error: null, flash: null, off: null }, ui: { pop: null, q: '', cal: null, editing: null, error: null, flash: null, off: null }, error: null, notice: takeFlash(), busy: false, addUser: '', addRole: 'Member', missing: false };
+    /** The properties every project has, as pickers for the "About this project" card; a property's name is its key in an update. */
+    const coreFields = () => [
+      { apiName: 'name', label: 'Name', type: 'TEXT', mandatory: true, readOnly: false, config: { maxLength: 100 }, options: [] },
+      { apiName: 'ownerId', label: 'Owner', type: 'USER', mandatory: true, readOnly: false, config: {}, options: [] },
+      { apiName: 'startDate', label: 'Start date', type: 'DATE', mandatory: false, readOnly: false, config: {}, options: [] },
+      { apiName: 'endDate', label: 'End date', type: 'DATE', mandatory: false, readOnly: false, config: {}, options: [] },
+      { apiName: 'visibility', label: 'Who can see it', type: 'PICKLIST', mandatory: true, readOnly: false, config: {}, options: [{ id: 'PRIVATE', label: 'Private: only members and Admins', active: true }, { id: 'PUBLIC', label: 'Public: every employee, read-only', active: true }] },
+      { apiName: 'description', label: 'Description', type: 'LONG_TEXT', mandatory: false, readOnly: false, wide: true, config: { maxLength: 5000 }, options: [] },
+    ];
+    const coreValues = (p) => ({ name: p.name, ownerId: p.owner.id, startDate: p.startDate, endDate: p.endDate, visibility: p.visibility, description: p.description });
     /** Only sections that have a visible field; collapsed state is remembered per person, per layout and section. */
     const sections = (p) => p.layout.sections.filter((x) => x.fields.length);
     const COLLAPSE_KEY = 'py-cf-collapsed';
@@ -285,7 +295,8 @@ const Projects = (() => {
         <div class="stats">${[['Progress', `${p.progress}%`, 'Closed tasks ÷ all tasks'], ['Open tasks', '—', 'Tasks arrive next'], ['Closed tasks', '—', 'Tasks arrive next'], ['Overdue', '—', 'Needs tasks with dates']].map(([l, v, f]) => `<div class="stat"><div class="stat-label">${l}</div><div class="stat-value">${v}</div><div class="stat-foot">${f}</div></div>`).join('')}</div>
         <div class="ov-grid">
           <div class="stack">
-            <section class="panel"><div class="panel-head"><div><h2>About</h2></div></div><div class="about">${p.description ? `<p>${esc(p.description)}</p>` : '<p class="muted">No description yet.</p>'}</div></section>
+            <section class="panel cf-card"><div class="panel-head"><div><h2>About this project</h2></div></div>
+              <div class="cf-props" id="cf-core">${CustomFields.propsHtml(coreFields(p), coreValues(p), s.uiCore, ctx, s.people, p.canEdit)}</div></section>
             ${sections(p).length ? `<div id="cf-sections" class="cf-sections">${p.canEdit ? '<p class="hint cf-top">Click a value to change it. Changes save as you go.</p>' : '<p class="hint cf-top">Read-only for you: only Admins, the owner and project Managers can change these.</p>'}
               ${sections(p).map((sec) => { const shut = sec.collapsible && collapsed(p, sec);
                 return `<section class="panel cf-card"><div class="panel-head"><div><h2>${sec.collapsible ? `<button class="sec-toggle" type="button" data-collapse="${esc(sec.id)}" aria-expanded="${!shut}"><span aria-hidden="true">${shut ? '▸' : '▾'}</span> ${esc(sec.name)}</button>` : esc(sec.name)}</h2></div></div>
@@ -315,6 +326,18 @@ const Projects = (() => {
     api = component(el, s, render, (el) => {
       sync(el, s, (name) => { if (name === 'addUser') { el.querySelector('.add-member button').disabled = !s.addUser; } });
       el.querySelectorAll('[data-collapse]').forEach((b) => b.addEventListener('click', () => { toggleCollapsed(s.p, s.p.layout.sections.find((x) => x.id === b.dataset.collapse)); api.paint(); }));
+      if (s.p?.canEdit) {
+        /* each property saves on its own: the update carries only that property */
+        const applyCore = (k, v) => { if (k === 'ownerId') s.p.owner = { id: v, name: s.people.find((x) => x.userId === v)?.fullName ?? s.p.owner.name }; else s.p[k] = v ?? (k === 'description' ? '' : null); };
+        CustomFields.bindProps(el.querySelector('#cf-core'), { fields: coreFields(), values: coreValues(s.p), ui: s.uiCore, people: s.people, repaint: () => api.paint(),
+          save: async (k, v, optimistic) => {
+            const prev = k === 'ownerId' ? s.p.owner.id : s.p[k];
+            if (optimistic) { applyCore(k, v); api.paint(); }
+            try { await Store.updateProject(ctx.portal.id, id, { [k]: v }); if (!optimistic) applyCore(k, v); }
+            catch (err) { if (optimistic) applyCore(k, prev); throw err; }
+            Store.project(ctx.portal.id, id).then((fresh) => { if (document.body.contains(el)) { s.p = fresh; api.paint(); } }).catch(() => {});
+          } });
+      }
       if (s.p?.canEdit && sections(s.p).length) {
         const apply = (k, v) => { const next = { ...s.p.customValues }; if (v == null || v === '' || (Array.isArray(v) && !v.length)) delete next[k]; else next[k] = v; s.p.customValues = next; };
         CustomFields.bindProps(el.querySelector('#cf-sections'), { fields: sections(s.p).flatMap((x) => x.fields), values: s.p.customValues || {}, ui: s.ui, people: s.people, repaint: () => api.paint(),

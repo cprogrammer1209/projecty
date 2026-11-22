@@ -236,7 +236,6 @@ const CustomFields = (() => {
         <td><div class="person"><div><strong>${esc(f.label)}</strong><small><span class="mono">${esc(f.apiName)}</span>${f.description ? ' · ' + esc(f.description) : ''}</small></div></div></td>
         <td>${esc(TYPE_LABEL[f.type])}${typeDetail(f) ? `<small class="cf-sub">${typeDetail(f)}</small>` : ''}</td>
         <td>${ruleChips(f)}</td>
-        <td>${f.usage} project${f.usage === 1 ? '' : 's'}</td>
         <td>${f.status === 'ACTIVE' ? '<span class="badge ok">Active</span>' : '<span class="badge">Inactive</span>'}</td>
         <td class="actions">${canManage ? `<a class="py-btn py-btn--ghost" href="${base(ctx)}/${esc(f.id)}/edit">Edit</a>
           ${f.status === 'ACTIVE' ? `<button class="py-btn py-btn--ghost" type="button" data-deactivate="${esc(f.id)}">Deactivate</button>` : `<button class="py-btn py-btn--ghost" type="button" data-activate="${esc(f.id)}">Activate</button>`}
@@ -250,8 +249,8 @@ const CustomFields = (() => {
           ${!canManage ? `<div class="cf-pad"><div class="py-alert" role="status">${icon('alert')}<span>Only Admins can add or change custom fields.</span></div></div>` : ''}
           <div class="filters"><label class="cf-check"><input type="checkbox" name="showInactive" ${s.showInactive ? 'checked' : ''} /><span>Show inactive fields</span></label></div>
           <div class="table-wrap"><table>
-            <thead><tr><th></th><th>Field</th><th>Type</th><th>Rules</th><th>Used by</th><th>Status</th><th></th></tr></thead>
-            <tbody>${rows || `<tr><td colspan="7" class="empty">${!s.items ? 'Loading fields…' : canManage ? 'No custom fields yet. Add the first one.' : 'No custom fields yet.'}</td></tr>`}</tbody></table></div>
+            <thead><tr><th></th><th>Field</th><th>Type</th><th>Rules</th><th>Status</th><th></th></tr></thead>
+            <tbody>${rows || `<tr><td colspan="6" class="empty">${!s.items ? 'Loading fields…' : canManage ? 'No custom fields yet. Add the first one.' : 'No custom fields yet.'}</td></tr>`}</tbody></table></div>
         </section>
         <p class="hint cf-note">Fields are shown on the project form in this order. A deactivated field is hidden but keeps its answers, and can be activated again. Deleting removes the answers for good.</p></div>`;
     };
@@ -299,8 +298,8 @@ const CustomFields = (() => {
     };
     const optionRows = () => s.options.map((o, i) => `<li class="cf-opt${o.active ? '' : ' off'}">
         <input type="text" data-opt="${i}" value="${esc(o.label)}" placeholder="Choice ${i + 1}" aria-label="Choice ${i + 1}" maxlength="60" />
-        <button class="icon-x" type="button" data-oup="${i}" aria-label="Move up" ${i === 0 ? 'disabled' : ''}>↑</button>
-        <button class="icon-x" type="button" data-odown="${i}" aria-label="Move down" ${i === s.options.length - 1 ? 'disabled' : ''}>↓</button>
+        ${o.saved ? '' : `<button class="icon-x" type="button" data-oup="${i}" aria-label="Move up" ${i === 0 || s.options[i - 1].saved ? 'disabled' : ''}>↑</button>
+        <button class="icon-x" type="button" data-odown="${i}" aria-label="Move down" ${i === s.options.length - 1 ? 'disabled' : ''}>↓</button>`}
         ${o.saved ? `<button class="py-btn py-btn--ghost" type="button" data-otoggle="${i}">${o.active ? 'Deactivate' : 'Activate'}</button>` : `<button class="icon-x" type="button" data-oremove="${i}" aria-label="Remove choice">✕</button>`}</li>`).join('');
     const check = (name, label, hint, disabled = false) => `<label class="cf-rule${disabled ? ' off' : ''}"><input type="checkbox" name="${name}" ${s[name] ? 'checked' : ''} ${disabled ? 'disabled' : ''} /><span><strong>${label}</strong><small>${hint}</small></span></label>`;
 
@@ -359,7 +358,7 @@ const CustomFields = (() => {
         s.options[+n.dataset.opt].label = n.value; paintPreview(el); paintDefault(el);
         if (s.errors.options) { s.errors.options = null; el.querySelector('#cf-opts').previousElementSibling?.remove(); }
       }));
-      const mv = (i, d) => { const j = i + d; if (j < 0 || j >= s.options.length) return; [s.options[i], s.options[j]] = [s.options[j], s.options[i]]; a.paint(); };
+      const mv = (i, d) => { const j = i + d; if (j < 0 || j >= s.options.length || s.options[i].saved || s.options[j].saved) return; [s.options[i], s.options[j]] = [s.options[j], s.options[i]]; a.paint(); };
       el.querySelectorAll('[data-oup]').forEach((b) => b.addEventListener('click', () => mv(+b.dataset.oup, -1)));
       el.querySelectorAll('[data-odown]').forEach((b) => b.addEventListener('click', () => mv(+b.dataset.odown, 1)));
       el.querySelectorAll('[data-otoggle]').forEach((b) => b.addEventListener('click', () => { const o = s.options[+b.dataset.otoggle]; o.active = !o.active; if (!o.active && s.defaultValue === o.id) s.defaultValue = null; a.paint(); }));
