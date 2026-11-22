@@ -1,0 +1,144 @@
+/* Global styles: copy of frontend/src/styles.scss (tokens live in tokens.css). Keep class names identical so screens port 1:1. */
+
+/* Base */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+a { text-decoration: none; }
+a:hover { text-decoration: underline; }
+:focus-visible { border-radius: var(--py-radius-sm); }
+svg { display: block; flex-shrink: 0; }
+[hidden] { display: none !important; }
+button { font: inherit; }
+
+/* Forms: field = label + input wrap + hint/error */
+.py-form { display: flex; flex-direction: column; gap: var(--py-space-4); }
+.py-field { display: flex; flex-direction: column; gap: 6px; border: 0; }
+.py-field__row { display: flex; align-items: baseline; justify-content: space-between; }
+.py-field__label { font: 500 13px/18px var(--py-font-ui); color: var(--py-ink); }
+.py-field__hint { font: 500 12px/16px var(--py-font-ui); color: var(--py-ink-muted); }
+.py-field__error, .py-field__ok {
+  display: flex; align-items: center; gap: 6px;
+  font: 500 12px/16px var(--py-font-ui); color: var(--py-status-blocked);
+}
+.py-field__ok { color: var(--py-status-done); }
+.py-field__error py-icon, .py-field__ok py-icon { width: 14px; height: 14px; }
+
+.py-input-wrap {
+  position: relative; display: flex; align-items: center;
+  height: var(--py-control-h); padding: 0 var(--py-space-3);
+  background: var(--py-surface-0);
+  border: 1px solid var(--py-border-control); border-radius: var(--py-radius-md);
+  transition: border-color .12s, box-shadow .12s;
+}
+.py-input-wrap:hover { border-color: var(--py-ink-muted); }
+.py-input-wrap:focus-within { border-color: var(--py-brand); box-shadow: 0 0 0 1px var(--py-brand); }
+.py-input-wrap input {
+  flex: 1; min-width: 0; height: 100%;
+  border: 0; outline: 0; background: transparent;
+  color: var(--py-ink); font: 400 14px/20px var(--py-font-ui);
+}
+.py-input-wrap input::placeholder { color: var(--py-ink-muted); }
+.py-input-wrap__suffix { color: var(--py-ink-muted); font: 400 14px/20px var(--py-font-ui); white-space: nowrap; }
+.py-field.is-invalid .py-input-wrap { border-color: var(--py-status-blocked); }
+.py-field.is-invalid .py-input-wrap:focus-within { box-shadow: 0 0 0 1px var(--py-status-blocked); }
+
+.py-check { display: inline-flex; align-items: flex-start; gap: var(--py-space-2); cursor: pointer; font: 400 13px/18px var(--py-font-ui); color: var(--py-ink); }
+.py-check input {
+  appearance: none; flex-shrink: 0; width: 16px; height: 16px; margin-top: 1px;
+  border: 1px solid var(--py-border-control); border-radius: var(--py-radius-sm);
+  background: var(--py-surface-0); display: grid; place-items: center; cursor: pointer;
+}
+.py-check input:checked { background: var(--py-brand); border-color: var(--py-brand); }
+.py-check input:checked::after {
+  content: ""; width: 9px; height: 5px; margin-top: -2px;
+  border-left: 2px solid var(--py-on-brand); border-bottom: 2px solid var(--py-on-brand);
+  transform: rotate(-45deg);
+}
+.py-field.is-invalid .py-check input { border-color: var(--py-status-blocked); }
+
+/* Auth screens: pieces shared by every view */
+.py-view-head { margin-bottom: var(--py-space-6); }
+.py-view-head p { margin-top: var(--py-space-1); color: var(--py-ink-muted); }
+.py-switch { margin-top: var(--py-space-6); text-align: center; color: var(--py-ink-muted); font: 400 13px/18px var(--py-font-ui); }
+.py-alert {
+  display: flex; gap: var(--py-space-2); align-items: flex-start;
+  padding: var(--py-space-3); margin-bottom: var(--py-space-4);
+  border: 1px solid var(--py-border); border-radius: var(--py-radius-md);
+  background: var(--py-surface-1); font: 400 13px/18px var(--py-font-ui);
+}
+.py-alert > py-icon { margin-top: 1px; color: var(--py-status-blocked); }
+.py-alert--ok > py-icon { color: var(--py-status-done); }
+.py-link-btn { border: 0; background: none; padding: 0; color: var(--py-brand); cursor: pointer; font: inherit; }
+.py-link-btn:hover { color: var(--py-brand-hover); text-decoration: underline; }
+.py-badge-icon {
+  width: 40px; height: 40px; border-radius: var(--py-radius-lg); display: grid; place-items: center;
+  background: var(--py-brand-subtle); color: var(--py-brand); margin-bottom: var(--py-space-4);
+}
+.py-badge-icon py-icon { width: 20px; height: 20px; }
+
+/* Stepper (sign-up is a two-step sequence) */
+.py-stepper { margin-bottom: var(--py-space-6); }
+.py-stepper__label { display: block; margin-bottom: var(--py-space-2); }
+.py-stepper__track { height: 4px; border-radius: var(--py-radius-full); background: var(--py-surface-2); overflow: hidden; }
+.py-stepper__fill { height: 100%; background: var(--py-brand); border-radius: var(--py-radius-full); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* Live password rules under a new-password field */
+.rules { display: flex; flex-wrap: wrap; gap: var(--py-space-1) var(--py-space-3); }
+.rule { display: inline-flex; align-items: center; gap: 6px; font: 500 12px/16px var(--py-font-ui); color: var(--py-ink-muted); }
+.rule py-icon { width: 14px; height: 14px; }
+.rule.is-met { color: var(--py-ink); }
+.rule.is-met py-icon { color: var(--py-status-done); }
+
+/* Dropdown menu (portal switcher, user menu) */
+.py-menu { position: absolute; z-index: 30; left: 0; right: 0; background: var(--py-surface-0); border: 1px solid var(--py-border); border-radius: 9px; box-shadow: var(--py-shadow-lg); padding: 6px; }
+.py-menu--down { top: calc(100% + 6px); }
+.py-menu--up { bottom: calc(100% + 6px); }
+.py-menu-label { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--py-ink-muted); padding: 6px 8px; }
+.py-menu-item { width: 100%; display: flex; align-items: center; gap: 9px; padding: 8px; border: 0; border-radius: 6px; background: none; color: var(--py-ink); font: 500 12px/1.3 var(--py-font-ui); text-align: left; cursor: pointer; text-decoration: none; }
+.py-menu-item:hover, .py-menu-item.current { background: var(--py-surface-1); text-decoration: none; }
+.py-menu-item py-icon { color: var(--py-ink-muted); }
+.py-menu-item.current py-icon { color: var(--py-brand); }
+.py-menu-sep { height: 1px; background: var(--py-border); margin: 6px 0; }
+
+/* Initials tile (portals) and avatar (people) */
+.py-tile { width: 30px; height: 30px; flex-shrink: 0; display: grid; place-items: center; border-radius: 7px; background: var(--py-brand-subtle); color: var(--py-brand); font: 600 12px/1 var(--py-font-ui); }
+.py-tile--sm { width: 26px; height: 26px; font-size: 10px; }
+.py-avatar { width: 30px; height: 30px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; background: #e7d9ca; color: #62432b; font: 600 11px/1 var(--py-font-ui); }
+.py-avatar--sm { width: 28px; height: 28px; }
+
+/* Native select styled like an input */
+.py-select {
+  height: var(--py-control-h); padding: 0 var(--py-space-3); width: 100%;
+  border: 1px solid var(--py-border-control); border-radius: var(--py-radius-md);
+  background: var(--py-surface-0); color: var(--py-ink); font: 400 14px/20px var(--py-font-ui);
+}
+.py-select:focus { outline: 0; border-color: var(--py-brand); box-shadow: 0 0 0 1px var(--py-brand); }
+.py-select:disabled { background: var(--py-surface-1); color: var(--py-ink-muted); }
+.py-field.is-invalid .py-select { border-color: var(--py-status-blocked); }
+
+/* <py-icon> is a custom element here (an Angular component in the app); same default size. */
+py-icon { display: inline-flex; width: 16px; height: 16px; flex-shrink: 0; }
+py-icon svg { width: 100%; height: 100%; }
+
+/* Field wrapper (Angular: <py-field>) */
+.py-field > .py-field__error, .py-field > .py-field__hint { margin: 0; }
+/* Password box (Angular: <py-password-input>) */
+.py-input-wrap .toggle { display: grid; place-items: center; width: 24px; height: 24px; margin-right: -6px; border: 0; background: transparent; color: var(--py-ink-muted); border-radius: var(--py-radius-sm); cursor: pointer; }
+.py-input-wrap .toggle:hover { color: var(--py-ink); background: var(--py-surface-2); }
+/* Logo (Angular: <py-logo>) */
+.logo { display: inline-flex; align-items: center; gap: 12px; color: var(--py-ink); }
+.logo:hover { text-decoration: none; color: var(--py-ink); }
+.logo__mark { width: 24px; height: 24px; }
+.logo__word { font: 600 15px/1 var(--py-font-ui); letter-spacing: -0.02em; }
+
+/* Prototype-only helper: stands in for the email inbox (Mailpit in the real app). Delete when porting. */
+.dev-note { margin-top: var(--py-space-6); padding: var(--py-space-3); border: 1px dashed var(--py-border-control); border-radius: var(--py-radius-md); font: 400 12px/16px var(--py-font-ui); color: var(--py-ink-muted); }
+.dev-note .py-btn { margin-top: var(--py-space-2); }
+.dev-note b { color: var(--py-ink); }
+
+/* The mount point must fill the viewport so the two-pane auth layout and the shell reach the bottom. */
+#app { min-height: 100%; height: 100%; }
