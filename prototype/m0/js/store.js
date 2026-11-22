@@ -8,7 +8,7 @@
  *   ravi@northwind.com    Employee in Northwind Labs
  */
 const Store = (() => {
-  const KEY = 'py-proto-v1';
+  const KEY = 'py-proto-v2';
   const LATENCY_MS = 350;
   const HOUR = 3600e3, DAY = 24 * HOUR;
 
@@ -20,6 +20,12 @@ const Store = (() => {
     { id: 'CLIENT', name: 'Client', description: 'External user. Sees only what is shared with them.', permissions: [] },
   ];
   const profileOf = (id) => PROFILES.find((p) => p.id === id);
+  /** Actions that can appear in a portal's log, with the label shown in the UI. */
+  const AUDIT_ACTIONS = [
+    ['PORTAL_CREATED', 'Portal created'], ['PORTAL_SETTINGS_CHANGED', 'Portal settings changed'], ['USER_INVITED', 'User invited'],
+    ['INVITATION_REVOKED', 'Invitation withdrawn'], ['INVITATION_ACCEPTED', 'Invitation accepted'], ['USER_PROFILE_CHANGED', 'Profile changed'],
+    ['USER_DEACTIVATED', 'User deactivated'], ['USER_REACTIVATED', 'User reactivated'], ['IMPERSONATION_STARTED', 'Support session started'],
+  ];
   const RESERVED_SLUGS = ['admin', 'api', 'app', 'www', 'support', 'projecty'];
 
   function seed() {
@@ -51,6 +57,16 @@ const Store = (() => {
         { id: 'i1', portalId: 'p1', email: 'new.hire@northwind.com', profile: 'EMPLOYEE', invitedBy: 'u1', expiresAt: now + 5 * DAY, token: 'inv-seed-1' },
       ],
       emailTokens: [],
+      /** Portal audit log, newest appended last. Same fields as AuditEventResponseDTO (portal-less AUTH events never show here). */
+      auditLog: [
+        { id: 'a1', portalId: 'p1', occurredAt: now - 30 * DAY, category: 'ADMIN', action: 'PORTAL_CREATED', actorType: 'USER', actorName: 'Priya Nair', targetName: null, detail: 'Created portal Northwind Labs' },
+        { id: 'a2', portalId: 'p1', occurredAt: now - 29 * DAY, category: 'ADMIN', action: 'USER_INVITED', actorType: 'USER', actorName: 'Priya Nair', targetName: 'ravi@northwind.com', detail: 'Invited as Employee' },
+        { id: 'a3', portalId: 'p1', occurredAt: now - 28 * DAY, category: 'ADMIN', action: 'INVITATION_ACCEPTED', actorType: 'USER', actorName: 'Ravi Kumar', targetName: 'Ravi Kumar', detail: 'Joined as Employee' },
+        { id: 'a4', portalId: 'p1', occurredAt: now - 20 * DAY, category: 'ADMIN', action: 'USER_PROFILE_CHANGED', actorType: 'USER', actorName: 'Priya Nair', targetName: 'Sara Lopez', detail: 'Profile: Employee → Manager' },
+        { id: 'a5', portalId: 'p1', occurredAt: now - 14 * DAY, category: 'ADMIN', action: 'PORTAL_SETTINGS_CHANGED', actorType: 'USER', actorName: 'Priya Nair', targetName: null, detail: 'timeZone: UTC → Asia/Kolkata' },
+        { id: 'a6', portalId: 'p1', occurredAt: now - 9 * DAY, category: 'ADMIN', action: 'USER_DEACTIVATED', actorType: 'USER', actorName: 'Priya Nair', targetName: 'Tom Becker', detail: 'Deactivated' },
+        { id: 'a7', portalId: 'p1', occurredAt: now - 2 * DAY, category: 'ADMIN', action: 'IMPERSONATION_STARTED', actorType: 'ADMIN', actorName: 'Support (platform admin)', targetName: 'Priya Nair', detail: 'Support session, 30 minutes: help with invitations' },
+      ],
       sessionUserId: null,
       lastSignup: null,
     };
@@ -70,6 +86,10 @@ const Store = (() => {
   const sessionUser = () => userById(db.sessionUserId);
   const requireUser = () => sessionUser() || fail('UNAUTHENTICATED', 'Sign in to continue.');
   const membership = (portalId, userId) => db.members.find((m) => m.portalId === portalId && m.userId === userId);
+  /** Appends an audit event for the signed-in user (the real server writes these in the same transaction as the change). */
+  const record = (portalId, action, { target = null, detail = null, category = 'ADMIN', actor = sessionUser() } = {}) => {
+    db.auditLog.push({ id: 'a' + token(), portalId, occurredAt: Date.now(), category, action, actorType: 'USER', actorName: actor?.fullName ?? 'Someone', targetName: target, detail });
+  };
   const issue = (type, email, ttl) => { const t = { token: token(), type, email, expiresAt: Date.now() + ttl, used: false }; db.emailTokens.push(t); return t; };
 
   function toMe(u) {
@@ -151,6 +171,7 @@ const Store = (() => {
       const portal = { id: 'p' + token(), name, slug, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC', dateFormat: 'MMM d, yyyy', currency: 'USD', weekStart: 'MONDAY' };
       db.portals.push(portal);
       db.members.push({ portalId: portal.id, userId: user.id, profile: 'ADMIN', owner: true, status: 'ACTIVE', lastLoginAt: Date.now() });
+      record(portal.id, 'PORTAL_CREATED', { detail: `Created portal ${name}` });
       return portal;
     }),
     /** Activating a portal: its settings plus my membership and permissions, or a reason it can't be opened. */
@@ -164,6 +185,9 @@ const Store = (() => {
     },
     updatePortal: (portalId, patch) => call(() => {
       requirePermission(portalId, 'PORTAL_SETTINGS_MANAGE');
+      const before = { ...portalById(portalId) };
+      const changes = Object.keys(patch).filter((k) => patch[k] !== before[k]).map((k) => `${k}: ${before[k]} → ${patch[k]}`);
+      if (changes.length) record(portalId, 'PORTAL_SETTINGS_CHANGED', { detail: changes.join('; ') });
       Object.assign(portalById(portalId), patch);
       return { ...portalById(portalId) };
     }),
@@ -178,17 +202,24 @@ const Store = (() => {
       db.invitations = db.invitations.filter((i) => !(i.portalId === portalId && i.email.toLowerCase() === email.trim().toLowerCase()));
       const inv = { id: 'i' + token(), portalId, email: email.trim(), profile: profileId, invitedBy: user.id, expiresAt: Date.now() + 7 * DAY, token: 'inv-' + token() };
       db.invitations.push(inv);
+      record(portalId, 'USER_INVITED', { target: inv.email, detail: `Invited as ${profileOf(profileId).name}` });
       return { ...toInvitation(inv), token: inv.token };
     }),
     resendInvitation: (portalId, id) => call(() => {
       requirePermission(portalId, 'USERS_MANAGE');
       const inv = db.invitations.find((i) => i.id === id); inv.expiresAt = Date.now() + 7 * DAY; return { email: inv.email, token: inv.token };
     }),
-    revokeInvitation: (portalId, id) => call(() => { requirePermission(portalId, 'USERS_MANAGE'); db.invitations = db.invitations.filter((i) => i.id !== id); }),
+    revokeInvitation: (portalId, id) => call(() => {
+      requirePermission(portalId, 'USERS_MANAGE');
+      const inv = db.invitations.find((i) => i.id === id);
+      if (inv) record(portalId, 'INVITATION_REVOKED', { target: inv.email, detail: 'Invitation withdrawn' });
+      db.invitations = db.invitations.filter((i) => i.id !== id);
+    }),
     changeProfile: (portalId, userId, profileId) => call(() => {
       requirePermission(portalId, 'USERS_MANAGE');
       const m = membership(portalId, userId);
       if (m.owner) fail('OWNER_LOCKED', 'The owner always stays an active Admin.');
+      record(portalId, 'USER_PROFILE_CHANGED', { target: userById(userId).fullName, detail: `Profile: ${profileOf(m.profile).name} → ${profileOf(profileId).name}` });
       m.profile = profileId;
     }),
     setActive: (portalId, userId, active) => call(() => {
@@ -196,7 +227,18 @@ const Store = (() => {
       const m = membership(portalId, userId);
       if (m.owner) fail('OWNER_LOCKED', 'The owner always stays an active Admin.');
       m.status = active ? 'ACTIVE' : 'DEACTIVATED';
+      record(portalId, active ? 'USER_REACTIVATED' : 'USER_DEACTIVATED', { target: userById(userId).fullName, detail: active ? 'Reactivated' : 'Deactivated' });
     }),
+
+    /** GET /api/audit-events: newest first, filtered, paged like PagedResponse. Page is 0-based, size max 100. */
+    auditEvents: (portalId, { category = '', action = '', page = 0, size = 25 } = {}) => call(() => {
+      requirePermission(portalId, 'AUDIT_VIEW');
+      const all = db.auditLog.filter((e) => e.portalId === portalId && (!category || e.category === category) && (!action || e.action === action))
+        .sort((a, b) => b.occurredAt - a.occurredAt);
+      const sz = Math.min(Math.max(size, 1), 100);
+      return { items: all.slice(page * sz, page * sz + sz), page, size: sz, totalItems: all.length, totalPages: Math.max(1, Math.ceil(all.length / sz)) };
+    }),
+    auditActions: () => AUDIT_ACTIONS,
 
     /* ----- accepting an invitation ----- */
     invitePreview: (tokenValue) => call(() => {
@@ -214,6 +256,7 @@ const Store = (() => {
       db.members.push({ portalId: inv.portalId, userId: user.id, profile: inv.profile, owner: false, status: 'ACTIVE', lastLoginAt: Date.now() });
       db.invitations = db.invitations.filter((i) => i !== inv);
       db.sessionUserId = user.id;
+      record(inv.portalId, 'INVITATION_ACCEPTED', { target: user.fullName, detail: `Joined as ${profileOf(inv.profile).name}` });
       return { slug: portalById(inv.portalId).slug };
     }),
   };

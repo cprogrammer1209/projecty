@@ -1,0 +1,604 @@
+/* The whole plan, as data. docs/project-plan.html only draws it.
+ * Edit this file to change the plan: before starting work, set the item to "doing" and move NOW; when done, set it to "done" and add a history line.
+ * Story and task states: todo | doing | done | na (no screen involved) | deferred (moved elsewhere).
+ * Progress counts MVP stories only; V1 and LATER stories are listed but not counted.
+ */
+const PLAN_UPDATED = "2026-11-22";
+const NOW = {"step": 4, "layer": "proto", "state": "next", "note": "Next up. Waiting for your go-ahead to start the Projects prototype."};
+const PHASES = [{"id": 0, "name": "Phase 0 · Foundation", "ms": "M0"}, {"id": 1, "name": "Phase 1 · Core Work Management", "ms": "M1"}, {"id": 2, "name": "Phase 2 · Second Work Type & Findability", "ms": "M2"}, {"id": 3, "name": "Phase 3 · Planning & Time", "ms": "M3"}, {"id": 4, "name": "Phase 4 · Automation & Collaboration", "ms": "M4"}, {"id": 5, "name": "Phase 5 · Insight Layer", "ms": "M5"}, {"id": 6, "name": "Phase 6 · Platform, AI & Commercial", "ms": "M6"}];
+const MILESTONES = [{"id": "M0", "name": "Foundation", "what": "Sign up, create a portal, invite users, log in, assign profiles. Audit and events flowing."}, {"id": "M1", "name": "Usable Core", "what": "Projects, tasks, comments, list and Kanban views, notifications, attachments. First deployable release."}, {"id": "M2", "name": "Core Complete", "what": "Custom fields and layouts, issues, global search, Notification service extracted."}, {"id": "M3", "name": "Planning & Time", "what": "Gantt, calendar, timesheets with approval, utilization, budgets."}, {"id": "M4", "name": "Automation", "what": "Workflow rules, blueprints, SLAs, feeds, forums, wiki. Automation service live."}, {"id": "M5", "name": "Insight", "what": "Reports, dashboards, portfolio view."}, {"id": "M6", "name": "Platform & Commercial", "what": "Public API, webhooks, AI, SSO, plans and billing."}];
+const MODULES = [
+{
+  step: 1,
+  name: "Portal & Multi-tenancy",
+  phase: 0,
+  service: "Platform",
+  req: 2,
+  file: "01-portal-multitenancy.md",
+  goal: "The portal is the tenant boundary. Every piece of data belongs to exactly one portal, and portal-level settings (time zone, currency, business hours, and so on) drive behavior across all modules.",
+  scopeIn: "portal creation, settings, branding, multiple portals per identity, portal switching, business hours, holiday calendars, entitlement checks, portal deletion.",
+  scopeOut: "real multi-region data residency (the setting is stored, but there is one region), payment and plans (Step 24).",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  history: [{"date": "2026-10-25", "text": "Slice 1: portal creation and slug check (PTL-US-01)."}, {"date": "2026-10-26", "text": "Slice 3: portal settings, switcher, isolation, personal time zone (PTL-US-02, 03, 04, 12)."}],
+  stories: [
+    {"id": "PTL-US-01", "tier": "MVP", "text": "As a new user signing up, I create my first portal by giving it a name and slug, so I can start working.", "proto": "done", "be": "done", "fe": "done"},
+    {"id": "PTL-US-02", "tier": "MVP", "text": "As a Portal Admin, I set the portal's time zone, date format, currency, and week start, so dates and money display correctly for everyone.", "proto": "done", "be": "done", "fe": "done"},
+    {"id": "PTL-US-03", "tier": "MVP", "text": "As a user who belongs to several portals, I switch between them from the top bar, without logging in again.", "proto": "done", "be": "done", "fe": "done"},
+    {"id": "PTL-US-04", "tier": "MVP", "text": "As a user, I see only the data of the portal I'm currently in.", "proto": "na", "be": "done", "fe": "done"},
+    {"id": "PTL-US-05", "tier": "V1", "text": "As a user, I create an additional portal (e.g., for a side business), and I become its owner.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PTL-US-06", "tier": "V1", "text": "As a Portal Admin, I upload a logo and choose a theme color, so the portal looks like my company.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PTL-US-07", "tier": "V1", "text": "As a Portal Admin, I define business hours (working days, start and end times), so scheduling and SLAs respect them.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PTL-US-08", "tier": "V1", "text": "As a Portal Admin, I maintain holiday calendars, so non-working days are excluded from durations.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PTL-US-09", "tier": "V1", "text": "As a Portal Owner, I transfer ownership to another admin.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PTL-US-10", "tier": "V1", "text": "As a Portal Owner, I request deletion of the portal. After a grace period, all its data is permanently removed.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PTL-US-11", "tier": "V1", "text": "As the system, I check entitlements before allowing a gated feature or exceeding a quota.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PTL-US-12", "tier": "MVP", "text": "As a user, I set my personal time zone, which overrides the portal default for display.", "proto": "done", "be": "done", "fe": "done"},
+    {"id": "PTL-US-13", "tier": "LATER", "text": "As a Portal Admin, I configure a custom domain (`projects.acme.com`).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PTL-US-14", "tier": "LATER", "text": "As a Portal Owner, I choose a data region at creation.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PTL-US-15", "tier": "LATER", "text": "As a Portal Admin, I set the default language for new users.", "proto": "todo", "be": "todo", "fe": "todo"}
+  ]
+},
+{
+  step: 2,
+  name: "Users, Roles & Permissions",
+  phase: 0,
+  service: "Platform",
+  req: 2,
+  file: "02-users-roles-permissions.md",
+  goal: "Controls who is in a portal and what each person can see and do. The permission model is evaluated on every request in every module, so it must be designed fully even though some parts (field-level, client visibility) are switched on later.",
+  scopeIn: "invitations, user lifecycle, profiles (permission sets), roles (hierarchy), project-level roles, teams, client companies and client users, the permission evaluation rules.",
+  scopeOut: "SSO and SCIM provisioning (Step 24), user custom fields (Step 7).",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  history: [{"date": "2026-10-26", "text": "Slice 4: new member module (users, profiles, invitations)."}, {"date": "2026-11-22", "text": "Project members (USR-US-07) moved to Step 4 because they need projects."}],
+  decisions: [{"date": "2026-10-26", "text": "Four system profiles per portal (Admin, Manager, Employee, Client); custom profiles come in V1."}],
+  stories: [
+    {"id": "USR-US-01", "tier": "MVP", "text": "As an Admin, I invite users by email with a profile, and optionally add them to projects.", "proto": "done", "be": "done", "fe": "done"},
+    {"id": "USR-US-02", "tier": "MVP", "text": "As an invitee, I accept the invite. I create my identity if I don't have one, or I join with my existing login.", "proto": "done", "be": "done", "fe": "done"},
+    {"id": "USR-US-03", "tier": "MVP", "text": "As an Admin, I see all portal users with their status, profile, and last active time, and I can search and filter.", "proto": "done", "be": "done", "fe": "done"},
+    {"id": "USR-US-04", "tier": "MVP", "text": "As an Admin, I change a user's profile.", "proto": "done", "be": "done", "fe": "done"},
+    {"id": "USR-US-05", "tier": "MVP", "text": "As an Admin, I deactivate a user. They lose access immediately, but their history stays attributed to them.", "proto": "done", "be": "done", "fe": "done"},
+    {"id": "USR-US-06", "tier": "MVP", "text": "As a user, I am blocked from any action my profile doesn't allow, and the UI hides actions I can't perform.", "proto": "done", "be": "done", "fe": "done"},
+    {"id": "USR-US-07", "tier": "MVP", "text": "As a Project Manager, I add or remove members of my project and set their project role.", "proto": "deferred", "be": "deferred", "fe": "deferred", "movedTo": 4},
+    {"id": "USR-US-08", "tier": "V1", "text": "As an Admin, I create custom profiles by cloning a system profile and adjusting the matrix.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "USR-US-09", "tier": "V1", "text": "As an Admin, I define a role hierarchy, so managers can see their reports' items.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "USR-US-10", "tier": "V1", "text": "As an Admin, I create teams. Work can be assigned to a team, and its members see it.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "USR-US-11", "tier": "V1", "text": "As an Admin, I create client companies and invite client users who see only external items in projects they belong to.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "USR-US-12", "tier": "V1", "text": "As an Admin, when deactivating or deleting a user, I reassign their open work (tasks, issues, project ownership) to another user.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "USR-US-13", "tier": "V1", "text": "As an Admin, I resend or revoke a pending invitation.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "USR-US-14", "tier": "V1", "text": "As an Admin, I reactivate a deactivated user.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "USR-US-15", "tier": "V1", "text": "As an Admin, I define custom project roles (e.g., \"QA Lead\") with their own project-scoped permissions.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "USR-US-16", "tier": "LATER", "text": "As an Admin, I bulk-invite users from CSV.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "USR-US-17", "tier": "LATER", "text": "As an Admin, I permanently delete a user, and their history is shown as \"Deleted user\".", "proto": "todo", "be": "todo", "fe": "todo"}
+  ]
+},
+{
+  step: 3,
+  name: "Security Core (Auth, Audit, Events, Trash)",
+  phase: 0,
+  service: "Platform",
+  req: 2,
+  file: "03-security-core.md",
+  goal: "Provides identity and authentication, an auditable record of changes, the business-event backbone every later module plugs into, and a shared trash/restore mechanism.",
+  scopeIn: "sign-up, email verification, login, logout, password reset, sessions, 2FA (TOTP), the portal audit log, business event publication (as a guarantee), trash and restore, encryption policy.",
+  scopeOut: "SSO/SAML, IP restrictions, GDPR tooling, data export (Step 24).",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  history: [{"date": "2026-10-25", "text": "Own authentication in Platform instead of Keycloak."}, {"date": "2026-10-26", "text": "Slice 5: audit log and outbox. Slice 5b: Kafka added."}, {"date": "2026-11-22", "text": "Audit log screen built (prototype, then Angular). Trash and restore (SEC-US-07) moved to Step 4."}],
+  decisions: [{"date": "2026-10-25", "text": "Own auth in Platform (RS256 tokens, refresh cookie), not Keycloak."}, {"date": "2026-10-26", "text": "Events go through a transactional outbox to Apache Kafka."}],
+  stories: [
+    {"id": "SEC-US-01", "tier": "MVP", "text": "As a visitor, I sign up with email and password and verify my email.", "proto": "done", "be": "done", "fe": "done"},
+    {"id": "SEC-US-02", "tier": "MVP", "text": "As a user, I log in and stay logged in across browser restarts until I log out or the session expires.", "proto": "done", "be": "done", "fe": "done"},
+    {"id": "SEC-US-03", "tier": "MVP", "text": "As a user, I reset a forgotten password through an emailed link.", "proto": "done", "be": "done", "fe": "done"},
+    {"id": "SEC-US-04", "tier": "MVP", "text": "As a user, I log out from the current device.", "proto": "done", "be": "done", "fe": "done"},
+    {"id": "SEC-US-05", "tier": "MVP", "text": "As the system, I record an audit entry for every create, update, and delete of admin- and security-relevant data.", "proto": "done", "be": "done", "fe": "done"},
+    {"id": "SEC-US-06", "tier": "MVP", "text": "As the system, every business change publishes a business event reliably: never lost, and never published for a change that was rolled back.", "proto": "na", "be": "done", "fe": "na"},
+    {"id": "SEC-US-07", "tier": "MVP", "text": "As a user, deleting a project, task, or document moves it to the trash. I or an Admin can restore it.", "proto": "deferred", "be": "deferred", "fe": "deferred", "movedTo": 4},
+    {"id": "SEC-US-08", "tier": "V1", "text": "As a user, I enable 2FA with an authenticator app and get recovery codes.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "SEC-US-09", "tier": "V1", "text": "As a user, I see my active sessions and revoke any of them.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "SEC-US-10", "tier": "V1", "text": "As an Admin, I browse and filter the portal audit log by user, action, module, and date.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "SEC-US-11", "tier": "V1", "text": "As an Admin, I enforce 2FA for all users in my portal.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "SEC-US-12", "tier": "V1", "text": "As an Admin, I permanently delete items from the trash, or empty it.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "SEC-US-13", "tier": "V1", "text": "As a user, I change my password, which signs out my other sessions.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "SEC-US-14", "tier": "LATER", "text": "As an Admin, I export the audit log to CSV.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "SEC-US-15", "tier": "LATER", "text": "As a user, I log in with Google or Microsoft (social login).", "proto": "todo", "be": "todo", "fe": "todo"}
+  ]
+},
+{
+  step: 4,
+  name: "Projects",
+  phase: 1,
+  service: "Work",
+  req: 2,
+  file: "04-projects.md",
+  goal: "A project is the container for all work: phases, task lists, tasks, issues, documents, time, and budget. It defines who participates, which modules are used, and how work is shaped (layouts).",
+  scopeIn: "project CRUD, archive, trash, groups, templates, statuses, overview page, members, visibility, module toggles, layout selection.",
+  scopeOut: "budgets (17), Gantt (13), portfolio (21).",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  tasks: [{"layer": "req", "text": "Requirements file written (04-projects.md, Draft)", "state": "done"}, {"layer": "proto", "text": "Enable \"Projects\" in the sidebar", "state": "todo"}, {"layer": "proto", "text": "Projects list: search, sort, filter by status and owner, empty state", "state": "todo"}, {"layer": "proto", "text": "Create / edit project: key rules (2-10 uppercase, unique, locked after creation), dates, owner", "state": "todo"}, {"layer": "proto", "text": "Project overview: status, members (portal users only), progress placeholders, delete", "state": "todo"}, {"layer": "proto", "text": "Trash view with restore (owner or Admin)", "state": "todo"}, {"layer": "proto", "text": "Mock rules and seed data; project changes also appear in the audit log", "state": "todo"}, {"layer": "proto", "text": "Check every journey in a browser as Admin and as Employee", "state": "todo"}, {"layer": "fe", "text": "Write the API contract for projects (kept in this plan, not in docs/)", "state": "todo"}, {"layer": "fe", "text": "Port list, create/edit, overview, trash to Angular under /p/:slug/projects", "state": "todo"}, {"layer": "fe", "text": "Sidebar item, routes, new permission names; build is clean", "state": "todo"}, {"layer": "be", "text": "Platform: publish permission-change events (extend UserProfileChanged)", "state": "todo"}, {"layer": "be", "text": "work-service skeleton: Spring Boot 8082, own database, token check via JWKS, X-Portal-Id, outbox", "state": "todo"}, {"layer": "be", "text": "Work: consume permission events into a local table (drop duplicates by eventId)", "state": "todo"}, {"layer": "be", "text": "project module: entity, key rules, statuses, members, trash, permissions PROJECTS_*, events", "state": "todo"}, {"layer": "be", "text": "Flyway insert so existing portals get the new permissions; verify with curl and the UI", "state": "todo"}],
+  decisions: [{"date": "2026-11-22", "text": "Build order: prototype first, then Angular, then backend."}, {"date": "2026-11-22", "text": "Project members: portal users only. Inviting new people stays in Settings → Users."}, {"date": "2026-11-22", "text": "Work learns permissions from Platform events and keeps its own copy (no call to Platform on each request)."}],
+  questions: [{"text": "Public projects: view-only plus a \"Join\" button? (V1, not needed for MVP.)", "state": "open"}, {"text": "Who may restore from trash: owner and Admin only, or any Manager?", "state": "open"}],
+  history: [{"date": "2026-11-22", "text": "Trash/restore (SEC-US-07) and project members (USR-US-07) moved in from Steps 3 and 2."}],
+  stories: [
+    {"id": "PRJ-US-01", "tier": "MVP", "text": "As a Manager, I create a project with a name, key, owner, dates, and description.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PRJ-US-02", "tier": "MVP", "text": "As a Manager, I edit project details.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PRJ-US-03", "tier": "MVP", "text": "As a user, I see a list of projects I can access, with status, owner, progress, and dates, and I can search, sort, and filter it.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PRJ-US-04", "tier": "MVP", "text": "As a member, I open a project overview with progress %, open/closed task counts, upcoming phases, overdue items, and recent activity.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PRJ-US-05", "tier": "MVP", "text": "As a Manager, I add members to my project (see USR-US-07).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PRJ-US-06", "tier": "MVP", "text": "As a Manager, I delete a project (it goes to the trash).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PRJ-US-07", "tier": "MVP", "text": "As a Manager, I set the project's status.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "SEC-US-07", "tier": "MVP", "text": "As a user, deleting a project, task, or document moves it to the trash. I or an Admin can restore it.", "proto": "todo", "be": "todo", "fe": "todo", "movedFrom": 3},
+    {"id": "USR-US-07", "tier": "MVP", "text": "As a Project Manager, I add or remove members of my project and set their project role.", "proto": "todo", "be": "todo", "fe": "todo", "movedFrom": 2},
+    {"id": "PRJ-US-08", "tier": "V1", "text": "As a Manager, I archive a completed project. It becomes read-only and drops out of active lists, and I can unarchive it.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PRJ-US-09", "tier": "V1", "text": "As an Admin, I define project groups, and Managers assign projects to them. Lists can be grouped by project group.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PRJ-US-10", "tier": "V1", "text": "As a Manager, I save a project as a template, and I create new projects from a template with a new start date. All dates shift relative to it.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PRJ-US-11", "tier": "V1", "text": "As an Admin, I customize the list of project statuses (name, color, type).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PRJ-US-12", "tier": "V1", "text": "As a Manager, I make a project Private (members only) or Public (visible to all portal employees as read-only, and they can join).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PRJ-US-13", "tier": "V1", "text": "As a Manager, I enable or disable modules per project (Issues, Timesheets, Documents, Forums, and so on). Disabled modules disappear from the project.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PRJ-US-14", "tier": "V1", "text": "As a Manager, I choose the task layout and issue layout for a project (see Step 7).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PRJ-US-15", "tier": "V1", "text": "As a Manager, I set Strict or Flexible mode. Strict blocks task dates outside the project dates.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PRJ-US-16", "tier": "V1", "text": "As a Manager, I duplicate a project (structure only, or structure and data).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PRJ-US-17", "tier": "V1", "text": "As a Manager, I link a client company to the project, so its client users can be added.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PRJ-US-18", "tier": "V1", "text": "As a user, I mark projects as favorites so they appear at the top.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PRJ-US-19", "tier": "LATER", "text": "As a member, I email the project's unique address to create a task or issue (email-in).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PRJ-US-20", "tier": "LATER", "text": "As an Admin, I define project layouts (different custom field sets per project type).", "proto": "todo", "be": "todo", "fe": "todo"}
+  ]
+},
+{
+  step: 5,
+  name: "Phases (Milestones)",
+  phase: 1,
+  service: "Work",
+  req: 2,
+  file: "05-phases.md",
+  goal: "Phases break a project into time-boxed stages (e.g., \"Design\", \"Build\", \"UAT\"). They provide checkpoints, group task lists and issues, and control which stages clients can see.",
+  scopeIn: "phase CRUD, status, completion, internal/external flag, linking task lists and issues, archive, phase list view.",
+  scopeOut: "Gantt bars (13), phase reports (20).",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  stories: [
+    {"id": "PHS-US-01", "tier": "MVP", "text": "As a Manager, I create a phase with a name, owner, start date, and end date.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PHS-US-02", "tier": "MVP", "text": "As a Manager, I edit or delete a phase.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PHS-US-03", "tier": "MVP", "text": "As a member, I see a project's phases in order, with dates, owner, status, and completion %.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PHS-US-04", "tier": "MVP", "text": "As a Manager, I attach a task list to a phase.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PHS-US-05", "tier": "MVP", "text": "As a Manager, I mark a phase Completed.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PHS-US-06", "tier": "V1", "text": "As a Manager, I flag a phase as External, so client users can see it and its external task lists.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PHS-US-07", "tier": "V1", "text": "As a Manager, I archive a completed phase to hide it from active views.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PHS-US-08", "tier": "V1", "text": "As a Manager, I link issues to a phase (affected phase and release phase, see Step 11).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PHS-US-09", "tier": "V1", "text": "As a member, I open a phase detail page with its task lists, tasks, issues, and progress.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PHS-US-10", "tier": "V1", "text": "As a Manager, I reorder phases.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "PHS-US-11", "tier": "LATER", "text": "As an Admin, I define custom phase statuses and phase custom fields.", "proto": "todo", "be": "todo", "fe": "todo"}
+  ]
+},
+{
+  step: 6,
+  name: "Task Lists & Tasks",
+  phase: 1,
+  service: "Work",
+  req: 2,
+  file: "06-tasks.md",
+  goal: "Tasks are the units of work people plan, assign, discuss, and complete. Task lists organize them. Everything else (Gantt, time, resources, automation, reports) builds on tasks.",
+  scopeIn: "task lists, task CRUD, all standard fields, multiple owners, subtasks with roll-up, statuses (from the layout), comments, mentions, reactions, attachments, followers, tags, activity stream, bulk actions, copy and move, recurrence, reminders.",
+  scopeOut: "dependencies (13), time logs and timer (15), blueprints and checklists (18), custom field admin UI (07).",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  decisions: [{"date": "2026-10-25", "text": "Built together with the data foundation of Step 7 (custom fields and statuses), so tasks do not need a rewrite."}],
+  stories: [
+    {"id": "TSK-US-01", "tier": "MVP", "text": "As a Manager, I create, rename, reorder, and delete task lists. Every project has a \"General\" list.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-02", "tier": "MVP", "text": "As a Manager, I link a task list to a phase (see PHS-US-04).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-03", "tier": "V1", "text": "As a Manager, I flag a task list as External or Internal.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-04", "tier": "V1", "text": "As a Manager, I archive a task list.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-10", "tier": "MVP", "text": "As a member, I create a task with just a title (quick add), then fill in other fields.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-11", "tier": "MVP", "text": "As a member, I set the description (rich text), owners (one or more), start and due dates, priority, and status.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-12", "tier": "MVP", "text": "As a member, I open a task detail page showing all fields, subtasks, comments, attachments, and activity.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-13", "tier": "MVP", "text": "As an owner, I change a task's status. Moving it to a Closed-type status marks it complete.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-14", "tier": "MVP", "text": "As a member, I delete a task (it goes to the trash, with its subtasks).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-15", "tier": "MVP", "text": "As a member, I set work hours (an effort estimate) and completion %.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-16", "tier": "MVP", "text": "As a member, I add tags to tasks (portal-level tags, created on the fly).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-17", "tier": "V1", "text": "As a member, I assign a task to a team (see USR-BR-10).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-18", "tier": "V1", "text": "As a member, I fill in custom fields defined on the project's task layout.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-20", "tier": "MVP", "text": "As a member, I add subtasks to a task and see them nested under it.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-21", "tier": "V1", "text": "As a member, I nest subtasks multiple levels deep.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-22", "tier": "V1", "text": "As a member, I see the parent's completion % and work hours rolled up from subtasks.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-23", "tier": "V1", "text": "As a member, I convert a task to a subtask (set its parent) or promote a subtask to a task.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-30", "tier": "MVP", "text": "As a member, I comment on a task with rich text.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-31", "tier": "MVP", "text": "As a member, I @mention a user in a comment, and they get notified.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-32", "tier": "MVP", "text": "As a member, I attach files to a task or comment.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-33", "tier": "MVP", "text": "As a comment author, I edit or delete my comment.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-34", "tier": "MVP", "text": "As a member, I follow or unfollow a task, and I add other followers.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-35", "tier": "V1", "text": "As a member, I reply to a comment in a thread.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-36", "tier": "V1", "text": "As a member, I react to a comment with an emoji.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-37", "tier": "MVP", "text": "As a member, I see a task's activity history: who changed what, from what, to what, and when.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-38", "tier": "V1", "text": "As a Manager in a client project, I mark a comment Internal so client users can't see it.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-40", "tier": "V1", "text": "As a member, I select multiple tasks and update status, owner, priority, dates, or tags in one action.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-41", "tier": "V1", "text": "As a member, I bulk delete tasks.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-42", "tier": "V1", "text": "As a member, I move a task (with subtasks) to another task list or project.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-43", "tier": "V1", "text": "As a member, I copy a task (optionally with subtasks, attachments, and comments) to another list or project.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-50", "tier": "V1", "text": "As a member, I make a task recurring (daily, weekly, monthly, yearly, with an end condition).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-51", "tier": "V1", "text": "As a member, I set reminders before or after the due date for owners, followers, or specific users.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-52", "tier": "V1", "text": "As an owner, I get a notification when my task becomes overdue.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "TSK-US-60", "tier": "V1", "text": "As an owner, I start and stop a timer on a task, which creates a time log (delivered with Step 15).", "proto": "todo", "be": "todo", "fe": "todo"}
+  ]
+},
+{
+  step: 7,
+  name: "Customization Engine",
+  phase: 1,
+  service: "Work",
+  req: 2,
+  file: "07-customization-engine.md",
+  goal: "Lets each portal shape modules to its own process without code: extra fields, different forms per work type, own statuses, conditional rules, and entirely new record types (custom modules), with field-level access control.",
+  scopeIn: "custom fields (all types), field properties and validation, layouts (sections, ordering, overrides), status sets per layout, layout rules, portal tags and picklists, field-level permissions, field history, custom modules with relations, user custom fields.",
+  scopeOut: "the AI module builder (23), workflow/blueprint usage of fields (18), reports on custom fields (20).",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  stories: [
+    {"id": "CUS-US-01", "tier": "MVP", "text": "As an Admin, I add a custom field to Tasks with a label, type, and mandatory flag.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-02", "tier": "MVP", "text": "As an Admin, I manage picklist options (add, reorder, color, deactivate).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-03", "tier": "MVP", "text": "As a user, I see and fill in custom fields on task create, edit, and detail views, with validation.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-04", "tier": "V1", "text": "As an Admin, I set default values, unique constraints, and validation rules (min/max, length, regex).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-05", "tier": "V1", "text": "As an Admin, I rename a field's label without breaking anything (the API name stays the same).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-06", "tier": "V1", "text": "As an Admin, I deactivate a field. It disappears from forms, but its data is kept and can be reactivated.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-07", "tier": "V1", "text": "As an Admin, I hard-delete a field after seeing an impact report (layouts, views, rules, workflows, and reports that use it).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-08", "tier": "V1", "text": "As an Admin, I create formula fields (e.g., `Work hours × Rate`) and lookup fields.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-09", "tier": "V1", "text": "As an Admin, I create dependent picklists (Category → Subcategory).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-10", "tier": "V1", "text": "As an Admin, I mark a field Sensitive. It's masked by default and excluded from exports unless permitted.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-11", "tier": "V1", "text": "As a user, I see a field's change history (old → new, who, when) in the activity stream.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-12", "tier": "LATER", "text": "As an Admin, I see a usage report listing everywhere a field is referenced.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-20", "tier": "MVP", "text": "As an Admin, I edit the default Task layout's status set (add, rename, color, order, Open/Closed type).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-21", "tier": "V1", "text": "As an Admin, I create multiple task layouts (e.g., \"Software Task\", \"Marketing Task\"), each with its own sections, fields, and statuses.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-22", "tier": "V1", "text": "As an Admin, I drag and drop fields into sections, and I set per-layout mandatory, read-only, and default overrides.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-23", "tier": "V1", "text": "As a Manager, I choose a project's task and issue layouts at creation, or via a template.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-24", "tier": "V1", "text": "As an Admin, I change a project's layout and map old statuses and fields to new ones for existing records.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-25", "tier": "V1", "text": "As an Admin, I clone and deactivate layouts.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-26", "tier": "LATER", "text": "As an Admin, I preview a layout as a specific profile.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-27", "tier": "LATER", "text": "As an Admin, I export and import layout configuration.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-30", "tier": "V1", "text": "As an Admin, I create a rule: \"When Type = Bug, show Severity and make it mandatory.\"", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-31", "tier": "V1", "text": "As an Admin, I chain rules (the result of one rule's set-value triggers another).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-40", "tier": "V1", "text": "As an Admin, I set each field to Hidden, Read-only, or Read & Write per profile.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-50", "tier": "V1", "text": "As an Admin, I create a custom module (e.g., \"Risk\") with fields, a layout, and statuses. It appears in project navigation.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-51", "tier": "V1", "text": "As a user, I create, list, edit, and delete records of a custom module, with comments, attachments, and activity like tasks.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-52", "tier": "V1", "text": "As an Admin, I relate a custom module to Tasks, Issues, or another custom module, and related lists show on both sides.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-53", "tier": "LATER", "text": "As an Admin, I add custom fields to user profiles (e.g., \"Department\", \"Skill\").", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-60", "tier": "V1", "text": "As an Admin, I manage portal-level tags (rename, merge, color, delete).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "CUS-US-61", "tier": "LATER", "text": "As an Admin, I define global picklists reusable across fields.", "proto": "todo", "be": "todo", "fe": "todo"}
+  ]
+},
+{
+  step: 8,
+  name: "Views",
+  phase: 1,
+  service: "Work",
+  req: 2,
+  file: "08-views.md",
+  goal: "Gives people multiple ways to look at and act on the same work: list, board, sheet, and saved filters, both within a project and across all projects (\"My Work\").",
+  scopeIn: "list view, Kanban, sheet view, filters, saved custom views, sharing, global \"My\" views, column chooser, per-user preferences.",
+  scopeOut: "Gantt (13), calendar view (14), reports (20).",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  stories: [
+    {"id": "VEW-US-01", "tier": "MVP", "text": "As a member, I see a project's tasks in a **list view** grouped by task list, with subtasks indented.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "VEW-US-02", "tier": "MVP", "text": "As a member, I sort by any column and group by status, owner, priority, task list, or phase.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "VEW-US-03", "tier": "MVP", "text": "As a member, I filter by status, owner, priority, dates (including relative: \"overdue\", \"due this week\"), and tags.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "VEW-US-04", "tier": "MVP", "text": "As a member, I use a **Kanban board** grouped by status, and drag cards between columns to change status.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "VEW-US-05", "tier": "MVP", "text": "As a member, I edit status, owner, priority, and dates inline in the list view.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "VEW-US-06", "tier": "MVP", "text": "As a user, I open **My Tasks**: all tasks assigned to me across projects, grouped by due date (Overdue, Today, This week, Later).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "VEW-US-07", "tier": "V1", "text": "As a member, I group Kanban by owner, priority, or a custom picklist field. Dragging updates that field.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "VEW-US-08", "tier": "V1", "text": "As a member, I build advanced filters with AND/OR groups on any field, including custom fields.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "VEW-US-09", "tier": "V1", "text": "As a member, I save a filter, sort, columns, and grouping as a named **custom view**, and share it with users, teams, or all project members.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "VEW-US-10", "tier": "V1", "text": "As a user, I choose which columns appear and their order, and my preference is remembered.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "VEW-US-11", "tier": "V1", "text": "As a user, I use a **sheet view**: a dense grid with keyboard navigation and inline edit of all editable fields.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "VEW-US-12", "tier": "V1", "text": "As a user, I open **My Issues** and **My Work** (tasks, issues, and custom-module records assigned to me).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "VEW-US-13", "tier": "V1", "text": "As a user, I see cross-project views (\"All open tasks in my projects\") with project as a column and group.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "VEW-US-14", "tier": "V1", "text": "As a user, my last-used view per project is restored when I return.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "VEW-US-15", "tier": "V1", "text": "As a user, I set WIP limits on Kanban columns (visual warning only).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "VEW-US-16", "tier": "LATER", "text": "As a user, I pin favorite views to the sidebar.", "proto": "todo", "be": "todo", "fe": "todo"}
+  ]
+},
+{
+  step: 9,
+  name: "Notifications",
+  phase: 1,
+  service: "Work → Notification",
+  req: 2,
+  file: "09-notifications.md",
+  goal: "Keeps people informed about what matters to them, through the right channel, at the right frequency, without spamming them.",
+  scopeIn: "in-app notification center, email notifications, real-time push to the open browser, per-user preferences per event type and channel, daily and weekly digests, portal defaults.",
+  scopeOut: "mobile push (no mobile apps), WhatsApp and SMS (LATER, through Automation), user-defined notification rules (Step 18).",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  decisions: [{"date": "2026-10-25", "text": "Starts as a module inside Work; Notification service is extracted in Phase 2."}],
+  stories: [
+    {"id": "NTF-US-01", "tier": "MVP", "text": "As a user, I see a bell icon with an unread count and a list of my notifications, newest first.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "NTF-US-02", "tier": "MVP", "text": "As a user, I click a notification to open the related item, and it's marked read.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "NTF-US-03", "tier": "MVP", "text": "As a user, I mark one or all notifications as read.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "NTF-US-04", "tier": "MVP", "text": "As a user, I receive an email for assignments and mentions.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "NTF-US-05", "tier": "V1", "text": "As a user, I configure per event type whether I get in-app, email, digest, or nothing.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "NTF-US-06", "tier": "V1", "text": "As a user, new notifications appear instantly without refreshing (real-time).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "NTF-US-07", "tier": "V1", "text": "As a user, I receive a daily digest email (at a time I choose, in my time zone) with my overdue items, items due today, and unread activity.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "NTF-US-08", "tier": "V1", "text": "As a user, I get a weekly summary of my projects' progress.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "NTF-US-09", "tier": "V1", "text": "As an Admin, I set portal-wide default preferences for new users.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "NTF-US-10", "tier": "V1", "text": "As a user, I mute notifications for a specific project.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "NTF-US-11", "tier": "V1", "text": "As a user, I reply to a comment-notification email, and my reply is added as a comment.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "NTF-US-12", "tier": "V1", "text": "As a user, I filter the notification center by unread, mentions, or assigned to me.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "NTF-US-13", "tier": "LATER", "text": "As a user, I snooze a notification until later.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "NTF-US-14", "tier": "LATER", "text": "As a user, I set \"do not disturb\" hours.", "proto": "todo", "be": "todo", "fe": "todo"}
+  ]
+},
+{
+  step: 10,
+  name: "Documents",
+  phase: 1,
+  service: "Work",
+  req: 2,
+  file: "10-documents.md",
+  goal: "A single place for a project's files, plus one shared file storage used for attachments on tasks, issues, comments, and forum posts.",
+  scopeIn: "project folders, upload, download, preview, versions, check-in/out, attachments everywhere, storage quotas, Internal/External flag.",
+  scopeOut: "online editing of docs/sheets/slides (out of scope), cloud storage integrations (LATER).",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  stories: [
+    {"id": "DOC-US-01", "tier": "MVP", "text": "As a member, I attach files to tasks and comments (drag and drop, multiple files at once).", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "DOC-US-02", "tier": "MVP", "text": "As a member, I download an attachment, and I preview images and PDFs in the browser.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "DOC-US-03", "tier": "MVP", "text": "As a member, I delete an attachment I uploaded.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "DOC-US-04", "tier": "V1", "text": "As a member, I create folders in a project's Documents area and upload files into them.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "DOC-US-05", "tier": "V1", "text": "As a member, I upload a new version of a document, and I see and download earlier versions.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "DOC-US-06", "tier": "V1", "text": "As a member, I check out a document so others can't upload new versions until I check it back in.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "DOC-US-07", "tier": "V1", "text": "As a member, I move and rename files and folders.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "DOC-US-08", "tier": "V1", "text": "As a Manager, I flag a folder or document External so client users can see it.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "DOC-US-09", "tier": "V1", "text": "As a member, I see all attachments of a project (from tasks and issues) in one \"All files\" view.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "DOC-US-10", "tier": "V1", "text": "As an Admin, I see the portal's storage usage against its quota.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "DOC-US-11", "tier": "LATER", "text": "As a member, I link files from Google Drive, Dropbox, or OneDrive.", "proto": "todo", "be": "todo", "fe": "todo"},
+    {"id": "DOC-US-12", "tier": "LATER", "text": "As a member, I preview Office documents in the browser.", "proto": "todo", "be": "todo", "fe": "todo"}
+  ]
+},
+{
+  step: 11,
+  name: "Issue Tracker",
+  phase: 2,
+  service: "Work",
+  req: 1,
+  file: "11-issue-tracker.md",
+  goal: "A second work type, for bugs, defects, and problem reports. It reuses the work-item engine from Steps 6–7 (comments, attachments, followers, activity, layouts, custom fields, statuses, views) and adds issue-specific fields and intake channels.",
+  scopeIn: "",
+  scopeOut: "",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  stories: [
+    
+  ]
+},
+{
+  step: 12,
+  name: "Search",
+  phase: 2,
+  service: "Work",
+  req: 1,
+  file: "12-search.md",
+  goal: "Find anything quickly (tasks, issues, projects, documents, comments, forum posts, custom records), and never show anything the searcher isn't allowed to see.",
+  scopeIn: "",
+  scopeOut: "",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  stories: [
+    
+  ]
+},
+{
+  step: 13,
+  name: "Scheduling & Gantt",
+  phase: 3,
+  service: "Work",
+  req: 1,
+  file: "13-scheduling-gantt.md",
+  goal: "Plan a project over time: dependencies between tasks, automatic rescheduling, the critical path, and comparison of the plan against reality.",
+  scopeIn: "",
+  scopeOut: "",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  stories: [
+    
+  ]
+},
+{
+  step: 14,
+  name: "Calendar & Events",
+  phase: 3,
+  service: "Work",
+  req: 1,
+  file: "14-calendar-events.md",
+  goal: "A time-based view of work (tasks, phases, events, leave) and the ability to schedule meetings within a project.",
+  scopeIn: "",
+  scopeOut: "",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  stories: [
+    
+  ]
+},
+{
+  step: 15,
+  name: "Time Tracking & Timesheets",
+  phase: 3,
+  service: "Work",
+  req: 1,
+  file: "15-time-tracking.md",
+  goal: "Capture how much time people spend on what, distinguish billable from non-billable work, and get it approved, which feeds utilization (16), budgets (17), and invoicing.",
+  scopeIn: "",
+  scopeOut: "",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  stories: [
+    
+  ]
+},
+{
+  step: 16,
+  name: "Resource Management",
+  phase: 3,
+  service: "Work",
+  req: 1,
+  file: "16-resource-management.md",
+  goal: "Help managers see who is over- or under-loaded and rebalance work before deadlines slip.",
+  scopeIn: "",
+  scopeOut: "",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  stories: [
+    
+  ]
+},
+{
+  step: 17,
+  name: "Budgeting & Finance",
+  phase: 3,
+  service: "Work",
+  req: 1,
+  file: "17-budgeting-finance.md",
+  goal: "Track what a project is expected to cost and earn against what it actually costs and earns, and warn before budgets are blown.",
+  scopeIn: "",
+  scopeOut: "",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  stories: [
+    
+  ]
+},
+{
+  step: 18,
+  name: "Automation (Workflows, Blueprints, SLA)",
+  phase: 4,
+  service: "Work + Automation",
+  req: 1,
+  file: "18-automation.md",
+  goal: "Let portals encode their process: automatic reactions to changes (workflow rules), enforced status flows (blueprints), quality gates (checklists), and time limits with escalation (SLA).",
+  scopeIn: "",
+  scopeOut: "",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  decisions: [{"date": "2026-10-25", "text": "Blueprint transition validation stays in Work; only after-actions go to Automation."}],
+  stories: [
+    
+  ]
+},
+{
+  step: 19,
+  name: "Collaboration Extras",
+  phase: 4,
+  service: "Work",
+  req: 1,
+  file: "19-collaboration.md",
+  goal: "Communication beyond item comments: project activity streams, status updates, discussions, and shared documentation.",
+  scopeIn: "",
+  scopeOut: "",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  stories: [
+    
+  ]
+},
+{
+  step: 20,
+  name: "Reports & Dashboards",
+  phase: 5,
+  service: "Work",
+  req: 1,
+  file: "20-reports-dashboards.md",
+  goal: "Turn the data in the system into answers: are we on track, who is overloaded, where is time going, and what is stuck?",
+  scopeIn: "",
+  scopeOut: "",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  stories: [
+    
+  ]
+},
+{
+  step: 21,
+  name: "Portfolio Management",
+  phase: 5,
+  service: "Work",
+  req: 1,
+  file: "21-portfolio.md",
+  goal: "Give leadership a view across many projects: health, progress, resources, and money.",
+  scopeIn: "",
+  scopeOut: "",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  stories: [
+    
+  ]
+},
+{
+  step: 22,
+  name: "Integrations & Public API",
+  phase: 6,
+  service: "Gateway + Automation",
+  req: 1,
+  file: "22-integrations-api.md",
+  goal: "Let other systems and developers read and act on ProjectY data, and connect ProjectY to the tools teams already use.",
+  scopeIn: "",
+  scopeOut: "",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  stories: [
+    
+  ]
+},
+{
+  step: 23,
+  name: "AI Features",
+  phase: 6,
+  service: "Work",
+  req: 1,
+  file: "23-ai-features.md",
+  goal: "Use LLMs to save people time (summaries, drafting) and surface problems earlier (insights), without leaking data across permission boundaries.",
+  scopeIn: "",
+  scopeOut: "",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  stories: [
+    
+  ]
+},
+{
+  step: 24,
+  name: "Advanced Security, Compliance & Billing",
+  phase: 6,
+  service: "Platform",
+  req: 1,
+  file: "24-advanced-security-billing.md",
+  goal: "Make ProjectY acceptable to larger organizations (SSO, compliance, data control) and commercially viable (plans, gating, billing).",
+  scopeIn: "",
+  scopeOut: "",
+  layers: {"proto": 0, "be": 0, "fe": 0},
+  stories: [
+    
+  ]
+}
+];
+/* Built, but not one of the 24 planned modules. Shown in the list, left out of the counts. */
+const EXTRA = [{
+  step: "+",
+  name: "Admin console & support impersonation",
+  phase: "extra",
+  service: "Platform + admin-console",
+  req: 2,
+  file: "",
+  goal: "Separate Angular app for platform admins: tenants, platform audit, time-boxed support sessions into a customer account.",
+  scopeIn: "Admin sign-in, tenants list and detail, tenant users, platform audit, start impersonation.",
+  scopeOut: "Add/edit/suspend tenant, add/deactivate user, plan, domain, CSV export.",
+  layers: {"proto": 2, "be": 2, "fe": 2},
+  history: [{"date": "2026-10-26", "text": "Slice 2b built from projecty-tenant-admin.html."}],
+  stories: [
+    
+  ]
+}];
+const MISSED = [
+  {"id": "m1", "text": "2FA (SEC-US-08)", "why": "Deferred from M0 to V1.", "module": 3, "source": "docs"},
+  {"id": "m2", "text": "Session list and sign out other devices (SEC-US-09)", "why": "Deferred from M0 to V1.", "module": 3, "source": "docs"},
+  {"id": "m3", "text": "Change password while signed in (SEC-US-13)", "why": "Deferred from M0 to V1.", "module": 3, "source": "docs"},
+  {"id": "m4", "text": "Custom profiles (USR-US-08)", "why": "Only the four system profiles exist today.", "module": 2, "source": "docs"},
+  {"id": "m5", "text": "Admin console: add, edit, suspend tenants; add or deactivate users; plans; domains; CSV export", "why": "Left out of Slice 2b until the backend supports them.", "module": 24, "source": "docs"},
+  {"id": "m6", "text": "Choose the search engine (OpenSearch or PostgreSQL full-text)", "why": "Open in 04-architecture-overview.md; needed before Step 12.", "module": 12, "source": "docs"},
+  {"id": "m7", "text": "Choose object storage for documents (S3-compatible, MinIO locally)", "why": "Open in 04-architecture-overview.md; needed for attachments in Step 6 and Step 10.", "module": 10, "source": "docs"},
+  {"id": "m8", "text": "Choose how custom field values are stored (JSONB or EAV)", "why": "Open in 04-architecture-overview.md; Step 6 and 7 depend on it.", "module": 7, "source": "docs"},
+  {"id": "m9", "text": "Angular architecture: state management, micro-frontends or not", "why": "Open in 04-architecture-overview.md; matters as the app grows past Settings.", "module": 4, "source": "docs"},
+  {"id": "m10", "text": "Deployment target and CI/CD pipeline", "why": "Open in 04-architecture-overview.md. M1 is meant to be the first deployable release.", "module": 4, "source": "docs"},
+  {"id": "m11", "text": "Activity stream (every change on a work item is recorded)", "why": "Every module from Step 6 on must add it (roadmap cross-cutting concerns).", "module": 6, "source": "docs"},
+  {"id": "m12", "text": "Internal / external (client) visibility on every client-visible item", "why": "Roadmap cross-cutting concern; also affects search and reports.", "module": 4, "source": "docs"},
+  {"id": "m13", "text": "Real email sending (SMTP provider) instead of Mailpit", "why": "Not in the docs. Needed before anyone outside local development can sign up.", "module": null, "source": "suggestion"},
+  {"id": "m14", "text": "Logging, error tracking and monitoring for the services", "why": "Not in the docs. Once there are two services it gets hard to debug without it.", "module": null, "source": "suggestion"},
+  {"id": "m15", "text": "API documentation for work-service (Swagger, like Platform has)", "why": "Not in the docs. Platform has springdoc; the frontend is built against that contract.", "module": 4, "source": "suggestion"}
+];
+const CHANGES = [
+  {"when": "2026-11-22", "tag": "changed", "title": "Plans now live in this page", "body": "Instead of separate plan documents, every module has its own plan here: work items per layer, decisions, open questions and history. A banner at the top says what is being built right now."},
+  {"when": "2026-11-22", "tag": "added", "title": "Prototype folder and audit log screen", "body": "A plain HTML/CSS/JS prototype of the whole frontend lives in prototype/. The audit log was designed there and then built in the app, closing the only M0 backend feature without a screen."},
+  {"when": "2026-11-22", "tag": "decided", "title": "Work gets permissions from Platform events", "body": "Platform announces permission changes and Work keeps its own copy, so Work never calls Platform on each request."},
+  {"when": "2026-10-26", "tag": "added", "title": "Kafka event backbone (Slice 5b)", "body": "Events go to Apache Kafka (KRaft) with a documented envelope, so later services can replay history. Contract in docs/07-events.md."},
+  {"when": "2026-10-26", "tag": "deferred", "title": "Trash and project members moved to Step 4", "body": "Both apply to projects, which live in the Work service. M0 only sets the soft-delete convention."},
+  {"when": "2026-10-26", "tag": "deferred", "title": "2FA, session list, change password, custom profiles pushed to V1", "body": "Not needed for the M0 outcome (sign up, invite, log in, assign profiles)."},
+  {"when": "2026-10-26", "tag": "added", "title": "Admin console and support impersonation (Slice 2b)", "body": "Not in the original roadmap. A separate Angular app for platform admins, with separate admin accounts and time-boxed, audited support sessions."},
+  {"when": "2026-10-26", "tag": "changed", "title": "Foundation delivered as five vertical slices", "body": "Instead of finishing Steps 1, 2 and 3 one after another, work was cut into slices that each end with something you can click through."},
+  {"when": "2026-10-25", "tag": "changed", "title": "Own authentication in Platform instead of Keycloak", "body": "Decided and reversed on the same day. Platform signs the tokens, so login screens are native and email links stay in the app."},
+  {"when": "Roadmap", "tag": "decided", "title": "Kept from the original plan", "body": "Modular monolith per service, database per service, almost no service-to-service calls, notifications start inside Work and move out in Phase 2, Automation only in Phase 4."}
+];

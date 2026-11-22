@@ -6,6 +6,8 @@ Plain HTML, CSS and JS for designing screens before they go into `frontend/` (An
 
 Open `index.html` in a browser (double-click is fine, no server or build). Routes are hash-based, e.g. `index.html#/p/northwind-labs/settings/users`.
 
+Screens: sign-in, sign-up, check-email, verify-email, forgot/reset password, portal picker, create portal, accept invite, Home, and Settings (Portal, Users, Audit log, My preferences).
+
 Demo logins (password `password123`):
 
 | Email | What you get |
@@ -23,7 +25,7 @@ css/base.css       frontend/src/styles.scss (global classes: py-btn, py-field, p
 css/auth.css       auth layout, showcases, portal picker, create portal
 css/shell.css      sidebar + top bar
 css/home.css       home
-css/settings.css   settings card, users table, dialogs
+css/settings.css   settings card, users table, audit log, dialogs
 js/icon.js         <py-icon> element
 js/core.js         helpers: field(), input(), dates, theme, router, component()
 js/store.js        the mock backend (all fake data and rules live here)

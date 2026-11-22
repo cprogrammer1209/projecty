@@ -65,6 +65,7 @@
   portalRoute('/p/:slug/settings', 'Settings', { nav: 'settings', crumb: 'Settings', mount: Settings.portal });
   portalRoute('/p/:slug/settings/portal', 'Settings', { nav: 'settings', crumb: 'Settings', mount: Settings.portal });
   portalRoute('/p/:slug/settings/users', 'Settings', { nav: 'settings', crumb: 'Users', mount: Settings.users, permission: 'USERS_VIEW' });
+  portalRoute('/p/:slug/settings/audit', 'Settings', { nav: 'settings', crumb: 'Audit log', mount: Settings.audit, permission: 'AUDIT_VIEW' });
   portalRoute('/p/:slug/settings/preferences', 'Settings', { nav: 'settings', crumb: 'My preferences', mount: Settings.preferences });
 
   Router.start();

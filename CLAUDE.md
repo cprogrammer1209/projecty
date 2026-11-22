@@ -42,4 +42,5 @@ ProjectY-specific additions (the `AppResponse` envelope, events in `api/event/`,
 
 - Current plan and slice status: [docs/05-implementation-plan.md](docs/05-implementation-plan.md). Requirements are in `docs/requirements/`.
 - Explain a new step and wait for a go-ahead before implementing it.
+- Plans live in [docs/project-plan.html](docs/project-plan.html) (data in `docs/project-plan.data.js`), in the module they belong to, not in new plan documents or chat write-ups. Before starting work, set its items to `doing` and move `NOW`; when done, tick it and add a history line.
 - Run locally: `docker compose up -d`, then `cd platform-service && ./mvnw spring-boot:run`. Tests: `./mvnw test` (needs Docker for Testcontainers).

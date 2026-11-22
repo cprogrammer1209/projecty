@@ -15,6 +15,7 @@ const Settings = (() => {
       <nav class="settings-tabs" aria-label="Settings sections">
         <a href="${base}/portal" class="${tab === 'portal' ? 'active' : ''}">Portal</a>
         ${ctx.can('USERS_VIEW') ? `<a href="${base}/users" class="${tab === 'users' ? 'active' : ''}">Users</a>` : ''}
+        ${ctx.can('AUDIT_VIEW') ? `<a href="${base}/audit" class="${tab === 'audit' ? 'active' : ''}">Audit log</a>` : ''}
         <a href="${base}/preferences" class="${tab === 'preferences' ? 'active' : ''}">My preferences</a>
       </nav><div id="tab"></div>`;
     mountTab(el.querySelector('#tab'), ctx);
@@ -225,7 +226,58 @@ const Settings = (() => {
     load();
   }
 
+  /* ---------- Audit log (GET /api/audit-events, AUDIT_VIEW) ---------- */
+  function auditTab(el, ctx) {
+    const ACTION_LABELS = Object.fromEntries(Store.auditActions());
+    const s = { data: null, action: '', page: 0, size: 25, error: null };
+    const when = (t) => formatDate(t, `${ctx.portal.dateFormat}, h:mm a`, ctx.timeZone);
+    const render = (s) => {
+      const d = s.data;
+      const rows = d ? d.items.map((e) => `<tr>
+        <td class="nowrap">${esc(when(e.occurredAt))}</td>
+        <td><span class="badge">${esc(ACTION_LABELS[e.action] ?? e.action)}</span></td>
+        <td><div class="person"><span class="py-avatar py-avatar--sm">${esc(initials(e.actorName))}</span><div><strong>${esc(e.actorName)}</strong>${e.actorType === 'ADMIN' ? '<small>Platform support</small>' : ''}</div></div></td>
+        <td>${e.targetName ? esc(e.targetName) : '<span class="muted">—</span>'}</td>
+        <td>${esc(e.detail ?? '')}</td></tr>`).join('') : '';
+      const body = !d ? '<tr><td colspan="5" class="empty">Loading audit log…</td></tr>' : rows || '<tr><td colspan="5" class="empty">No events match.</td></tr>';
+      const from = d && d.totalItems ? d.page * d.size + 1 : 0, to = d ? Math.min((d.page + 1) * d.size, d.totalItems) : 0;
+      return `<div class="users-page">
+      ${s.error ? alertBox(s.error) : ''}
+      <section class="panel">
+        <div class="panel-head"><div><h2>Audit log</h2><p>Every change to portal settings and people in ${esc(ctx.portal.name)}. Entries can't be edited or deleted.</p></div></div>
+        <div class="filters">
+          <select class="py-select status" name="action" aria-label="Filter by action">${options([['', 'All actions'], ...Store.auditActions()], s.action)}</select>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>When</th><th>Action</th><th>Who</th><th>Affected</th><th>Details</th></tr></thead>
+          <tbody>${body}</tbody></table></div>
+        <div class="pager">
+          <span class="py-caption">${d ? (d.totalItems ? `${from}–${to} of ${d.totalItems}` : '0 events') : ''}</span>
+          <div class="pager-actions">
+            <select class="py-select pager-size" name="size" aria-label="Rows per page">${options([['10', '10 per page'], ['25', '25 per page'], ['50', '50 per page']], String(s.size))}</select>
+            <button class="py-btn py-btn--secondary" type="button" id="prev" ${!d || d.page === 0 ? 'disabled' : ''}>Previous</button>
+            <button class="py-btn py-btn--secondary" type="button" id="next" ${!d || d.page + 1 >= d.totalPages ? 'disabled' : ''}>Next</button>
+          </div>
+        </div>
+      </section></div>`;
+    };
+    let api;
+    const load = async () => {
+      try { s.data = await Store.auditEvents(ctx.portal.id, { action: s.action, page: s.page, size: s.size }); s.error = null; }
+      catch (err) { s.error = err.message; s.data = s.data || { items: [], page: 0, size: s.size, totalItems: 0, totalPages: 1 }; }
+      api.paint();
+    };
+    api = component(el, s, render, (el) => {
+      el.querySelector('[name=action]').addEventListener('change', (e) => { s.action = e.target.value; s.page = 0; s.data = null; api.paint(); load(); });
+      el.querySelector('[name=size]').addEventListener('change', (e) => { s.size = +e.target.value; s.page = 0; s.data = null; api.paint(); load(); });
+      el.querySelector('#prev').addEventListener('click', () => { s.page -= 1; load(); });
+      el.querySelector('#next').addEventListener('click', () => { s.page += 1; load(); });
+    });
+    load();
+  }
+
   return {
+    audit: (el, ctx) => page(el, ctx, 'audit', auditTab),
     portal: (el, ctx) => page(el, ctx, 'portal', portalTab),
     users: (el, ctx) => page(el, ctx, 'users', usersTab),
     preferences: (el, ctx) => page(el, ctx, 'preferences', preferencesTab),

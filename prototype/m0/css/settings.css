@@ -52,3 +52,10 @@
 .settings-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--py-border); margin: 20px 0; }
 .settings-tabs a { padding: 10px 12px; margin-bottom: -1px; border-bottom: 2px solid transparent; color: var(--py-ink-muted); font-size: 13px; text-decoration: none; }
 .settings-tabs a.active { border-bottom-color: var(--py-brand); color: var(--py-brand); font-weight: 600; }
+
+/* Audit log table: reuses the users table styles; these add the pager and small helpers. */
+.users-page .nowrap { white-space: nowrap; }
+.users-page .muted { color: var(--py-ink-muted); }
+.users-page .pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 18px; border-top: 1px solid var(--py-border); flex-wrap: wrap; }
+.users-page .pager-actions { display: flex; align-items: center; gap: 8px; }
+.users-page .pager-size { width: 130px; }

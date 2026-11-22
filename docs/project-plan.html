@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProjectY plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+  // Same saved theme as the app and the prototype.
+  (function () { try { var t = localStorage.getItem('py-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {} })();
+</script>
+<style>
+:root {
+  --surface-0:#FFFFFF; --surface-1:#F6F7F9; --surface-2:#EEF0F3; --border:#E3E6EB; --border-control:#7D8696;
+  --ink:#14161A; --ink-muted:#5B6270; --brand:#2A5BD7; --brand-hover:#2149B8; --brand-subtle:#EBF0FD; --on-brand:#FFFFFF;
+  --done:#127235; --done-subtle:#E6F4EC; --partial:#A44A06; --partial-subtle:#FDF0E1;
+  --shadow-md:0 4px 12px rgba(20,22,26,.08),0 1px 3px rgba(20,22,26,.06); --shadow-lg:0 16px 40px rgba(20,22,26,.18);
+  --font-ui:'Inter',system-ui,sans-serif; --font-mono:'JetBrains Mono',ui-monospace,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --surface-0:#0E0F12; --surface-1:#15171C; --surface-2:#1C1F26; --border:#2A2E37; --border-control:#687083;
+    --ink:#ECEEF2; --ink-muted:#9AA1AE; --brand:#7C9BFF; --brand-hover:#9AB2FF; --brand-subtle:#1A2442; --on-brand:#0E0F12;
+    --done:#4ADE80; --done-subtle:#12301F; --partial:#FFB547; --partial-subtle:#33260F;
+    --shadow-md:0 4px 12px rgba(0,0,0,.5); --shadow-lg:0 16px 40px rgba(0,0,0,.6); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"] {
+  --surface-0:#0E0F12; --surface-1:#15171C; --surface-2:#1C1F26; --border:#2A2E37; --border-control:#687083;
+  --ink:#ECEEF2; --ink-muted:#9AA1AE; --brand:#7C9BFF; --brand-hover:#9AB2FF; --brand-subtle:#1A2442; --on-brand:#0E0F12;
+  --done:#4ADE80; --done-subtle:#12301F; --partial:#FFB547; --partial-subtle:#33260F;
+  --shadow-md:0 4px 12px rgba(0,0,0,.5); --shadow-lg:0 16px 40px rgba(0,0,0,.6); color-scheme:dark;
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html,body { background:var(--surface-1); color:var(--ink); font:400 14px/20px var(--font-ui); -webkit-font-smoothing:antialiased; }
+a { color:var(--brand); } a:hover { color:var(--brand-hover); }
+:focus-visible { outline:2px solid var(--brand); outline-offset:2px; border-radius:4px; }
+button { font:inherit; color:inherit; }
+.wrap { max-width:1180px; margin:0 auto; padding:24px 16px 56px; }
+@media (min-width:700px) { .wrap { padding:32px 32px 72px; } }
+.top { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:20px; }
+.top h1 { font:600 26px/32px var(--font-ui); letter-spacing:-.03em; }
+.top p { color:var(--ink-muted); margin-top:4px; max-width:64ch; }
+.icon-btn { width:32px; height:32px; flex-shrink:0; border:1px solid var(--border); border-radius:7px; background:var(--surface-0); cursor:pointer; display:grid; place-items:center; }
+.icon-btn:hover { background:var(--surface-2); } .icon-btn svg { width:16px; height:16px; }
+.card { background:var(--surface-0); border:1px solid var(--border); border-radius:10px; }
+section.block { margin-top:32px; }
+section.block > h2 { font:600 16px/24px var(--font-ui); letter-spacing:-.01em; }
+section.block > .sub { color:var(--ink-muted); font-size:13px; margin:2px 0 14px; }
+
+/* Now building banner */
+.now { padding:16px 18px; border-color:var(--brand); box-shadow:0 0 0 1px var(--brand); display:grid; gap:10px; }
+.now .eyebrow { font:600 11px/16px var(--font-ui); text-transform:uppercase; letter-spacing:.07em; color:var(--brand); display:flex; align-items:center; gap:8px; }
+.dot { width:8px; height:8px; border-radius:50%; background:var(--brand); }
+.dot.live { animation:pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity:.3; } }
+.now h2 { font:600 20px/28px var(--font-ui); letter-spacing:-.02em; }
+.now h2 span { color:var(--ink-muted); font-weight:500; }
+.now .row { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.now .bar { flex:1; min-width:160px; max-width:420px; height:8px; }
+.now .meta { font-size:13px; color:var(--ink-muted); }
+.now .note { font-size:13px; color:var(--ink-muted); }
+
+/* Summary */
+.summary { display:grid; gap:12px; grid-template-columns:1fr; margin-top:20px; }
+@media (min-width:860px) { .summary { grid-template-columns:260px 1fr; } }
+.overall { padding:18px; display:flex; align-items:center; gap:16px; }
+.ring { --p:0; width:84px; height:84px; border-radius:50%; flex-shrink:0; display:grid; place-items:center; background:conic-gradient(var(--done) calc(var(--p) * 1%), var(--surface-2) 0); }
+.ring span { width:64px; height:64px; border-radius:50%; background:var(--surface-0); display:grid; place-items:center; font:600 18px/1 var(--font-ui); letter-spacing:-.02em; }
+.overall b { display:block; font-weight:600; } .overall small { color:var(--ink-muted); font-size:12px; }
+.cols { display:grid; gap:12px; grid-template-columns:repeat(2,minmax(0,1fr)); }
+@media (min-width:640px) { .cols { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+.col { padding:14px 16px; } .col .label { font-size:12px; color:var(--ink-muted); }
+.col .num { font:600 22px/1 var(--font-ui); letter-spacing:-.03em; margin:10px 0 8px; }
+.col .num small { font:400 12px/1 var(--font-ui); color:var(--ink-muted); letter-spacing:0; margin-left:4px; }
+.col .hint { font-size:11px; color:var(--ink-muted); margin-top:6px; min-height:16px; }
+.bar { height:6px; border-radius:99px; background:var(--surface-2); overflow:hidden; display:flex; }
+.bar i { display:block; height:100%; } .bar .d { background:var(--done); } .bar .p { background:var(--partial); }
+
+/* Roadmap strip */
+.road { display:flex; gap:0; overflow-x:auto; padding:4px 2px 10px; }
+.node { flex:1 0 132px; position:relative; background:none; border:0; cursor:pointer; text-align:left; padding:0 8px 0 0; }
+.node::before { content:""; position:absolute; left:26px; right:0; top:15px; height:2px; background:var(--border); }
+.node:last-child::before { display:none; }
+.node.done::before { background:var(--done); }
+.node .mark { position:relative; width:32px; height:32px; border-radius:50%; background:var(--surface-0); border:2px solid var(--border-control); display:grid; place-items:center; font:600 11px/1 var(--font-mono); z-index:1; }
+.node.done .mark { background:var(--done); border-color:var(--done); color:var(--on-brand); }
+.node.progress .mark, .node.next .mark { border-color:var(--brand); color:var(--brand); box-shadow:0 0 0 3px var(--brand-subtle); }
+.node.sel .mark { box-shadow:0 0 0 3px var(--brand-subtle), 0 0 0 5px var(--brand); }
+.node b { display:block; font:600 13px/18px var(--font-ui); margin-top:8px; }
+.node small { display:block; font-size:12px; color:var(--ink-muted); line-height:16px; }
+.mdetail { margin-top:6px; padding:12px 14px; font-size:13px; color:var(--ink-muted); }
+.mdetail b { color:var(--ink); }
+
+.chip { display:inline-flex; align-items:center; height:20px; padding:0 8px; border-radius:99px; font:600 11px/1 var(--font-ui); border:1px solid var(--border); background:var(--surface-1); color:var(--ink-muted); white-space:nowrap; }
+.chip.done { color:var(--done); background:var(--done-subtle); border-color:transparent; }
+.chip.progress { color:var(--partial); background:var(--partial-subtle); border-color:transparent; }
+.chip.next, .chip.now { color:var(--brand); background:var(--brand-subtle); border-color:transparent; }
+
+/* Controls */
+.controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px; }
+.input, .select { height:32px; padding:0 10px; border:1px solid var(--border-control); border-radius:6px; background:var(--surface-0); color:var(--ink); font:400 13px/20px var(--font-ui); }
+.input { width:min(260px,100%); }
+.check { display:inline-flex; align-items:center; gap:6px; font-size:13px; cursor:pointer; }
+.btn { height:32px; padding:0 12px; border-radius:6px; border:1px solid var(--border-control); background:var(--surface-0); cursor:pointer; font:500 13px/18px var(--font-ui); }
+.btn:hover { background:var(--surface-2); }
+.btn.primary { background:var(--brand); border-color:var(--brand); color:var(--on-brand); } .btn.primary:hover { background:var(--brand-hover); }
+.legend { display:flex; flex-wrap:wrap; gap:14px; margin-left:auto; font-size:12px; color:var(--ink-muted); align-items:center; }
+.legend span { display:inline-flex; align-items:center; gap:6px; }
+
+/* Table */
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; min-width:760px; }
+th { text-align:left; font:600 11px/16px var(--font-ui); text-transform:uppercase; letter-spacing:.05em; color:var(--ink-muted); background:var(--surface-1); padding:9px 12px; }
+th.c, td.c { text-align:center; width:96px; }
+td { padding:10px 12px; border-top:1px solid var(--border); vertical-align:middle; }
+tr.phase td { background:var(--surface-1); }
+tr.phase .ph { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+tr.phase b { font:600 13px/18px var(--font-ui); } tr.phase small { color:var(--ink-muted); font-size:12px; }
+tr.phase .bar { width:120px; margin-left:auto; }
+tr.mrow { cursor:pointer; } tr.mrow:hover td { background:var(--surface-1); }
+tr.mrow.is-now td { background:var(--brand-subtle); }
+.step { font:500 12px/16px var(--font-mono); color:var(--ink-muted); width:48px; }
+.namebtn { background:none; border:0; padding:0; cursor:pointer; text-align:left; font-weight:500; }
+.namebtn:hover { color:var(--brand); }
+.note { display:block; font-size:12px; color:var(--ink-muted); margin-top:2px; max-width:60ch; }
+.svc { font-size:12px; color:var(--ink-muted); white-space:nowrap; }
+tr.row-done .namebtn::after { content:"✓"; color:var(--done); margin-left:8px; font-weight:600; }
+tr.extra .namebtn::before { content:"Added later"; font:600 10px/1 var(--font-ui); text-transform:uppercase; letter-spacing:.04em; color:var(--brand); background:var(--brand-subtle); padding:3px 6px; border-radius:4px; margin-right:8px; }
+.empty { text-align:center; color:var(--ink-muted); padding:24px; }
+
+/* Tri-state box */
+.cell { width:26px; height:26px; border-radius:7px; border:1.5px solid var(--border-control); background:var(--surface-0); cursor:pointer; display:inline-grid; place-items:center; padding:0; transition:background .12s,border-color .12s; vertical-align:middle; flex-shrink:0; }
+.cell:hover { border-color:var(--ink-muted); }
+.cell svg { width:14px; height:14px; display:none; }
+.cell[aria-pressed="true"] { background:var(--done); border-color:var(--done); color:var(--on-brand); } .cell[aria-pressed="true"] .i-check { display:block; }
+.cell[aria-pressed="mixed"] { background:var(--partial-subtle); border-color:var(--partial); color:var(--partial); } .cell[aria-pressed="mixed"] .i-half { display:block; }
+.cell.ro { cursor:default; } .cell.ro:hover { border-color:var(--border-control); }
+.cell.ro[aria-pressed="true"]:hover { border-color:var(--done); } .cell.ro[aria-pressed="mixed"]:hover { border-color:var(--partial); }
+.lg { display:inline-block; width:14px; height:14px; border-radius:4px; border:1.5px solid var(--border-control); }
+.lg.d { background:var(--done); border-color:var(--done); } .lg.p { background:var(--partial-subtle); border-color:var(--partial); }
+
+/* Missed list */
+.list { list-style:none; display:grid; gap:8px; }
+.list li { display:flex; gap:12px; align-items:flex-start; padding:12px 14px; }
+.list .t { font-weight:500; } .list .d { font-size:12px; color:var(--ink-muted); margin-top:2px; max-width:80ch; }
+.list .tags { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+.tag { font:600 10px/1 var(--font-ui); text-transform:uppercase; letter-spacing:.05em; padding:4px 6px; border-radius:4px; background:var(--surface-2); color:var(--ink-muted); border:0; }
+button.tag { cursor:pointer; } button.tag:hover { color:var(--brand); }
+.tag.changed { background:var(--partial-subtle); color:var(--partial); } .tag.added, .tag.suggestion { background:var(--brand-subtle); color:var(--brand); }
+.tag.decided { background:var(--done-subtle); color:var(--done); }
+
+/* Timeline */
+.timeline { list-style:none; position:relative; padding-left:22px; }
+.timeline::before { content:""; position:absolute; left:5px; top:6px; bottom:6px; width:2px; background:var(--border); }
+.timeline li { position:relative; padding:0 0 16px; }
+.timeline li::before { content:""; position:absolute; left:-22px; top:5px; width:12px; height:12px; border-radius:50%; background:var(--surface-0); border:2px solid var(--brand); }
+.timeline .when { font:500 12px/16px var(--font-mono); color:var(--ink-muted); }
+.timeline .what { font-weight:500; margin-top:2px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.timeline p { color:var(--ink-muted); font-size:13px; margin-top:2px; max-width:80ch; }
+footer { margin-top:40px; color:var(--ink-muted); font-size:12px; display:flex; flex-wrap:wrap; gap:6px 16px; }
+
+[hidden] { display:none !important; }
+/* Module plan drawer */
+.overlay { position:fixed; inset:0; background:rgba(12,16,24,.45); z-index:40; }
+.drawer { position:fixed; top:0; right:0; bottom:0; width:min(640px,100%); background:var(--surface-0); border-left:1px solid var(--border); box-shadow:var(--shadow-lg); z-index:41; display:flex; flex-direction:column; }
+.drawer-head { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; gap:12px; }
+.drawer-head h2 { font:600 18px/26px var(--font-ui); letter-spacing:-.02em; }
+.drawer-head .sub { color:var(--ink-muted); font-size:12px; margin-top:2px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.drawer-body { overflow-y:auto; padding:4px 20px 28px; flex:1; }
+.dsec { margin-top:20px; }
+.dsec h3 { font:600 12px/16px var(--font-ui); text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); margin-bottom:8px; display:flex; gap:8px; align-items:center; }
+.dsec p { font-size:13px; max-width:70ch; } .dsec p + p { margin-top:4px; color:var(--ink-muted); }
+.lanes { display:grid; gap:8px; grid-template-columns:repeat(2,minmax(0,1fr)); }
+.lane { padding:10px 12px; background:var(--surface-1); border:1px solid var(--border); border-radius:8px; }
+.lane .l { font-size:12px; color:var(--ink-muted); display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; } .lane .bar { margin-top:8px; }
+.tasks { list-style:none; display:grid; gap:2px; }
+.task { display:flex; gap:10px; align-items:flex-start; padding:6px 0; font-size:13px; }
+.task .cell { width:22px; height:22px; border-radius:6px; margin-top:-1px; } .task .cell svg { width:12px; height:12px; }
+.task.done span { color:var(--ink-muted); text-decoration:line-through; }
+.lane-title { font:600 12px/16px var(--font-ui); margin:12px 0 2px; color:var(--ink); }
+.stories { width:100%; border-collapse:collapse; min-width:0; font-size:12px; }
+.stories th { padding:6px 4px; font-size:10px; } .stories td { padding:7px 4px; border-top:1px solid var(--border); vertical-align:top; }
+.stories .sid { font:500 11px/16px var(--font-mono); color:var(--ink-muted); white-space:nowrap; padding-right:8px; }
+.stories .stext { max-width:0; width:100%; } .stories .stext span { display:block; }
+.stories td.sc, .stories th.sc { width:34px; text-align:center; }
+.sb { width:24px; height:24px; border-radius:6px; border:1.5px solid var(--border-control); background:var(--surface-0); cursor:pointer; font:600 11px/1 var(--font-ui); padding:0; }
+.sb.doing { background:var(--partial-subtle); border-color:var(--partial); color:var(--partial); }
+.sb.done { background:var(--done); border-color:var(--done); color:var(--on-brand); }
+.sb.na, .sb.deferred { border-style:dashed; border-color:var(--border); color:var(--ink-muted); background:transparent; cursor:default; }
+.moved { display:block; font-size:11px; color:var(--brand); margin-top:2px; }
+details summary { cursor:pointer; font-size:13px; font-weight:500; padding:6px 0; }
+.dl { list-style:none; display:grid; gap:8px; font-size:13px; }
+.dl li { display:flex; gap:10px; } .dl .when { font:500 11px/20px var(--font-mono); color:var(--ink-muted); white-space:nowrap; }
+.q::before { content:"?"; display:inline-grid; place-items:center; width:16px; height:16px; border-radius:50%; background:var(--partial-subtle); color:var(--partial); font:600 11px/1 var(--font-ui); margin-right:8px; }
+@media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>ProjectY plan</h1>
+      <p>The one place for the plan: what is being built now, how every module stands, and what is still ahead. Click a module to open its own plan.</p>
+    </div>
+    <button class="icon-btn" id="theme" type="button" aria-label="Switch theme"></button>
+  </header>
+
+  <div id="now"></div>
+  <div class="summary" id="summary"></div>
+
+  <section class="block">
+    <h2>Roadmap</h2>
+    <p class="sub">Seven milestones, in order. Click one to see its modules below.</p>
+    <div class="road" id="road" role="list"></div>
+    <div class="card mdetail" id="mdetail"></div>
+  </section>
+
+  <section class="block" id="modules">
+    <h2>Modules</h2>
+    <p class="sub">The 24 modules of <a href="03-roadmap.md">the roadmap</a>, in build order. A box is ticked when every MVP story of that module is built for that layer. Click a row for the module's plan.</p>
+    <div class="controls">
+      <input class="input" id="q" type="search" placeholder="Search module, service or note" aria-label="Search modules">
+      <select class="select" id="phase" aria-label="Filter by phase"></select>
+      <label class="check"><input type="checkbox" id="hide"> Hide finished</label>
+      <button class="btn" id="reset" type="button">Reset my changes</button>
+      <div class="legend"><span><i class="lg"></i>Not started</span><span><i class="lg p"></i>Partly / outline only</span><span><i class="lg d"></i>Done</span></div>
+    </div>
+    <div class="card table-wrap"><table id="table"></table></div>
+  </section>
+
+  <section class="block">
+    <h2>You may have missed</h2>
+    <p class="sub">Things found in the docs (or suggested by me, marked) that no module's plan covers yet. Tick them off or assign them to a module as you decide.</p>
+    <ul class="list" id="missed"></ul>
+  </section>
+
+  <section class="block">
+    <h2>How the plan has changed</h2>
+    <p class="sub">What differs from the original roadmap, newest first.</p>
+    <div class="card" style="padding:20px 20px 4px"><ol class="timeline" id="timeline"></ol></div>
+  </section>
+
+  <footer><span id="updated"></span><a href="03-roadmap.md">Roadmap</a><a href="05-implementation-plan.md">Implementation plan</a><a href="requirements/README.md">Requirements</a></footer>
+</div>
+
+<div class="overlay" id="overlay" hidden></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" hidden></aside>
+
+<script src="project-plan.data.js"></script>
+<script>
+/* ===== drawing code only. The plan itself is in project-plan.data.js ===== */
+const KEY = 'py-plan-v2';
+const LAYERS = [['req', 'Requirements', 'R'], ['proto', 'Prototype', 'P'], ['be', 'Backend', 'B'], ['fe', 'Frontend', 'F']];
+const LAYER_NAME = Object.fromEntries(LAYERS.map(([k, n]) => [k, n]));
+const $ = (s) => document.querySelector(s);
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const CHECK = '<svg class="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+const HALF = '<svg class="i-half" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12h14"/></svg>';
+const BOXES = ['todo', 'doing', 'done'];
+const STATE_WORD = { todo: 'not started', doing: 'in progress', done: 'done', na: 'not applicable', deferred: 'moved to another step' };
+
+let saved = {};
+try { saved = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
+const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {} };
+const cycle = (s) => BOXES[(BOXES.indexOf(s) + 1) % 3];
+
+/* ---- effective state (data file value, unless the user changed it here) ---- */
+const sKey = (m, s, l) => `s:${m.step}:${s.id}:${l}`;
+const tKey = (m, i) => `t:${m.step}:${i}`;
+const storyState = (m, s, l) => saved[sKey(m, s, l)] ?? s[l];
+const taskState = (m, i) => saved[tKey(m, i)] ?? m.tasks[i].state;
+const manualLayer = (m, l) => saved[`c:${m.step}:${l}`] ?? m.layers[l];
+const mvp = (m, l) => m.stories.filter((s) => s.tier === 'MVP' && !['na', 'deferred'].includes(storyState(m, s, l)));
+const tasksOf = (m, l) => (m.tasks || []).map((t, i) => ({ ...t, i, state: taskState(m, i) })).filter((t) => t.layer === l);
+const fromStates = (states) => (states.every((x) => x === 'done') ? 2 : states.some((x) => x === 'done' || x === 'doing') ? 1 : 0);
+/* A layer is judged by its work items if the module has any, else by its MVP stories, else by the manual box. */
+function layerVal(m, l) {
+  if (l === 'req') return m.req;
+  const t = tasksOf(m, l);
+  if (t.length) return fromStates(t.map((x) => x.state));
+  const st = mvp(m, l);
+  if (st.length) return fromStates(st.map((s) => storyState(m, s, l)));
+  return manualLayer(m, l);
+}
+const manualOnly = (m, l) => l !== 'req' && !tasksOf(m, l).length && !mvp(m, l).length;
+const rowDone = (m) => LAYERS.every(([l]) => layerVal(m, l) === 2);
+const mods = () => [...MODULES, ...EXTRA];
+const byStep = (s) => mods().find((m) => String(m.step) === String(s));
+const pct = (list) => { const c = list.flatMap((m) => LAYERS.map(([l]) => layerVal(m, l))); return c.length ? Math.round(c.reduce((a, b) => a + b, 0) / (c.length * 2) * 100) : 0; };
+const bar = (d, p, t) => `<div class="bar" role="img" aria-label="${d} done, ${p} partly, of ${t}"><i class="d" style="width:${t ? d / t * 100 : 0}%"></i><i class="p" style="width:${t ? p / t * 100 : 0}%"></i></div>`;
+const boxAttr = (v) => (v === 'done' || v === 2 ? 'true' : v === 'doing' || v === 1 ? 'mixed' : 'false');
+const word = (v) => (typeof v === 'number' ? ['not started', 'partly done or outline only', 'done'][v] : STATE_WORD[v]);
+
+/* ---- NOW banner ---- */
+function renderNow() {
+  const m = byStep(NOW.step); const l = NOW.layer;
+  const t = tasksOf(m, l); const done = t.filter((x) => x.state === 'done').length; const doing = t.filter((x) => x.state === 'doing').length;
+  const building = NOW.state === 'building' || doing > 0 || done > 0;
+  $('#now').innerHTML = `<div class="card now"><div class="eyebrow"><span class="dot ${building ? 'live' : ''}"></span>${building ? 'Building now' : 'Next up'}</div>
+    <h2>Step ${m.step} · ${esc(m.name)} <span>›</span> ${esc(LAYER_NAME[l])}</h2>
+    <div class="row">${t.length ? bar(done, doing, t.length) + `<span class="meta">${done} of ${t.length} work items done${doing ? `, ${doing} in progress` : ''}</span>` : ''}
+    <button class="btn primary" type="button" data-open="${m.step}">Open this plan →</button></div>
+    ${NOW.note && !building ? `<div class="note">${esc(NOW.note)}</div>` : ''}</div>`;
+}
+
+function renderSummary() {
+  const total = MODULES.length, p = pct(MODULES);
+  const cols = LAYERS.map(([l, label]) => {
+    const d = MODULES.filter((m) => layerVal(m, l) === 2).length, h = MODULES.filter((m) => layerVal(m, l) === 1).length;
+    return `<div class="card col"><div class="label">${label}</div><div class="num">${d}<small>of ${total} modules</small></div>${bar(d, h, total)}<div class="hint">${h ? `${h} partly / outline` : ''}</div></div>`;
+  }).join('');
+  $('#summary').innerHTML = `<div class="card overall"><div class="ring" style="--p:${p}" role="img" aria-label="${p}% overall"><span>${p}%</span></div><div><b>Overall</b><small>done = 1, partly = ½, over ${total} modules × 4 layers (MVP scope).</small></div></div><div class="cols">${cols}</div>`;
+}
+
+/* ---- roadmap ---- */
+let selMs = null;
+function msInfo(ms) {
+  const phaseIds = PHASES.filter((p) => p.ms === ms).map((p) => p.id);
+  const list = MODULES.filter((m) => phaseIds.includes(m.phase));
+  const nowMs = PHASES[byStep(NOW.step).phase]?.ms;
+  let state = 'todo', label = 'Not started';
+  if (list.every(rowDone)) { state = 'done'; label = 'Done'; }
+  else if (list.some((m) => ['proto', 'be', 'fe'].some((l) => layerVal(m, l) > 0))) { state = 'progress'; label = 'In progress'; }
+  else if (nowMs === ms) { state = 'next'; label = 'Next up'; }
+  return { list, state, label, pct: pct(list) };
+}
+function renderRoad() {
+  $('#road').innerHTML = MILESTONES.map((m) => { const i = msInfo(m.id);
+    return `<button class="node ${i.state}${selMs === m.id ? ' sel' : ''}" type="button" role="listitem" data-ms="${m.id}" aria-pressed="${selMs === m.id}"><span class="mark">${i.state === 'done' ? '✓' : m.id}</span><b>${esc(m.name)}</b><small>${i.label} · ${i.pct}%</small></button>`; }).join('');
+  /* With nothing selected, describe the first milestone that is not finished. */
+  const m = MILESTONES.find((x) => x.id === (selMs || MILESTONES.find((y) => msInfo(y.id).state !== 'done')?.id)) || MILESTONES[0];
+  const i = msInfo(m.id);
+  $('#mdetail').innerHTML = `<b>${m.id} · ${esc(m.name)}</b> <span class="chip ${i.state}">${i.label}</span><br>${esc(m.what)} <br>Steps ${i.list[0].step}–${i.list[i.list.length - 1].step}: ${i.list.map((x) => esc(x.name)).join(', ')}.`;
+}
+
+/* ---- table ---- */
+function cell(m, l) {
+  const v = layerVal(m, l);
+  const label = `${LAYER_NAME[l]} for ${m.name}: ${word(v)}`;
+  const ro = !manualOnly(m, l);
+  return `<button class="cell${ro ? ' ro' : ''}" type="button" ${ro ? 'tabindex="-1"' : `data-c="${m.step}:${l}"`} aria-pressed="${boxAttr(v)}" aria-label="${esc(label)}${ro ? '' : '. Click to change.'}" title="${esc(ro ? 'Worked out from the module plan. Click the row to open it.' : 'No stories or work items yet: click to set by hand.')}">${CHECK}${HALF}</button>`;
+}
+function renderTable() {
+  const q = $('#q').value.trim().toLowerCase(), phase = $('#phase').value, hide = $('#hide').checked;
+  const match = (m) => (!q || `${m.name} ${m.service}`.toLowerCase().includes(q)) && (!hide || !rowDone(m)) && (!selMs || m.phase === 'extra' || PHASES[m.phase].ms === selMs);
+  let body = '';
+  const group = (title, sub, list, key) => {
+    const shown = list.filter(match);
+    if (!shown.length || (phase !== 'all' && phase !== String(key))) return;
+    body += `<tr class="phase"><td colspan="7"><div class="ph"><b>${esc(title)}</b><small>${esc(sub)}</small>${bar(list.filter(rowDone).length, 0, list.length)}</div></td></tr>`;
+    body += shown.map((m) => `<tr class="mrow${rowDone(m) ? ' row-done' : ''}${m.phase === 'extra' ? ' extra' : ''}${m.step === NOW.step ? ' is-now' : ''}" data-open="${m.step}">
+      <td class="step">${m.step}</td><td><button class="namebtn" type="button" data-open="${m.step}">${esc(m.name)}</button>${m.step === NOW.step ? ' <span class="chip now">Now</span>' : ''}
+      <span class="note">${m.stories.length ? `${m.stories.filter((s) => s.tier === 'MVP').length} MVP stories` : 'Outline only, stories not detailed yet'}${m.tasks ? ` · ${m.tasks.length} work items` : ''}</span></td><td class="svc">${esc(m.service)}</td>
+      ${LAYERS.map(([l]) => `<td class="c">${cell(m, l)}</td>`).join('')}</tr>`).join('');
+  };
+  PHASES.forEach((ph) => { const list = MODULES.filter((m) => m.phase === ph.id); group(ph.name, `${ph.ms} · ${pct(list)}%`, list, ph.id); });
+  group('Added after the original plan', 'Built, but not one of the 24 modules', EXTRA, 'extra');
+  $('#table').innerHTML = `<thead><tr><th>Step</th><th>Module</th><th>Service</th>${LAYERS.map(([, n]) => `<th class="c">${n}</th>`).join('')}</tr></thead><tbody>${body || '<tr><td colspan="7" class="empty">No modules match.</td></tr>'}</tbody>`;
+}
+
+/* ---- missed ---- */
+function renderMissed() {
+  $('#missed').innerHTML = MISSED.map((x) => { const v = saved['x:' + x.id] ?? 'todo'; const m = x.module ? byStep(x.module) : null;
+    return `<li class="card"><button class="cell" type="button" data-x="${x.id}" aria-pressed="${boxAttr(v)}" aria-label="${esc(x.text)}: ${word(v)}. Click to change.">${CHECK}${HALF}</button>
+    <div><div class="t">${esc(x.text)}</div><div class="d">${esc(x.why)}</div><div class="tags">${x.source === 'suggestion' ? '<span class="tag suggestion">My suggestion, not in the docs</span>' : '<span class="tag">From the docs</span>'}${m ? `<button class="tag" type="button" data-open="${m.step}">Belongs to Step ${m.step} · ${esc(m.name)}</button>` : '<span class="tag">No module yet</span>'}</div></div></li>`; }).join('');
+}
+function renderTimeline() {
+  $('#timeline').innerHTML = CHANGES.map((c) => `<li><div class="when">${esc(c.when)}</div><div class="what"><span class="tag ${c.tag}">${c.tag}</span>${esc(c.title)}</div><p>${esc(c.body)}</p></li>`).join('');
+}
+
+/* ---- module plan drawer ---- */
+let openStep = null, lastFocus = null;
+function laneBlock(m, l, label) {
+  const t = tasksOf(m, l);
+  const items = t.length ? t : mvp(m, l).map((s) => ({ state: storyState(m, s, l) }));
+  const d = items.filter((x) => x.state === 'done').length, p = items.filter((x) => x.state === 'doing').length;
+  const text = l === 'req' ? (m.req === 2 ? 'Draft written' : 'Outline only') : items.length ? `${d} of ${items.length}` : 'nothing planned yet';
+  return `<div class="lane"><div class="l"><span>${label}</span><b>${text}</b></div>${l === 'req' ? bar(m.req === 2 ? 1 : 0, m.req === 1 ? 1 : 0, 1) : bar(d, p, items.length || 1)}</div>`;
+}
+function storyBtn(m, s, l, short) {
+  const v = storyState(m, s, l);
+  const ico = { todo: '', doing: '◐', done: '✓', na: '–', deferred: '→' }[v];
+  const fixed = v === 'na' || v === 'deferred';
+  return `<button class="sb ${v}" type="button" ${fixed ? 'tabindex="-1"' : `data-s="${m.step}|${s.id}|${l}"`} aria-label="${LAYER_NAME[l]} for ${esc(s.id)}: ${STATE_WORD[v]}${fixed ? '' : '. Click to change.'}" title="${LAYER_NAME[l]}: ${STATE_WORD[v]}">${ico || short}</button>`;
+}
+function storyRow(m, s) {
+  const moved = s.movedTo ? `<span class="moved">Moved to Step ${s.movedTo}</span>` : s.movedFrom ? `<span class="moved">Moved in from Step ${s.movedFrom}</span>` : '';
+  return `<tr><td class="sid">${esc(s.id)}</td><td class="stext"><span>${esc(s.text)}</span>${moved}</td>${[['proto', 'P'], ['be', 'B'], ['fe', 'F']].map(([l, k]) => `<td class="sc">${storyBtn(m, s, l, k)}</td>`).join('')}</tr>`;
+}
+function renderDrawer() {
+  const m = byStep(openStep); if (!m) return;
+  const tasks = (m.tasks || []);
+  const mv = m.stories.filter((s) => s.tier === 'MVP'), later = m.stories.filter((s) => s.tier !== 'MVP');
+  const head = `<tr><th>Story</th><th></th><th class="sc" title="Prototype">P</th><th class="sc" title="Backend">B</th><th class="sc" title="Frontend">F</th></tr>`;
+  const ph = m.phase === 'extra' ? 'Added after the plan' : PHASES[m.phase].name;
+  $('#drawer').innerHTML = `<div class="drawer-head"><div style="flex:1"><h2 id="drawer-title">${m.step === '+' ? '' : `Step ${m.step} · `}${esc(m.name)}</h2>
+      <div class="sub"><span>${esc(ph)}</span><span>·</span><span>${esc(m.service)}</span>${m.step === NOW.step ? '<span class="chip now">Now</span>' : ''}${rowDone(m) ? '<span class="chip done">Done</span>' : ''}</div></div>
+      <button class="icon-btn" type="button" data-close aria-label="Close plan">✕</button></div>
+    <div class="drawer-body">
+      <div class="dsec"><h3>Goal</h3><p>${esc(m.goal || 'Not written yet.')}</p>${m.scopeIn ? `<p><b>In:</b> ${esc(m.scopeIn)}</p>` : ''}${m.scopeOut ? `<p><b>Out:</b> ${esc(m.scopeOut)}</p>` : ''}${m.file ? `<p><a href="requirements/${esc(m.file)}">Requirements file</a></p>` : ''}</div>
+      <div class="dsec"><h3>Progress by layer</h3><div class="lanes">${LAYERS.map(([l, n]) => laneBlock(m, l, n)).join('')}</div></div>
+      ${tasks.length ? `<div class="dsec"><h3>Work items</h3>${LAYERS.map(([l, n]) => { const t = tasksOf(m, l); return t.length ? `<div class="lane-title">${n}</div><ul class="tasks">${t.map((x) => `<li class="task ${x.state}"><button class="cell" type="button" data-t="${m.step}:${x.i}" aria-pressed="${boxAttr(x.state)}" aria-label="${esc(x.text)}: ${STATE_WORD[x.state]}. Click to change.">${CHECK}${HALF}</button><span>${esc(x.text)}</span></li>`).join('')}</ul>` : ''; }).join('')}</div>` : ''}
+      <div class="dsec"><h3>Stories <span class="chip">${mv.length} MVP</span></h3>${mv.length ? `<table class="stories">${head}${mv.map((s) => storyRow(m, s)).join('')}</table>` : '<p>Stories are not detailed yet (requirements are an outline). They are written before this phase starts.</p>'}
+        ${later.length ? `<details><summary>${later.length} V1 / later stories (not counted in progress)</summary><table class="stories">${head}${later.map((s) => storyRow(m, s)).join('')}</table></details>` : ''}</div>
+      ${(m.decisions || []).length ? `<div class="dsec"><h3>Decisions</h3><ul class="dl">${m.decisions.map((d) => `<li><span class="when">${esc(d.date)}</span><span>${esc(d.text)}</span></li>`).join('')}</ul></div>` : ''}
+      ${(m.questions || []).length ? `<div class="dsec"><h3>Open questions</h3><ul class="dl">${m.questions.map((q) => `<li class="q">${esc(q.text)}</li>`).join('')}</ul></div>` : ''}
+      ${(m.history || []).length ? `<div class="dsec"><h3>History</h3><ul class="dl">${[...m.history].reverse().map((d) => `<li><span class="when">${esc(d.date)}</span><span>${esc(d.text)}</span></li>`).join('')}</ul></div>` : ''}
+    </div>`;
+}
+function openDrawer(step) {
+  if (!byStep(step)) return;
+  lastFocus = document.activeElement; openStep = String(step);
+  renderDrawer(); $('#drawer').hidden = false; $('#overlay').hidden = false;
+  document.body.style.overflow = 'hidden'; $('#drawer [data-close]').focus();
+  if (location.hash !== '#step-' + step) history.replaceState(null, '', '#step-' + step);
+}
+function closeDrawer() {
+  openStep = null; $('#drawer').hidden = true; $('#overlay').hidden = true; document.body.style.overflow = '';
+  history.replaceState(null, '', location.pathname + location.search); lastFocus?.focus?.();
+}
+
+function renderAll() { renderNow(); renderSummary(); renderRoad(); renderTable(); renderMissed(); if (openStep) renderDrawer(); }
+
+document.addEventListener('click', (e) => {
+  const t = e.target;
+  const close = t.closest('[data-close]'); if (close || t.id === 'overlay') return closeDrawer();
+  const sb = t.closest('[data-s]');
+  if (sb) { const [step, id, l] = sb.dataset.s.split('|'); const m = byStep(step), s = m.stories.find((x) => x.id === id); saved[sKey(m, s, l)] = cycle(storyState(m, s, l)); persist(); const y = $('.drawer-body').scrollTop; renderAll(); $('.drawer-body').scrollTop = y; $(`[data-s="${sb.dataset.s}"]`)?.focus(); return; }
+  const tk = t.closest('[data-t]');
+  if (tk) { const [step, i] = tk.dataset.t.split(':'); const m = byStep(step); saved[tKey(m, +i)] = cycle(taskState(m, +i)); persist(); const y = $('.drawer-body').scrollTop; renderAll(); $('.drawer-body').scrollTop = y; $(`[data-t="${tk.dataset.t}"]`)?.focus(); return; }
+  const c = t.closest('[data-c]');
+  if (c) { const [step, l] = c.dataset.c.split(':'); const m = byStep(step); const v = (manualLayer(m, l) + 1) % 3; saved[`c:${step}:${l}`] = v; persist(); renderAll(); $(`[data-c="${c.dataset.c}"]`)?.focus(); return; }
+  const x = t.closest('[data-x]');
+  if (x) { saved['x:' + x.dataset.x] = cycle(saved['x:' + x.dataset.x] ?? 'todo'); persist(); renderMissed(); $(`[data-x="${x.dataset.x}"]`)?.focus(); return; }
+  const ms = t.closest('[data-ms]');
+  if (ms) { selMs = selMs === ms.dataset.ms ? null : ms.dataset.ms; renderRoad(); renderTable(); $(`[data-ms="${ms.dataset.ms}"]`)?.focus(); return; }
+  const op = t.closest('[data-open]');
+  if (op) { if (!$('#drawer').hidden) { openStep = op.dataset.open; renderDrawer(); $('.drawer-body').scrollTop = 0; history.replaceState(null, '', '#step-' + openStep); } else openDrawer(op.dataset.open); }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && openStep) closeDrawer();
+  if (e.key === 'Tab' && openStep) { // keep focus inside the open plan
+    const f = [...$('#drawer').querySelectorAll('button:not([tabindex="-1"]),a[href],summary')]; if (!f.length) return;
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+});
+$('#q').addEventListener('input', renderTable); $('#phase').addEventListener('change', renderTable); $('#hide').addEventListener('change', renderTable);
+$('#reset').addEventListener('click', () => { if (!confirm('Discard your changes in this browser and go back to the plan written in project-plan.data.js?')) return; saved = {}; persist(); renderAll(); });
+window.addEventListener('hashchange', () => { const m = /^#step-(.+)$/.exec(location.hash); if (m && String(openStep) !== m[1]) openDrawer(m[1]); });
+
+const SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
+const MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>';
+const isDark = () => (document.documentElement.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark';
+function paintTheme() { $('#theme').innerHTML = isDark() ? SUN : MOON; $('#theme').setAttribute('aria-label', isDark() ? 'Switch to light theme' : 'Switch to dark theme'); }
+$('#theme').addEventListener('click', () => { const next = isDark() ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', next); try { localStorage.setItem('py-theme', next); } catch (e) {} paintTheme(); });
+
+$('#phase').innerHTML = '<option value="all">All phases</option>' + PHASES.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join('') + '<option value="extra">Added after the plan</option>';
+$('#updated').textContent = 'Last updated ' + PLAN_UPDATED;
+paintTheme(); renderTimeline(); renderAll();
+{ const m = /^#step-(.+)$/.exec(location.hash); if (m) openDrawer(m[1]); }
+</script>
+</body>
+</html>
