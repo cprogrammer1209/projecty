@@ -7,3 +7,6 @@
 [submodule "platform-service"]
 	path = platform-service
 	url = https://github.com/cprogrammer1209/projecty-platform-service.git
+[submodule "work-service"]
+	path = work-service
+	url = https://github.com/cprogrammer1209/work-service.git

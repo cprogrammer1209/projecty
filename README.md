@@ -12,7 +12,7 @@ A personal, production-grade project management application modeled on **Zoho Pr
 
 ## Get the code
 
-The app repos (`frontend`, `admin-console`, `platform-service`) are git submodules, so clone with `--recurse-submodules`:
+The app repos (`frontend`, `admin-console`, `platform-service`, `work-service`) are git submodules, so clone with `--recurse-submodules`:
 
 ```bash
 git clone --recurse-submodules https://github.com/cprogrammer1209/projecty.git
