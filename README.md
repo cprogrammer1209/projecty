@@ -30,6 +30,7 @@ Prerequisites: Docker, Java 21, Node 22.
 ```bash
 docker compose up -d                              # Postgres :5432, Mailpit :8025, Kafka :9092, Kafka UI :8088
 cd platform-service && ./mvnw spring-boot:run     # Platform service :8081
+cd work-service && ./mvnw spring-boot:run         # Work service :8082 (projects); start Platform first
 cd frontend && npm start                          # Angular :4200
 cd admin-console && npm start                     # Admin console :4300
 ```
@@ -40,11 +41,15 @@ cd admin-console && npm start                     # Admin console :4300
 | Admin console | http://localhost:4300 | `admin@projecty.local` / `projecty-admin-dev` (created at first start) |
 | Platform health | http://localhost:8081/actuator/health | — |
 | API docs (Swagger UI) | http://localhost:8081/swagger-ui.html | Authorize with a token from `/api/auth/login` |
+| Work health | http://localhost:8082/actuator/health | — |
+| Work API docs (Swagger UI) | http://localhost:8082/swagger-ui.html | Authorize with the same Platform token |
 | Mailpit (local inbox) | http://localhost:8025 | — |
 | Kafka (events, see [docs/07-events.md](docs/07-events.md)) | localhost:9092 | — |
 | Redpanda Console (browse topics and messages) | http://localhost:8088 | — |
 
 Local credentials are for development only. To reset all data: `docker compose down -v`.
+
+Work has its own database, `work`. On a fresh volume `docker/postgres/init/01-create-work-db.sql` creates it; on an existing volume run `docker compose exec postgres psql -U projecty -d platform -c "CREATE DATABASE work"` once.
 
 ## Documentation map
 

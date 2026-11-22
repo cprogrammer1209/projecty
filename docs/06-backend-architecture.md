@@ -72,3 +72,23 @@ session ──SupportSessionExpiredEvent──▶ impersonation
 - **Two service beans in `member`:** the read-only `MembershipService` (repositories + `portal.api`) and the management `MemberService` (needs `account.api`). This split prevents a bean cycle, because `account` reads memberships for `/api/me`.
 
 **Two kinds of access token, one signing key.** Customer tokens have audience `projecty-api` (role USER); admin console tokens have audience `projecty-admin` (role PLATFORM_ADMIN). `SecurityConfig` gives `/api/admin/**` to PLATFORM_ADMIN and the rest of `/api/**` to USER, so neither token works on the other side. A support session is a normal customer token for the target user plus `act` (the admin) and `imp` (session id and end time).
+
+## Part 4: Work service module map
+
+`work-service` (port 8082, database `work`) follows the same standard. It never calls Platform to check a request: the token is checked against Platform's published keys, and "who is in this portal and what may they do" comes from Platform's member events.
+
+| Module | Owns | Exposes (`api/`) |
+|---|---|---|
+| `access` | `MemberAccess` (portal, user, profile key, permissions, active), `ProcessedEvent`; the Kafka listener on `projecty.member`; the portal-access port the security filter needs | `MemberAccessLookUpService.findMemberAccess` |
+| `project` | `Project`, `ProjectMember`, `ProjectActivity`; every `/api/work/projects*` and `/api/work/project-statuses` endpoint | — (nothing else needs it yet) |
+| `outbox` | `OutboxEvent`; the relay that publishes Work's events (copy of Platform's) | `OutboxWriteService.publish` |
+| `shared` | `PermissionConstants` (names Platform grants), `OutboxEventConstants` | — |
+| `external/broker` | Kafka publisher and topic creation (copy of Platform's) | `BrokerPublisher` |
+
+```
+project ──▶ access.api, outbox.api
+outbox  ──▶ external/broker
+Platform ──projecty.member events──▶ access
+```
+
+`common/` is copied from Platform (response envelope, errors, `X-Portal-Id` filter, `@RequirePermission`); `JwtConfig` differs: it checks Platform's tokens through `projecty.token.jwk-set-uri`, `issuer` and `audience`. The copied outbox, broker and `common/` code is duplicated on purpose for now; a shared library is a later cleanup.

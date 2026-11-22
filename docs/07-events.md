@@ -47,11 +47,27 @@ Kafka headers repeat `eventId`, `eventType`, `version` and `portalId`, so a cons
 | `PortalSettingsChanged` | portal | Portal settings change | `portalId`, `changes` (readable before → after text) |
 | `UserInvited` | invitation | An invitation is sent | `portalId`, `invitationId`, `profileId`, `invitedByUserId` |
 | `InvitationRevoked` | invitation | A pending invitation is revoked | `portalId`, `invitationId`, `revokedByUserId` |
-| `UserActivated` | member | A user joins (invitation accepted) or is reactivated | `portalId`, `userId`, `profileId` (+ `actorUserId` on reactivation) |
-| `UserProfileChanged` | member | A member's profile changes | `portalId`, `userId`, `actorUserId`, `fromProfileId`, `toProfileId` |
+| `UserActivated` | member | A user joins (invitation accepted), is reactivated, or a portal's owner is set up | `portalId`, `userId`, `profileId`, `profileKey`, `permissions` (sorted names) (+ `actorUserId` on reactivation) |
+| `UserProfileChanged` | member | A member's profile changes | `portalId`, `userId`, `actorUserId`, `fromProfileId`, `toProfileId`, `profileKey`, `permissions` (of the new profile) |
 | `UserDeactivated` | member | A member is deactivated | `portalId`, `userId`, `actorUserId` |
 
-The owner is announced by `PortalCreated` only; there is no `UserActivated` for them.
+`profileKey` and `permissions` were added to `UserActivated` and `UserProfileChanged` for the Work service, which keeps its own copy of who may do what (no version bump: adding a field is not breaking). Events written before that carry only `profileId`; Flyway `V8` announced every active member again with the new fields (`"backfill": true`), so a consumer that reads from the start ends with the permissions. A new portal's owner now gets a `UserActivated` too.
+
+### Work service events
+
+Published by `work-service` through its own outbox, topic `projecty.project` (aggregate `PROJECT`, message key = project id). Payloads carry ids and the project key, no personal data.
+
+| Event | Raised when | Payload |
+|---|---|---|
+| `ProjectCreated` | A project is created | `portalId`, `projectId`, `key`, `ownerUserId` |
+| `ProjectUpdated` | Name, description, owner, dates or visibility change | `portalId`, `projectId`, `key`, `changes` (field names) |
+| `ProjectStatusChanged` | The status changes | `portalId`, `projectId`, `key`, `fromStatus`, `toStatus` |
+| `ProjectTrashed` | The project is moved to the trash | `portalId`, `projectId`, `key` |
+| `ProjectRestored` | The project is restored from the trash | `portalId`, `projectId`, `key` |
+| `ProjectMemberAdded` | A person joins the project | `portalId`, `projectId`, `key`, `userId`, `role` |
+| `ProjectMemberRemoved` | A person leaves the project | `portalId`, `projectId`, `key`, `userId` |
+
+Work is also a **consumer**: group `work-service` reads `projecty.member` from the start (`auto-offset-reset: earliest`), drops repeated `eventId`s using its `processed_event` table, and applies `UserActivated`, `UserProfileChanged` and `UserDeactivated` to its `member_access` table.
 
 ## Rules for producers
 

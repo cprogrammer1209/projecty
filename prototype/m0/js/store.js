@@ -8,7 +8,7 @@
  *   ravi@northwind.com    Employee in Northwind Labs
  */
 const Store = (() => {
-  const KEY = 'py-proto-v2';
+  const KEY = 'py-proto-m0';
   const LATENCY_MS = 350;
   const HOUR = 3600e3, DAY = 24 * HOUR;
 

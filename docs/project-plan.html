@@ -299,8 +299,9 @@ const word = (v) => (typeof v === 'number' ? ['not started', 'partly done or out
 function renderNow() {
   const m = byStep(NOW.step); const l = NOW.layer;
   const t = tasksOf(m, l); const done = t.filter((x) => x.state === 'done').length; const doing = t.filter((x) => x.state === 'doing').length;
-  const building = NOW.state === 'building' || doing > 0 || done > 0;
-  $('#now').innerHTML = `<div class="card now"><div class="eyebrow"><span class="dot ${building ? 'live' : ''}"></span>${building ? 'Building now' : 'Next up'}</div>
+  const finished = t.length > 0 && done === t.length;
+  const building = !finished && (NOW.state === 'building' || doing > 0 || done > 0);
+  $('#now').innerHTML = `<div class="card now"><div class="eyebrow"><span class="dot ${building ? 'live' : ''}"></span>${finished ? 'Done: ready for your review' : building ? 'Building now' : 'Next up'}</div>
     <h2>Step ${m.step} · ${esc(m.name)} <span>›</span> ${esc(LAYER_NAME[l])}</h2>
     <div class="row">${t.length ? bar(done, doing, t.length) + `<span class="meta">${done} of ${t.length} work items done${doing ? `, ${doing} in progress` : ''}</span>` : ''}
     <button class="btn primary" type="button" data-open="${m.step}">Open this plan →</button></div>
@@ -401,7 +402,7 @@ function renderDrawer() {
       <div class="sub"><span>${esc(ph)}</span><span>·</span><span>${esc(m.service)}</span>${m.step === NOW.step ? '<span class="chip now">Now</span>' : ''}${rowDone(m) ? '<span class="chip done">Done</span>' : ''}</div></div>
       <button class="icon-btn" type="button" data-close aria-label="Close plan">✕</button></div>
     <div class="drawer-body">
-      <div class="dsec"><h3>Goal</h3><p>${esc(m.goal || 'Not written yet.')}</p>${m.scopeIn ? `<p><b>In:</b> ${esc(m.scopeIn)}</p>` : ''}${m.scopeOut ? `<p><b>Out:</b> ${esc(m.scopeOut)}</p>` : ''}${m.file ? `<p><a href="requirements/${esc(m.file)}">Requirements file</a></p>` : ''}</div>
+      <div class="dsec"><h3>Goal</h3><p>${esc(m.goal || 'Not written yet.')}</p>${m.scopeIn ? `<p><b>In:</b> ${esc(m.scopeIn)}</p>` : ''}${m.scopeOut ? `<p><b>Out:</b> ${esc(m.scopeOut)}</p>` : ''}${m.file ? `<p><a href="requirements/${esc(m.file)}">Requirements file</a>${m.protoUrl ? ` · <a href="${esc(m.protoUrl)}">Open the prototype</a>` : ''}</p>` : ''}</div>
       <div class="dsec"><h3>Progress by layer</h3><div class="lanes">${LAYERS.map(([l, n]) => laneBlock(m, l, n)).join('')}</div></div>
       ${tasks.length ? `<div class="dsec"><h3>Work items</h3>${LAYERS.map(([l, n]) => { const t = tasksOf(m, l); return t.length ? `<div class="lane-title">${n}</div><ul class="tasks">${t.map((x) => `<li class="task ${x.state}"><button class="cell" type="button" data-t="${m.step}:${x.i}" aria-pressed="${boxAttr(x.state)}" aria-label="${esc(x.text)}: ${STATE_WORD[x.state]}. Click to change.">${CHECK}${HALF}</button><span>${esc(x.text)}</span></li>`).join('')}</ul>` : ''; }).join('')}</div>` : ''}
       <div class="dsec"><h3>Stories <span class="chip">${mv.length} MVP</span></h3>${mv.length ? `<table class="stories">${head}${mv.map((s) => storyRow(m, s)).join('')}</table>` : '<p>Stories are not detailed yet (requirements are an outline). They are written before this phase starts.</p>'}

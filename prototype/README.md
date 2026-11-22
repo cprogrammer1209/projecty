@@ -1,46 +1,56 @@
-# ProjectY prototype
+# ProjectY prototypes
 
-Plain HTML, CSS and JS for designing screens before they go into `frontend/` (Angular). It looks and behaves like the frontend does today. It never calls `platform-service`; a mock backend in `localStorage` stands in for it.
+Plain HTML, CSS and JS for designing screens before they go into `frontend/` (Angular). No backend: a mock in `localStorage` stands in for the services. Each step has its **own folder with its own copy** of the prototype, so any step can be opened on its own.
+
+```
+prototype/
+  m0/                    M0 Foundation: sign-in and sign-up, portals, Home, Settings (Portal, Users, Audit log, My preferences)
+    prototype.html
+    css/  js/  assets/
+  m1/
+    step4/               M1 Step 4 Projects: M0 plus Projects list, create/edit, overview with members, trash
+      prototype.html
+      css/  js/  assets/
+    step5/ ...           added when each step is built, copied from the step before
+```
+
+The plan for what each step contains is in [`docs/project-plan.html`](../docs/project-plan.html) (open it, click a module).
 
 ## Run it
 
-Open `index.html` in a browser (double-click is fine, no server or build). Routes are hash-based, e.g. `index.html#/p/northwind-labs/settings/users`.
-
-Screens: sign-in, sign-up, check-email, verify-email, forgot/reset password, portal picker, create portal, accept invite, Home, and Settings (Portal, Users, Audit log, My preferences).
+Open a step's `prototype.html` in a browser (double-click is fine, no server or build). Routes are hash-based, e.g. `m1/step4/prototype.html#/p/northwind-labs/projects`.
 
 Demo logins (password `password123`):
 
 | Email | What you get |
 |---|---|
 | `priya@northwind.com` | Admin and owner of Northwind Labs, Employee in Acme Studio (two portals, so you see the picker) |
+| `sara@northwind.com` | Manager in Northwind Labs (owns two projects) |
 | `ravi@northwind.com` | Employee in Northwind Labs (no manage controls) |
 
-"Reset demo data" in the sign-in footer restores the seed. Anything labelled **Prototype only** (the mailbox stand-in buttons, demo-login note, reset link) is not part of the real UI; drop it when porting.
+"Reset demo data" in the sign-in footer restores that step's seed. Each step saves to its own `localStorage` key (`py-proto-m0`, `py-proto-m1-step4`, ...), so steps don't overwrite each other. Anything labelled **Prototype only** (mailbox stand-in buttons, demo-login note, reset link) is not part of the real UI; drop it when porting.
 
-## Layout
+## Inside a step
 
 ```
 css/tokens.css     copy of frontend/src/styles/projecty-tokens.css
 css/base.css       frontend/src/styles.scss (global classes: py-btn, py-field, py-menu, ...)
-css/auth.css       auth layout, showcases, portal picker, create portal
-css/shell.css      sidebar + top bar
-css/home.css       home
-css/settings.css   settings card, users table, audit log, dialogs
+css/*.css          one file per area (auth, shell, home, settings, projects)
 js/icon.js         <py-icon> element
 js/core.js         helpers: field(), input(), dates, theme, router, component()
 js/store.js        the mock backend (all fake data and rules live here)
-js/views/*.js      one file per area: auth, shell, home, settings
+js/views/*.js      one file per area
 js/app.js          route table and guards
 ```
 
-Component CSS is scoped with a wrapper class (`.shell`, `.home`, `.users-page`, ...), standing in for Angular's view encapsulation. When you port a screen, drop the prefix and put the rules in the component's `.scss`.
+Component CSS is scoped with a wrapper class (`.shell`, `.home`, `.users-page`, `.projects-page`, ...), standing in for Angular's view encapsulation. When you port a screen, drop the prefix and put the rules in the component's `.scss`.
 
-## Adding a screen
+## Starting the next step
 
-1. Add `css/<name>.css` and link it in `index.html`; add `js/views/<name>.js` and a `<script>` tag before `app.js`.
-2. Write the view as `mount(el, ctx)` (signed in, inside the shell) or `(ctx, el)` (signed out). `ctx` has `me`, `portal`, `can(permission)`, `timeZone`.
-3. Register it in `js/app.js` with `portalRoute(...)` or `authRoute(...)`. Add a sidebar item in `views/shell.js` if it needs one.
-4. Need data? Add methods to `js/store.js` that return the same shapes the API will (and throw `{ code, message }` on errors).
+1. Copy the previous step's folder (`cp -r m1/step4 m1/step5`), give `js/store.js` its own `KEY`, and set the `<title>` in `prototype.html`.
+2. Add `css/<name>.css` and `js/views/<name>.js`, link them in `prototype.html`, register the routes in `js/app.js` (`portalRoute(...)`), and add the sidebar item in `js/views/shell.js`.
+3. Mock data and rules go in `js/store.js`; throw `{ code, message }` for errors, like the real API will.
+4. Update the module's plan in `docs/project-plan.data.js` (tasks, `protoUrl`, history).
 
 ## Porting a screen to Angular
 
@@ -52,4 +62,5 @@ Component CSS is scoped with a wrapper class (`.shell`, `.home`, `.users-page`, 
 ## Differences from the app
 
 - Email, reset and invitation links are buttons (the app uses Mailpit).
-- Latency is a fixed 350ms; the real app has refresh-token rotation, lockout and the support-session screens, which are only shown here as static pages.
+- Latency is a fixed 350ms. The real app's refresh-token rotation, lockout and support-session screens are not simulated.
+- Project progress is always 0% and task counts show "—" until Tasks (Step 6) exist.
