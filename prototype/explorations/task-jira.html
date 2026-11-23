@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backlog · Jira style · ProjectY</title>
+<style>
+:root{--blue:#0c66e4;--blue-d:#0055cc;--blue-t:#e9f2ff;--tx:#172b4d;--sub:#44546f;--mut:#626f86;--bd:#dcdfe4;--bd2:#091e4224;--bg:#fff;--n:#f7f8f9;--hov:#f1f2f4;--red:#c9372c;--grn:#1f845a;--org:#b38600;--top:56px;--sh:0 8px 12px #091e4226,0 0 1px #091e424f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/20px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans","Helvetica Neue",Arial,sans-serif;height:100vh;overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid #388bff;outline-offset:1px}
+.av{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:#fff;font-weight:500;flex:none;line-height:1}
+.av.none{background:#f1f2f4;border:0;position:relative}
+.av.none::after{content:"";width:50%;height:50%;border-radius:50%;background:#8590a2;opacity:.7}
+svg{flex:none}
+/* top nav */
+.top{height:var(--top);display:flex;align-items:center;gap:6px;padding:0 12px;border-bottom:1px solid var(--bd2);background:#fff;position:relative;z-index:30}
+.logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:18px;color:#253858;padding:0 8px;letter-spacing:-.02em}
+.logo i{width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,#2684ff,#0052cc);display:inline-block}
+.tnav{height:32px;display:inline-flex;align-items:center;gap:4px;border:0;background:none;padding:0 10px;border-radius:3px;color:var(--sub);font-weight:500}
+.tnav:hover{background:var(--hov)}
+.tnav.on{background:var(--blue-t);color:var(--blue-d)}
+.bluebtn{height:32px;border:0;background:var(--blue);color:#fff;border-radius:3px;padding:0 12px;font-weight:500}
+.bluebtn:hover{background:var(--blue-d)}
+.gs{position:relative;margin-left:auto;width:min(320px,30vw)}
+.gs input{width:100%;height:32px;border:2px solid #738496;border-radius:3px;padding:0 8px 0 30px;font-size:14px}
+.gs svg{position:absolute;left:8px;top:8px;color:var(--mut)}
+.tic{width:32px;height:32px;border:0;background:none;border-radius:50%;color:var(--sub);display:inline-flex;align-items:center;justify-content:center}
+.tic:hover{background:var(--hov)}
+.app{display:flex;height:calc(100vh - var(--top))}
+/* sidebar */
+.side{width:240px;flex:none;background:var(--n);border-right:1px solid var(--bd);display:flex;flex-direction:column;padding:12px 8px;overflow:auto;gap:1px}
+.proj{display:flex;align-items:center;gap:10px;padding:6px 8px 12px}
+.proj .pi{width:32px;height:32px;border-radius:3px;background:linear-gradient(135deg,#8777d9,#5e4db2);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px}
+.proj b{display:block;font-weight:600;line-height:18px}
+.proj small{color:var(--mut);font-size:12px}
+.sn{display:flex;align-items:center;gap:10px;height:34px;padding:0 8px;border:0;background:none;border-radius:3px;color:var(--sub);font-weight:500;width:100%;text-align:left;position:relative}
+.sn:hover{background:var(--hov)}
+.sn.on{background:var(--blue-t);color:var(--blue-d)}
+.sn.on::before{content:"";position:absolute;left:-8px;top:0;bottom:0;width:3px;background:var(--blue);border-radius:0 3px 3px 0}
+.sh{font-size:11px;font-weight:700;color:var(--mut);padding:14px 8px 4px;text-transform:uppercase;letter-spacing:.02em}
+.sep{border-top:1px solid var(--bd);margin:8px 0}
+.sn .n{margin-left:auto;font-size:12px;background:#dcdfe4;border-radius:8px;padding:0 6px;color:var(--sub)}
+/* page */
+.page{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.ph{padding:20px 24px 0;flex:none}
+.crumb{font-size:12px;color:var(--mut)}
+.crumb a{color:var(--mut);text-decoration:none;cursor:pointer}
+.crumb a:hover{text-decoration:underline}
+h1{margin:6px 0 0;font-size:24px;line-height:32px;font-weight:600;letter-spacing:-.01em;display:flex;align-items:center;gap:12px}
+.vtabs{display:flex;gap:4px;margin-top:6px;border-bottom:2px solid var(--bd)}
+.vt{height:40px;padding:0 10px;border:0;background:none;color:var(--sub);font-weight:500;position:relative;margin-bottom:-2px;border-bottom:2px solid transparent}
+.vt:hover{background:var(--hov)}
+.vt.on{color:var(--blue-d);border-bottom-color:var(--blue)}
+.fb{display:flex;align-items:center;gap:8px;padding:12px 24px;flex-wrap:wrap;flex:none}
+.sbox{position:relative}
+.sbox input{width:200px;height:32px;border:2px solid var(--bd);border-radius:3px;padding:0 8px 0 30px;background:#fff}
+.sbox input:hover{background:var(--n)}
+.sbox input:focus{border-color:#388bff;outline:0;background:#fff}
+.sbox svg{position:absolute;left:9px;top:8px;color:var(--mut)}
+.avs{display:flex;padding-left:8px}
+.avs button{border:2px solid #fff;border-radius:50%;padding:0;background:none;margin-left:-8px;position:relative;box-shadow:0 0 0 0 var(--blue)}
+.avs button:hover{transform:translateY(-2px)}
+.avs button.on .av{box-shadow:0 0 0 2px var(--blue)}
+.dd{height:32px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;border:0;background:#f1f2f4;border-radius:3px;color:var(--sub);font-weight:500}
+.dd:hover{background:#dcdfe4}
+.dd.on{background:#cce0ff;color:var(--blue-d)}
+.dd.ghost{background:none}
+.dd.ghost:hover{background:var(--hov)}
+.fb .sp{flex:1}
+.lnk{border:0;background:none;color:var(--blue);padding:0 4px}
+.lnk:hover{text-decoration:underline}
+.body{flex:1;overflow:auto;padding:0 24px 40px}
+/* lozenges, icons */
+.loz{display:inline-flex;align-items:center;height:16px;padding:0 4px;border-radius:3px;font-size:11px;line-height:16px;font-weight:700;text-transform:uppercase;white-space:nowrap;letter-spacing:.01em;max-width:100%;overflow:hidden}
+.loz.s-open{background:#dcdfe4;color:#44546f}
+.loz.s-progress,.loz.s-review{background:#cce0ff;color:#0055cc}
+.loz.s-closed{background:#baf3db;color:#216e4e}
+.sbtn{display:inline-flex;align-items:center;gap:4px;border:0;background:none;padding:0;border-radius:3px;max-width:100%}
+.sbtn:hover .loz{filter:brightness(.93)}
+.sbtn .car{color:var(--sub);margin-left:-1px}
+.ep{display:inline-flex;align-items:center;height:16px;border-radius:3px;padding:0 4px;font-size:11px;font-weight:700;background:var(--eb);color:var(--ec);white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis}
+.lb{display:inline-flex;align-items:center;height:20px;border-radius:3px;padding:0 6px;font-size:12px;background:#f1f2f4;color:var(--sub);white-space:nowrap}
+.pts{min-width:20px;height:20px;border-radius:10px;background:#dcdfe4;color:var(--sub);font-size:12px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;padding:0 6px}
+/* backlog sections */
+.sec{border:1px solid transparent;background:var(--n);border-radius:3px;margin-top:16px}
+.sec.over{border-color:var(--blue)}
+.sech{display:flex;align-items:center;gap:8px;height:44px;padding:0 8px;cursor:pointer}
+.sech .car{color:var(--sub);transition:transform .1s}
+.sech.fold .car{transform:rotate(-90deg)}
+.sech b{font-weight:700;font-size:15px}
+.sech small{color:var(--mut);font-weight:400}
+.sech .sp{flex:1}
+.badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:10px;font-size:12px;font-weight:500;padding:0 6px}
+.badge.g{background:#dcdfe4;color:#44546f}.badge.b{background:#cce0ff;color:#0055cc}.badge.d{background:#baf3db;color:#216e4e}
+.sech .btn2{height:28px;border:0;background:#f1f2f4;border-radius:3px;padding:0 10px;font-weight:500;color:var(--sub)}
+.sech .btn2:hover{background:#dcdfe4}
+.item{display:flex;align-items:center;gap:8px;height:40px;padding:0 8px 0 12px;background:#fff;border:1px solid var(--bd);border-top:0;cursor:pointer;position:relative}
+.item:first-of-type{border-top:1px solid var(--bd)}
+.item:hover{background:var(--hov)}
+.item.sel{background:var(--blue-t)}
+.item .key{color:var(--sub);width:64px;flex:none;font-size:13px;white-space:nowrap}
+.item.done .key,.item.done .sum{text-decoration:line-through;color:var(--mut)}
+.item .sum{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .sp{flex:1}
+.item .chk{width:16px;height:16px;border:2px solid #8590a2;border-radius:3px;background:#fff;opacity:0;padding:0;flex:none;display:flex;align-items:center;justify-content:center;color:#fff}
+.item:hover .chk,.item.checked .chk{opacity:1}
+.item.checked .chk{background:var(--blue);border-color:var(--blue)}
+.item .asg{border:0;background:none;padding:0;border-radius:50%}
+.item .asg:hover{box-shadow:0 0 0 2px #cce0ff}
+.item .pr{border:0;background:none;padding:2px;border-radius:3px;display:flex}
+.item .pr:hover{background:#dcdfe4}
+.item .due{font-size:12px;color:var(--mut);width:48px;text-align:right}
+.due.overdue{color:var(--red);font-weight:600}
+.due.today{color:var(--org);font-weight:600}
+.cr{display:flex;align-items:center;height:40px;padding:0 12px;background:#fff;border:1px solid var(--bd);border-top:0;border-radius:0 0 3px 3px}
+.cr button.mk{border:0;background:none;color:var(--sub);display:flex;align-items:center;gap:6px;height:100%;width:100%;text-align:left}
+.cr button.mk:hover{color:var(--tx);background:var(--hov)}
+.cr input{flex:1;height:32px;border:2px solid #388bff;border-radius:3px;padding:0 8px;outline:0}
+.cr .tp{margin:0 8px 0 0}
+.noitems{padding:14px 12px;background:#fff;border:1px dashed var(--bd);border-top:0;text-align:center;color:var(--mut)}
+/* list table */
+.tbl{border:1px solid var(--bd);border-radius:3px;overflow:hidden;background:#fff}
+.tg{--c:28px 24px 70px minmax(170px,1fr) 128px 150px 108px 70px 120px 130px}
+.thd,.tr{display:grid;grid-template-columns:var(--c);align-items:center;padding:0 12px;gap:8px}
+.thd{height:40px;border-bottom:2px solid var(--bd);font-size:12px;font-weight:700;color:var(--mut);text-transform:uppercase}
+.thd button{border:0;background:none;text-align:left;font:inherit;color:inherit;text-transform:inherit;display:flex;align-items:center;gap:4px;height:100%;padding:0}
+.thd button:hover{color:var(--tx)}
+.tr{height:44px;border-bottom:1px solid var(--bd);cursor:pointer}
+.tr:hover{background:var(--hov)}
+.tr.sel{background:var(--blue-t)}
+.tr .key{color:var(--sub);font-size:13px}
+.tr.done .sum,.tr.done .key{text-decoration:line-through;color:var(--mut)}
+.tr .sum{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tr .who{display:flex;align-items:center;gap:8px;border:0;background:none;padding:2px 4px;margin:0 -4px;border-radius:3px;text-align:left;min-width:0}
+.tr .who:hover{background:#dcdfe4}
+.tr .who span.nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tr .pcell{display:flex;align-items:center;gap:6px;border:0;background:none;padding:2px 4px;margin:0 -4px;border-radius:3px}
+.tr .pcell:hover{background:#dcdfe4}
+.gtl{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;background:var(--n);border-bottom:1px solid var(--bd);font-weight:600;cursor:pointer}
+.gtl .car{color:var(--sub)}
+.gtl.fold .car{transform:rotate(-90deg)}
+.emptyst{padding:60px 20px;text-align:center;color:var(--mut)}
+.emptyst b{display:block;color:var(--tx);font-size:16px;margin:10px 0 4px}
+/* board */
+.bd{display:flex;gap:8px;align-items:flex-start;min-width:max-content}
+.bcol{flex:0 0 272px;background:var(--n);border-radius:3px;display:flex;flex-direction:column;min-height:120px;border:2px solid transparent}
+.bcol.over{border-color:var(--blue);background:var(--blue-t)}
+.bcol h3{margin:0;padding:10px 12px 8px;font-size:12px;font-weight:700;color:var(--mut);text-transform:uppercase;display:flex;align-items:center;gap:6px}
+.bcol h3 .ok{color:var(--grn)}
+.bcards{padding:0 4px 6px;display:flex;flex-direction:column;gap:8px;min-height:30px}
+.bcard{background:#fff;border-radius:3px;padding:10px 12px 8px;box-shadow:0 1px 1px #091e4240,0 0 1px #091e424f;cursor:pointer;border:2px solid transparent}
+.bcard:hover{background:var(--hov)}
+.bcard.dragging{opacity:.45}
+.bcard .sm{margin-bottom:8px;overflow-wrap:anywhere}
+.bcard.done .sm{text-decoration:line-through;color:var(--mut)}
+.bcard .tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.bcard .ft{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}.bcard .ft .key,.bcard .ft .due{white-space:nowrap}
+.bcard .ft .sp{flex:1}
+.bcard .ft .key{font-size:12px;color:var(--sub);font-weight:600}
+.bcard.done .ft .key{text-decoration:line-through}
+.bcard .ft .due{width:auto}
+.bcreate{padding:2px 4px 6px}
+.bcreate button{width:100%;height:32px;border:0;background:none;border-radius:3px;color:var(--sub);display:none;align-items:center;gap:6px;padding:0 8px;text-align:left}
+.bcol:hover .bcreate button{display:flex}
+.bcreate button:hover{background:#dcdfe4}
+.bcreate input{width:100%;height:32px;border:2px solid #388bff;border-radius:3px;padding:0 8px;outline:0}
+.lane{margin-bottom:12px}
+.laneh{display:flex;align-items:center;gap:8px;height:36px;padding:0 4px;font-weight:600;cursor:pointer;position:sticky;left:0}
+.laneh small{color:var(--mut);font-weight:400}
+.laneh .car{color:var(--sub)}
+.laneh.fold .car{transform:rotate(-90deg)}
+/* detail */
+.scrim{position:fixed;inset:0;z-index:50;background:#091e4270;display:flex;align-items:flex-start;justify-content:center;padding-top:5vh}
+.drawer-w{position:fixed;inset:var(--top) 0 0 0;z-index:40;display:flex;justify-content:flex-end;pointer-events:none}
+.dm{background:#fff;pointer-events:auto;display:flex;flex-direction:column}
+.dm.modal{width:min(1120px,94vw);max-height:90vh;border-radius:3px;box-shadow:var(--sh)}
+.dm.drawer{width:min(600px,100vw);height:100%;border-left:1px solid var(--bd);box-shadow:-8px 0 12px #091e4226}
+.dh{display:flex;align-items:center;gap:6px;padding:12px 20px;flex:none}
+.dh .bc{display:flex;align-items:center;gap:6px;color:var(--sub);font-size:14px}
+.dh .bc a{color:var(--sub);text-decoration:none}
+.dh .bc a:hover{text-decoration:underline}
+.dh .sp{flex:1}
+.dh .ib{width:32px;height:32px;border:0;background:none;border-radius:3px;color:var(--sub);display:inline-flex;align-items:center;justify-content:center}
+.dh .ib:hover{background:var(--hov)}
+.dbody{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;padding:0 24px 24px;overflow:auto}
+.dm.drawer .dbody{display:flex;flex-direction:column;padding:0 20px 24px}
+.dm.drawer .dleft{display:contents}
+.dm.drawer .dbody{overflow:auto}.dm.drawer .dbody>*,.dm.drawer .dleft>*{flex:none}.dm.drawer .ti{order:0}.dm.drawer .dtool{order:1}.dm.drawer .dright{order:2;margin-bottom:20px}.dm.drawer .dsec{order:3}
+.ti{width:100%;border:2px solid transparent;border-radius:3px;font-size:24px;line-height:32px;font-weight:600;padding:2px 8px;margin:0 -8px 8px;resize:none;field-sizing:content;overflow:hidden;font-family:inherit;background:none;letter-spacing:-.01em}
+.ti:hover{background:var(--hov)}
+.ti:focus{background:#fff;border-color:#388bff;outline:0}
+.dtool{display:flex;gap:8px;margin-bottom:16px}
+.dtool button{height:32px;display:inline-flex;align-items:center;gap:6px;border:0;background:#f1f2f4;border-radius:3px;padding:0 10px;font-weight:500;color:var(--sub)}
+.dtool button:hover{background:#dcdfe4}
+.dsec{margin-bottom:20px}
+.dsec>h4{margin:0 0 8px;font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px}
+.dsec>h4 small{font-weight:400;color:var(--mut);font-size:12px}
+.dd-desc{min-height:56px;padding:8px;margin:0 -8px;border-radius:3px;cursor:text;white-space:pre-wrap;border:2px solid transparent}
+.dd-desc:hover{background:var(--hov)}
+.dd-desc.ph{color:var(--mut)}
+textarea.desc-in{width:100%;min-height:110px;border:2px solid #388bff;border-radius:3px;padding:8px;font-family:inherit;resize:vertical;outline:0}
+.child{display:flex;align-items:center;gap:8px;height:38px;border:1px solid var(--bd);border-top:0;padding:0 8px}
+.child:first-of-type{border-top:1px solid var(--bd);border-radius:3px 3px 0 0}
+.child .sp{flex:1}
+.child.done .cs{text-decoration:line-through;color:var(--mut)}
+.child .key{font-size:13px;color:var(--sub);width:70px}
+.pbar{height:6px;background:#dcdfe4;border-radius:3px;overflow:hidden;margin-bottom:8px;display:flex;align-items:center}
+.pbar i{display:block;height:100%;background:#1f845a}
+.addc{display:flex;gap:8px;margin-top:8px}
+.addc input{flex:1;height:32px;border:2px solid var(--bd);border-radius:3px;padding:0 8px}
+.addc input:focus{border-color:#388bff;outline:0}
+.atabs{display:flex;align-items:center;gap:6px;margin-bottom:12px}
+.atabs button{height:28px;border:0;background:#f1f2f4;border-radius:3px;padding:0 10px;font-weight:500;color:var(--sub)}
+.atabs button.on{background:#cce0ff;color:var(--blue-d)}
+.atabs .lab{color:var(--mut);margin-right:4px}
+.cm{display:flex;gap:12px;margin-bottom:16px}
+.cm .hd{font-weight:600}
+.cm .hd span{font-weight:400;color:var(--mut);margin-left:8px;font-size:12px}
+.cm p{margin:2px 0 4px;white-space:pre-wrap}
+.cm .acts{font-size:12px;color:var(--sub);display:flex;gap:10px}
+.hist{display:flex;gap:12px;margin-bottom:16px}
+.hist .t b{font-weight:600}
+.hist .when{font-size:12px;color:var(--mut)}
+.cbox{display:flex;gap:12px;margin-bottom:20px}
+.cbox .f{flex:1}
+.cbox textarea{width:100%;height:36px;border:2px solid var(--bd);border-radius:3px;padding:6px 10px;resize:none;font-family:inherit}
+.cbox:focus-within textarea{height:84px;border-color:#388bff;outline:0}
+.cbox .btns{display:none;gap:8px;margin-top:8px}
+.cbox:focus-within .btns{display:flex}
+.cbox .tip{font-size:12px;color:var(--mut);margin-top:6px}
+.cbox:focus-within .tip{display:none}
+.statusbar{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.tbtn{height:32px;display:inline-flex;align-items:center;gap:6px;border:0;border-radius:3px;padding:0 12px;font-weight:700;font-size:14px;color:#fff;background:var(--sc)}
+.tbtn.s-open{background:#dcdfe4;color:#292a2e}
+.tbtn.s-progress,.tbtn.s-review{background:#cce0ff;color:#0055cc}
+.tbtn.s-closed{background:#baf3db;color:#216e4e}
+.tbtn:hover{filter:brightness(.95)}
+.dp{border:1px solid var(--bd);border-radius:3px}
+.dp>h5{margin:0;padding:12px 16px;font-size:14px;font-weight:600;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bd);cursor:pointer}
+.dp.fold>h5{border-bottom:0}
+.dp.fold .dpb{display:none}
+.dpr{display:grid;grid-template-columns:116px 1fr;gap:8px;align-items:center;padding:6px 16px;min-height:42px}
+.dpr label{font-size:12px;font-weight:700;color:var(--mut);text-transform:none}
+.dpr .v{display:flex;align-items:center;gap:8px;border:0;background:none;padding:4px 8px;margin:0 -8px;border-radius:3px;text-align:left;min-width:0}
+.dpr button.v:hover{background:var(--hov)}
+.dpr .v.mut{color:var(--mut)}
+.dpr input.v{border:2px solid transparent;width:100%;height:30px}
+.dpr input.v:hover{background:var(--hov)}
+.dpr input.v:focus{border-color:#388bff;background:#fff;outline:0}
+.dmeta{font-size:12px;color:var(--mut);margin-top:12px;line-height:18px}
+.dpb{padding-bottom:6px}
+/* popup */
+.pop{position:fixed;z-index:90;min-width:200px;max-width:320px;background:#fff;border-radius:3px;box-shadow:var(--sh);padding:8px 0}
+.pop-t{padding:6px 12px;font-size:11px;font-weight:700;color:var(--mut);text-transform:uppercase}
+.pop-s{width:calc(100% - 24px);margin:0 12px 6px;height:32px;border:2px solid var(--bd);border-radius:3px;padding:0 8px}
+.pop-s:focus{border-color:#388bff;outline:0}
+.pop-l{max-height:300px;overflow:auto}
+.pop-i{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;padding:0 12px;height:36px;text-align:left}
+.pop-i:hover,.pop-i.hi{background:var(--hov)}
+.pop-i.on{background:var(--blue-t);box-shadow:inset 2px 0 0 var(--blue)}
+.pop-tick{margin-left:auto;color:var(--blue)}
+.pop-ck{width:16px;height:16px;border:2px solid #8590a2;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:#fff;flex:none}
+.pop-i.on .pop-ck{background:var(--blue);border-color:var(--blue)}
+.pop-e{padding:8px 12px;color:var(--mut)}
+.mf{width:min(560px,94vw);background:#fff;border-radius:3px;box-shadow:var(--sh);max-height:90vh;overflow:auto}
+.mf h2{margin:0;padding:20px 24px 8px;font-size:20px;font-weight:500}
+.mf .fr{padding:8px 24px}
+.mf label{display:block;font-size:12px;font-weight:700;color:var(--mut);margin-bottom:4px}
+.mf input[type=text],.mf .fsel{width:100%;height:36px;border:2px solid var(--bd);border-radius:3px;padding:0 10px;background:#fafbfc;display:flex;align-items:center;gap:8px;text-align:left}
+.mf input[type=text]:focus{border-color:#388bff;outline:0;background:#fff}
+.mf .ft{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:16px 24px}
+.mf .ft label{margin:0 auto 0 0;display:flex;align-items:center;gap:6px;font-weight:400;color:var(--tx);font-size:14px}
+.ghost{border:0;background:none;height:32px;padding:0 10px;border-radius:3px;font-weight:500;color:var(--sub)}
+.ghost:hover{background:var(--hov);text-decoration:underline}
+#toast{position:fixed;left:24px;bottom:24px;background:#fff;box-shadow:var(--sh);border-left:4px solid var(--grn);padding:12px 16px;border-radius:3px;opacity:0;pointer-events:none;transform:translateY(12px);transition:.2s;z-index:99}
+#toast.show{opacity:1;transform:none}
+@media(max-width:1100px){.dbody{grid-template-columns:1fr}.dright{order:-1}}
+@media(max-width:900px){.side{display:none}.tnav.hide{display:none}}
+</style>
+</head>
+<body>
+<header class="top" id="top"></header>
+<div class="app"><nav class="side" id="side" aria-label="Project navigation"></nav><main class="page" id="page"></main></div>
+<script src="task-model.js"></script>
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const esc = TM.esc;
+const P = {
+  grid: '<path d="M3 3h5v5H3zm7 0h5v5h-5zM3 10h5v5H3zm7 0h5v5h-5z" fill="currentColor"/>',
+  search: '<circle cx="8" cy="8" r="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 12l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  down: '<path d="M5 7l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  plus: '<path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  x: '<path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  bell: '<path d="M10 3a4.5 4.5 0 0 0-4.5 4.5c0 4-1.5 5-1.5 5h12s-1.5-1-1.5-5A4.5 4.5 0 0 0 10 3zM8.5 15.5a1.6 1.6 0 0 0 3 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+  help: '<circle cx="10" cy="10" r="7.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 8a2 2 0 1 1 3 1.7c-.7.4-1 .8-1 1.5M10 13.6v.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+  more: '<circle cx="4.5" cy="10" r="1.5" fill="currentColor"/><circle cx="10" cy="10" r="1.5" fill="currentColor"/><circle cx="15.5" cy="10" r="1.5" fill="currentColor"/>',
+  eye: '<path d="M2 10s3-5.5 8-5.5S18 10 18 10s-3 5.5-8 5.5S2 10 2 10z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="10" cy="10" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/>',
+  share: '<circle cx="5" cy="10" r="2" fill="currentColor"/><circle cx="14.5" cy="5" r="2" fill="currentColor"/><circle cx="14.5" cy="15" r="2" fill="currentColor"/><path d="M6.7 9l6-3M6.7 11l6 3" stroke="currentColor" stroke-width="1.5"/>',
+  clip: '<path d="M14 9l-5 5a3 3 0 0 1-4-4l6-6a2 2 0 0 1 3 3l-6 6a1 1 0 0 1-1.500-1.500L12 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+  link: '<path d="M8.500 11.500a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1 1M11.500 8.500a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1-1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+  sum: '<path d="M3 4h14M3 8h14M3 12h9M3 16h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+  time: '<path d="M3 15h14M5 15V9M9 15V5M13 15v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  back: '<rect x="3" y="3" width="4" height="14" rx="1" fill="currentColor"/><rect x="8" y="3" width="4" height="9" rx="1" fill="currentColor"/><rect x="13" y="3" width="4" height="11" rx="1" fill="currentColor"/>',
+  list: '<path d="M3 5h2M7 5h10M3 10h2M7 10h10M3 15h2M7 15h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  sort: '<path d="M7 4v12m0 0l-3-3m3 3l3-3M13 16V4m0 0l-3 3m3-3l3 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+  me: '<circle cx="10" cy="7" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 16c.8-3 3-4.200 6-4.200s5.200 1.200 6 4.200" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+  star: '<path d="M10 3l2.200 4.500 5 .7-3.600 3.500.9 5L10 14.300 5.500 16.700l.9-5L2.800 8.200l5-.7z" fill="none" stroke="currentColor" stroke-width="1.500" stroke-linejoin="round"/>',
+};
+const ic = (n, s = 16) => `<svg width="${s}" height="${s}" viewBox="0 0 20 20">${P[n]}</svg>`;
+function typeIcon(t, s = 16) {
+  if (t.id && t.id.includes('.')) return `<svg width="${s}" height="${s}" viewBox="0 0 16 16"><rect width="16" height="16" rx="3" fill="#4bade8"/><path d="M5 4v4.500c0 1 .5 1.500 1.500 1.500H11M9.500 8L11 10l-1.500 2" fill="none" stroke="#fff" stroke-width="1.500" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  if (t.tags && t.tags.includes('bug')) return `<svg width="${s}" height="${s}" viewBox="0 0 16 16"><rect width="16" height="16" rx="3" fill="#e5493a"/><circle cx="8" cy="8" r="3.200" fill="#fff"/></svg>`;
+  return `<svg width="${s}" height="${s}" viewBox="0 0 16 16"><rect width="16" height="16" rx="3" fill="#4fade6"/><path d="M4.500 8.200l2.300 2.300 4.700-4.800" fill="none" stroke="#fff" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+const PRI = { urgent: ['Highest', '#c9372c', 'M4 12l4-4 4 4M4 8l4-4 4 4'], high: ['High', '#c9372c', 'M4 10l4-4 4 4'], medium: ['Medium', '#e56910', 'M4 6h8M4 10h8'], low: ['Low', '#2a6dd3', 'M4 6l4 4 4-4'], none: ['None', '#8590a2', 'M4 8h8'] };
+function priIcon(id) { const p = PRI[id]; return `<svg width="16" height="16" viewBox="0 0 16 16" aria-label="${p[0]}"><title>${p[0]}</title><path d="${p[2]}" fill="none" stroke="${p[1]}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`; }
+const loz = (s) => `<span class="loz s-${s.id}">${esc(s.name)}</span>`;
+const EP = { design: ['#e5d4fb', '#5e4db2'], dev: ['#cce0ff', '#0055cc'], launch: ['#fce4a6', '#7f5f01'] };
+const epic = (l) => `<span class="ep" style="--eb:${EP[l.id][0]};--ec:${EP[l.id][1]}" title="Epic: ${esc(l.name)}">${esc(l.name)}</span>`;
+const doneCount = (t) => t.subtasks.filter((s) => s.done).length;
+const PTS = (t) => (t.cf.effort == null ? '' : `<span class="pts" title="Effort (hrs)">${t.cf.effort}</span>`);
+
+const S = { page: 'backlog', f: { q: '', status: [], owner: [], priority: [], tag: [], list: [] }, mineOnly: false, group: 'none', lgroup: 'none', fold: {}, sort: { k: 'order', d: 1 }, sel: null, mode: null, atab: 'all', newest: true, qa: null, modal: null, checked: new Set(), dfold: {}, editDesc: false, focus: null };
+
+function items() {
+  let it = TM.filter(S.f);
+  if (S.page === 'mine') return it.filter((t) => t.owner === TM.ME);
+  if (S.mineOnly) it = it.filter((t) => t.owner === TM.ME);
+  return it;
+}
+const mineN = () => TM.tasks.filter((t) => t.owner === TM.ME && !TM.isClosed(t)).length;
+
+function renderTop() {
+  $('#top').innerHTML = `<button class="tic" aria-label="Apps">${ic('grid', 18)}</button><div class="logo"><i></i>Jira</div>
+    <button class="tnav${S.page === 'mine' ? ' on' : ''} hide" data-nav="mine">Your work ${ic('down', 14)}</button><button class="tnav on hide">Projects ${ic('down', 14)}</button><button class="tnav hide">Filters ${ic('down', 14)}</button><button class="tnav hide">Dashboards ${ic('down', 14)}</button><button class="tnav hide">Teams ${ic('down', 14)}</button>
+    <button class="bluebtn" data-act="create" style="margin-left:6px">Create</button>
+    <div class="gs">${ic('search')}<input placeholder="Search" aria-label="Search"></div>
+    <button class="tic" aria-label="Notifications">${ic('bell', 18)}</button><button class="tic" aria-label="Help">${ic('help', 18)}</button><button class="tic" aria-label="Account">${TM.avatar(TM.ME, 28)}</button>`;
+}
+function renderSide() {
+  const on = (p) => (S.page === p ? ' on' : '');
+  $('#side').innerHTML = `<button class="sn${on('mine')}" data-nav="mine" id="nav-mine">${ic('me')}My tasks<span class="n">${mineN()}</span></button>
+    <button class="sn">${ic('star')}Starred</button><div class="sep"></div>
+    <div class="proj"><span class="pi">WR</span><div><b>Website Revamp</b><small>Software project</small></div></div>
+    <div class="sh">Planning</div>
+    <button class="sn">${ic('time')}Summary</button><button class="sn${on('backlog')}" data-nav="backlog">${ic('sum')}Backlog</button><button class="sn${on('board')}" data-nav="board">${ic('back')}Board</button><button class="sn${on('list')}" data-nav="list">${ic('list')}List</button>
+    <div class="sep"></div><div class="sh">Project</div><button class="sn">${ic('link')}Project pages</button><button class="sn">${ic('more')}Project settings</button>`;
+}
+function pageHead(title) {
+  const tabs = [['backlog', 'Backlog'], ['board', 'Board'], ['list', 'List']];
+  return `<div class="ph"><div class="crumb"><a>Projects</a> / <a>Website Revamp</a>${S.page === 'mine' ? '' : ' / ' + title}</div><h1>${title}${S.page === 'board' ? '<span class="loz s-open" style="font-size:11px">Phase 2 · Build</span>' : ''}<span style="margin-left:auto;display:flex;gap:6px"><button class="tic" aria-label="Share" style="border-radius:3px;background:#f1f2f4">${ic('share')}</button><button class="tic" aria-label="More" style="border-radius:3px;background:#f1f2f4">${ic('more')}</button></span></h1>
+    ${S.page === 'mine' ? `<div class="vtabs"><button class="vt">Worked on</button><button class="vt">Viewed</button><button class="vt on">Assigned to me <span class="badge g" style="margin-left:4px">${mineN()}</span></button><button class="vt">Starred</button></div>` : `<div class="vtabs">${tabs.map((x) => `<button class="vt${S.page === x[0] ? ' on' : ''}" data-nav="${x[0]}">${x[1]}</button>`).join('')}</div>`}</div>`;
+}
+function filterBar() {
+  const fc = ['status', 'priority', 'tag', 'list'].reduce((n, k) => n + S.f[k].length, 0) + S.f.owner.length + (S.mineOnly ? 1 : 0);
+  const dd = (k, label) => `<button class="dd${S.f[k].length ? ' on' : ''}" data-fmenu="${k}">${label}${S.f[k].length ? ' (' + S.f[k].length + ')' : ''} ${ic('down', 14)}</button>`;
+  const grp = S.page === 'board' ? `<button class="dd ghost" data-act="groupmenu">Group: <b style="font-weight:600;margin-left:2px">${({ none: 'None', owner: 'Assignees', list: 'Epic', priority: 'Priority' })[S.group]}</b> ${ic('down', 14)}</button>` : S.page === 'list' ? `<button class="dd ghost" data-act="groupmenu">Group: <b style="font-weight:600;margin-left:2px">${({ none: 'None', status: 'Status', owner: 'Assignee', list: 'Epic' })[S.lgroup]}</b> ${ic('down', 14)}</button>` : '';
+  return `<div class="fb"><div class="sbox">${ic('search', 14)}<input id="q" placeholder="Search ${S.page === 'board' ? 'board' : 'work'}" value="${esc(S.f.q)}" aria-label="Search issues"></div>
+    <div class="avs" role="group" aria-label="Filter by assignee">${TM.users.slice(0, 5).map((u) => `<button data-avf="${u.id}" class="${S.f.owner.includes(u.id) ? 'on' : ''}" aria-label="Filter by ${esc(u.name)}" title="${esc(u.name)}">${TM.avatar(u.id, 28)}</button>`).join('')}</div>
+    ${dd('list', 'Epic')}${dd('tag', 'Label')}${dd('priority', 'Priority')}${dd('status', 'Status')}
+    <button class="dd${S.mineOnly ? ' on' : ''}" data-act="onlymine">Only my issues</button>${fc ? '<button class="lnk" data-act="clearall">Clear filters</button>' : ''}<span class="sp"></span>${grp}</div>`;
+}
+
+/* ---- Backlog ---- */
+function itemRow(t) {
+  const d = TM.dueInfo(t);
+  return `<div class="item${TM.isClosed(t) ? ' done' : ''}${S.sel === t.id ? ' sel' : ''}${S.checked.has(t.id) ? ' checked' : ''}" data-open="${t.id}" data-id="${t.id}">
+    <button class="chk" data-check="${t.id}" aria-label="Select">${S.checked.has(t.id) ? '✓' : ''}</button>${typeIcon(t)}<span class="key">${t.id}</span><span class="sum">${esc(t.title)}</span>
+    ${t.subtasks.length ? `<span class="lb" title="Child issues">${doneCount(t)}/${t.subtasks.length} child</span>` : ''}${t.tags.slice(0, 2).map((x) => `<span class="lb">${esc(x)}</span>`).join('')}<span class="sp"></span>
+    ${epic(TM.list(t.list))}<span class="due ${d.cls}">${d.label}</span>
+    <button class="sbtn" data-pick="status:${t.id}" aria-label="Change status">${loz(TM.status(t.status))}<span class="car">${ic('down', 12)}</span></button>${PTS(t) || '<span class="pts" style="visibility:hidden">0</span>'}
+    <button class="pr" data-pick="priority:${t.id}" aria-label="Priority">${priIcon(t.priority)}</button>
+    <button class="asg" data-pick="owner:${t.id}" aria-label="Assignee">${TM.avatar(t.owner, 24)}</button></div>`;
+}
+function renderBacklog(its) {
+  if (!its.length) return emptyState();
+  return TM.groupBy(its, 'list').map((g) => {
+    const folded = S.fold['b' + g.id]; const c = (cat) => g.items.filter((t) => cat === 'g' ? t.status === 'open' : cat === 'b' ? ['progress', 'review'].includes(t.status) : TM.isClosed(t)).length;
+    const qa = S.qa && S.qa.k === 'list' && S.qa.g === g.id;
+    return `<section class="sec" data-col="${g.id}"><div class="sech${folded ? ' fold' : ''}" data-fold="b${g.id}"><span class="car">${ic('down', 16)}</span><b>${esc(g.label)}</b><small>${esc(g.list.phase)} · ${g.items.length} issue${g.items.length === 1 ? '' : 's'}</small><span class="sp"></span><span class="badge g" title="Open">${c('g')}</span><span class="badge b" title="In progress">${c('b')}</span><span class="badge d" title="Done">${c('d')}</span><button class="btn2" data-act="nop">Start sprint</button></div>` +
+      (folded ? '' : (g.items.length ? g.items.map(itemRow).join('') : '<div class="noitems">Your backlog section is empty. Create an issue below.</div>') +
+        `<div class="cr">${qa ? `<span class="tp">${typeIcon({})}</span><input id="qai" data-qa="list:${g.id}" placeholder="What needs to be done?" aria-label="Summary"><span style="margin-left:8px;color:var(--mut);font-size:12px">Enter to create</span>` : `<button class="mk" data-qaopen="list:${g.id}">${ic('plus', 14)}Create issue</button>`}</div>`) + `</section>`;
+  }).join('');
+}
+/* ---- List ---- */
+const COLS = [['type', ''], ['key', 'Work'], ['title', 'Summary'], ['status', 'Status'], ['owner', 'Assignee'], ['priority', 'Priority'], ['due', 'Due date'], ['tags', 'Labels'], ['list', 'Epic']];
+function sortItems(its) {
+  const k = S.sort.k, d = S.sort.d; if (k === 'order') return its.slice().sort((a, b) => a.order - b.order);
+  const v = (t) => k === 'key' ? t.num : k === 'title' ? t.title.toLowerCase() : k === 'status' ? TM.statuses.findIndex((s) => s.id === t.status) : k === 'owner' ? (TM.user(t.owner)?.name || 'zzz') : k === 'priority' ? -TM.prio(t.priority).rank : k === 'due' ? (t.due || '9999') : k === 'list' ? t.list : '';
+  return its.slice().sort((a, b) => (v(a) > v(b) ? 1 : v(a) < v(b) ? -1 : 0) * d);
+}
+function tRow(t) {
+  const d = TM.dueInfo(t), u = TM.user(t.owner);
+  return `<div class="tr${TM.isClosed(t) ? ' done' : ''}${S.sel === t.id ? ' sel' : ''}" data-open="${t.id}"><button class="chk" style="opacity:1;width:16px;height:16px;border:2px solid #8590a2;border-radius:3px;background:${S.checked.has(t.id) ? 'var(--blue)' : '#fff'};color:#fff;padding:0;font-size:10px" data-check="${t.id}" aria-label="Select">${S.checked.has(t.id) ? '✓' : ''}</button>${typeIcon(t)}<span class="key">${t.id}</span><span class="sum">${esc(t.title)}</span>
+    <button class="sbtn" data-pick="status:${t.id}">${loz(TM.status(t.status))}<span class="car">${ic('down', 12)}</span></button>
+    <button class="who" data-pick="owner:${t.id}">${TM.avatar(t.owner, 24)}<span class="nm" style="${u ? '' : 'color:var(--mut)'}">${u ? esc(u.name) : 'Unassigned'}</span></button>
+    <button class="pcell" data-pick="priority:${t.id}">${priIcon(t.priority)}${PRI[t.priority][0]}</button>
+    <span class="due ${d.cls}" style="width:auto;text-align:left">${t.due ? TM.fmtDate(t.due) : ''}</span>
+    <span style="display:flex;gap:4px;overflow:hidden">${t.tags.slice(0, 2).map((x) => `<span class="lb">${esc(x)}</span>`).join('')}</span>${epic(TM.list(t.list))}</div>`;
+}
+function renderTable(its, grouped) {
+  if (!its.length) return emptyState();
+  const sorted = sortItems(its);
+  const head = `<div class="thd"><span></span><span></span>${COLS.slice(1).map((c) => `<button data-sort="${c[0]}" ${c[0] === 'tags' ? 'disabled' : ''}>${c[1]}${S.sort.k === c[0] ? (S.sort.d > 0 ? ' ▲' : ' ▼') : ''}</button>`).join('')}</div>`;
+  let body;
+  if (!grouped || S.lgroup === 'none') body = sorted.map(tRow).join('');
+  else body = TM.groupBy(sorted, S.lgroup).map((g) => `<div class="gtl${S.fold['l' + g.id] ? ' fold' : ''}" data-fold="l${g.id}"><span class="car">${ic('down', 14)}</span>${esc(g.label)}<span class="badge g">${g.items.length}</span></div>` + (S.fold['l' + g.id] ? '' : g.items.map(tRow).join(''))).join('');
+  const qa = S.qa && S.qa.k === 'table';
+  return `<div class="tbl tg">${head}${body}<div class="cr" style="border:0;border-top:1px solid var(--bd)">${qa ? `<span class="tp">${typeIcon({})}</span><input id="qai" data-qa="table:x" placeholder="What needs to be done?" aria-label="Summary">` : `<button class="mk" data-qaopen="table:x">${ic('plus', 14)}Create</button>`}</div></div>`;
+}
+/* ---- Board ---- */
+function card(t) {
+  const d = TM.dueInfo(t);
+  return `<article class="bcard${TM.isClosed(t) ? ' done' : ''}" draggable="true" data-card="${t.id}" data-open="${t.id}"><div class="sm">${esc(t.title)}</div>
+    <div class="tags">${epic(TM.list(t.list))}${t.tags.slice(0, 2).map((x) => `<span class="lb">${esc(x)}</span>`).join('')}${t.subtasks.length ? `<span class="lb" title="Child issues">${doneCount(t)}/${t.subtasks.length} child</span>` : ''}</div>
+    <div class="ft">${typeIcon(t)}<span class="key">${t.id}</span><span class="sp"></span>${d.label ? `<span class="due ${d.cls}">${d.label}</span>` : ''}${PTS(t)}<span title="${PRI[t.priority][0]}">${priIcon(t.priority)}</span>${TM.avatar(t.owner, 24)}</div></article>`;
+}
+function columns(its, laneId) {
+  return `<div class="bd">` + TM.statuses.map((s) => {
+    const col = its.filter((t) => t.status === s.id);
+    const qa = S.qa && S.qa.k === 'board' && S.qa.g === s.id && S.qa.lane === laneId;
+    return `<section class="bcol" data-col="${s.id}" data-lane="${laneId}"><h3>${esc(s.name)} <span style="font-weight:400">${col.length}</span>${s.type === 'Closed' ? `<span class="ok" title="Issues here are done">${ic('plus', 0)}✓</span>` : ''}</h3><div class="bcards">${col.map(card).join('')}</div><div class="bcreate">${qa ? `<input id="qai" data-qa="board:${s.id}:${laneId}" placeholder="What needs to be done?" aria-label="Summary">` : `<button data-qaopen="board:${s.id}:${laneId}">${ic('plus', 14)}Create issue</button>`}</div></section>`;
+  }).join('') + `</div>`;
+}
+function renderBoard(its) {
+  if (S.group === 'none') return columns(its, '');
+  return TM.groupBy(its, S.group).map((g) => `<div class="lane"><div class="laneh${S.fold['n' + g.id] ? ' fold' : ''}" data-fold="n${g.id}"><span class="car">${ic('down', 16)}</span>${S.group === 'owner' ? TM.avatar(g.id === 'none' ? null : g.id, 24) : ''}${esc(g.label)}<small>${g.items.length} issue${g.items.length === 1 ? '' : 's'}</small></div>${S.fold['n' + g.id] ? '' : columns(g.items, g.id)}</div>`).join('');
+}
+function emptyState() { return `<div class="emptyst"><svg width="64" height="64" viewBox="0 0 20 20" style="color:#b3b9c4">${P.sum}</svg><b>No work items match your filters</b>Try adjusting or clearing your filters.<br><br><button class="dd" data-act="clearall">Clear filters</button></div>`; }
+
+/* ---- Detail ---- */
+function detail(t, mode) {
+  const st = TM.status(t.status), l = TM.list(t.list), u = TM.user(t.owner);
+  const events = [];
+  if (S.atab !== 'history') t.comments.forEach((c) => events.push({ k: 'c', ...c }));
+  if (S.atab !== 'comments') t.activity.forEach((a) => events.push({ k: 'h', ...a }));
+  events.sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0) * (S.newest ? 1 : -1));
+  const dn = doneCount(t), d = TM.dueInfo(t);
+  const row = (label, inner) => `<div class="dpr"><label>${label}</label><div>${inner}</div></div>`;
+  const right = `<div class="dright"><div class="statusbar"><button class="tbtn s-${t.status}" data-pick="trans:${t.id}" aria-haspopup="menu">${esc(st.name)} ${ic('down', 14)}</button>${TM.isClosed(t) ? '' : `<button class="dd" data-close="${t.id}" style="height:32px">✓ Done</button>`}</div>
+    <div class="dp${S.dfold.det ? ' fold' : ''}"><h5 data-dfold="det">Details ${ic('down', 16)}</h5><div class="dpb">
+      ${row('Assignee', `<button class="v${u ? '' : ' mut'}" data-pick="owner:${t.id}">${TM.avatar(t.owner, 24)}${u ? esc(u.name) : 'Unassigned'}</button>`)}
+      ${row('Reporter', `<span class="v">${TM.avatar(t.creator, 24)}${esc(TM.user(t.creator).name)}</span>`)}
+      ${row('Priority', `<button class="v" data-pick="priority:${t.id}">${priIcon(t.priority)}${PRI[t.priority][0]}</button>`)}
+      ${row('Labels', `<button class="v${t.tags.length ? '' : ' mut'}" data-pick="tags:${t.id}" style="flex-wrap:wrap">${t.tags.length ? t.tags.map((x) => `<span class="lb">${esc(x)}</span>`).join('') : 'None'}</button>`)}
+      ${row('Due date', `<button class="v due ${t.due ? d.cls : 'mut'}" data-pick="due:${t.id}" style="width:auto">${t.due ? TM.fmtLong(t.due) : 'None'}</button>`)}
+      ${row('Parent', `<button class="v" data-pick="list:${t.id}">${epic(l)}</button>`)}
+      ${row('Effort (hrs)', `<input class="v" type="number" min="0" data-cf="effort:${t.id}" value="${t.cf.effort ?? ''}" placeholder="None" aria-label="Effort hours">`)}
+      ${row('Customer visible', `<button class="v${t.cf.visible ? '' : ' mut'}" data-pick="visible:${t.id}">${esc(t.cf.visible || 'None')}</button>`)}
+    </div></div>
+    <div class="dmeta">Created ${TM.fmtLong(t.created)}<br>Updated ${t.activity.length ? TM.dayLabel(t.activity[0].at) : 'today'}</div></div>`;
+  const left = `<div class="dleft"><textarea class="ti" rows="1" data-title="${t.id}" aria-label="Summary">${esc(t.title)}</textarea>
+    <div class="dtool"><button data-act="nop">${ic('clip', 14)}Attach</button><button data-act="addchild">${ic('plus', 14)}Add a child issue</button><button data-act="nop">${ic('link', 14)}Link issue</button></div>
+    <div class="dsec"><h4>Description</h4>${S.editDesc ? `<textarea class="desc-in" id="descin" aria-label="Description">${esc(t.desc)}</textarea><div style="margin-top:8px;display:flex;gap:8px"><button class="bluebtn" data-act="savedesc">Save</button><button class="ghost" data-act="canceldesc">Cancel</button></div>` : `<div class="dd-desc${t.desc ? '' : ' ph'}" data-act="editdesc" tabindex="0">${t.desc ? esc(t.desc) : 'Add a description…'}</div>`}</div>
+    <div class="dsec"><h4>Child issues <small>${t.subtasks.length ? Math.round(dn / t.subtasks.length * 100) + '% Done' : ''}</small></h4>${t.subtasks.length ? `<div class="pbar"><i style="width:${Math.round(dn / t.subtasks.length * 100)}%"></i></div>` : '<div style="color:var(--mut)">No child issues yet.</div>'}
+      ${t.subtasks.map((s, i) => `<div class="child${s.done ? ' done' : ''}">${typeIcon(s)}<span class="key">${s.id}</span><span class="cs">${esc(s.title)}</span><span class="sp"></span><button class="sbtn" data-subtog="${t.id}:${i}" aria-label="Toggle done">${loz(s.done ? TM.status('closed') : TM.status('open'))}</button>${TM.avatar(s.owner, 24)}</div>`).join('')}
+      <div class="addc"><input id="subin" placeholder="What needs to be done? Press Enter to add a child issue" aria-label="Child issue summary"></div></div>
+    <div class="dsec"><h4>Activity</h4><div class="atabs"><span class="lab">Show:</span>${[['all', 'All'], ['comments', 'Comments'], ['history', 'History']].map((x) => `<button class="${S.atab === x[0] ? 'on' : ''}" data-atab="${x[0]}">${x[1]}</button>`).join('')}<span style="flex:1"></span><button data-act="newest" style="background:none">${S.newest ? 'Newest first' : 'Oldest first'} ${ic('sort', 14)}</button></div>
+      <div class="cbox">${TM.avatar(TM.ME, 32)}<div class="f"><textarea id="cmt" placeholder="Add a comment…" aria-label="Add a comment"></textarea><div class="tip"><b>Pro tip:</b> press <b>M</b> to comment</div><div class="btns"><button class="bluebtn" data-act="comment">Save</button><button class="ghost" data-act="nop">Cancel</button></div></div></div>
+      ${events.length ? events.map((e) => e.k === 'c' ? `<div class="cm">${TM.avatar(e.by, 32)}<div><div class="hd">${esc(TM.user(e.by).name)}<span>${TM.dayLabel(e.at)}</span></div><p>${esc(e.text)}</p><div class="acts"><a>Edit</a><a>Delete</a><a>Reply</a></div></div></div>` : `<div class="hist">${TM.avatar(e.by, 32)}<div class="t"><b>${esc(TM.user(e.by).name)}</b> ${esc(e.text)}<div class="when">${TM.dayLabel(e.at)}</div></div></div>`).join('') : '<div style="color:var(--mut)">Nothing here yet.</div>'}</div></div>`;
+  return `<div class="dh"><div class="bc">${typeIcon(t)}<a data-act="nop">${esc('WEB')}</a> / <a>${t.id}</a></div><span class="sp"></span><button class="ib" aria-label="Watch">${ic('eye')}</button><button class="ib" aria-label="Share">${ic('share')}</button><button class="ib" aria-label="Actions">${ic('more')}</button>${mode === 'drawer' ? `<button class="ib" data-act="expand" aria-label="Open as modal" title="Open as modal">⤢</button>` : ''}<button class="ib" data-act="closed" aria-label="Close">${ic('x')}</button></div>
+    <div class="dbody">${left}${right}</div>`;
+}
+function createModal() {
+  const d = S.modal;
+  return `<div class="scrim" data-scrim="modal"><div class="mf" role="dialog" aria-label="Create issue"><h2>Create issue</h2>
+    <div class="fr"><label>Project *</label><div class="fsel"><span class="pi" style="width:20px;height:20px;border-radius:3px;background:#8777d9;display:inline-block"></span>Website Revamp (WEB)</div></div>
+    <div class="fr"><label>Work type</label><div class="fsel">${typeIcon({})}Task</div></div>
+    <div class="fr"><label>Status</label><button class="fsel" data-mpick="status">${loz(TM.status(d.status))}</button></div>
+    <div class="fr"><label for="msum">Summary *</label><input type="text" id="msum" value="${esc(d.title)}" aria-label="Summary"></div>
+    <div class="fr"><label>Assignee</label><button class="fsel" data-mpick="owner">${TM.avatar(d.owner, 24)}${d.owner ? esc(TM.user(d.owner).name) : 'Automatic'}</button></div>
+    <div class="fr"><label>Priority</label><button class="fsel" data-mpick="priority">${priIcon(d.priority)}${PRI[d.priority][0]}</button></div>
+    <div class="fr"><label>Parent (epic)</label><button class="fsel" data-mpick="list">${epic(TM.list(d.list))}</button></div>
+    <div class="ft"><label><input type="checkbox" id="another"${d.another ? ' checked' : ''}>Create another issue</label><button class="ghost" data-act="cancelmodal">Cancel</button><button class="bluebtn" data-act="submitmodal">Create</button></div></div></div>`;
+}
+
+function render() {
+  renderTop(); renderSide();
+  const pg = $('#page'), sc = $('.body', pg) ? $('.body', pg).scrollTop : 0, scx = $('.body', pg) ? $('.body', pg).scrollLeft : 0;
+  const its = items(), title = { backlog: 'Backlog', board: 'Board', list: 'List', mine: 'Your work' }[S.page];
+  const content = S.page === 'backlog' ? renderBacklog(its) : S.page === 'board' ? renderBoard(its) : renderTable(its, S.page === 'list');
+  pg.innerHTML = pageHead(title) + (S.page === 'mine' ? '' : filterBar()) + `<div class="body" id="body">${S.page === 'mine' ? mineHeader() : ''}${content}</div>`;
+  const b = $('#body'); b.scrollTop = sc; b.scrollLeft = scx;
+  let ov = $('#overlay'); if (!ov) { ov = document.createElement('div'); ov.id = 'overlay'; document.body.appendChild(ov); }
+  const t = S.sel && TM.get(S.sel);
+  ov.innerHTML = t ? (S.mode === 'modal' ? `<div class="scrim" data-scrim="detail"><div class="dm modal" role="dialog" aria-label="Issue ${t.id}">${detail(t, 'modal')}</div></div>` : `<div class="drawer-w"><div class="dm drawer" role="dialog" aria-label="Issue ${t.id}">${detail(t, 'drawer')}</div></div>`) : '';
+  if (S.modal) ov.innerHTML += createModal();
+  const q = $('#qai'); if (q) q.focus();
+  if (S.focus) { const f = $(S.focus); if (f) { f.focus(); f.setSelectionRange?.(f.value.length, f.value.length); } S.focus = null; }
+}
+const mineHeader = () => `<div style="color:var(--mut);margin:12px 0">Work assigned to you across all projects</div>`;
+
+/* ---- pickers ---- */
+function pick(kind, id, anchor, onSet) {
+  const t = TM.get(id) || {}; const set = onSet || ((p) => TM.update(id, p));
+  if (kind === 'status') return TM.pop(anchor, { title: 'Status', items: TM.statuses.map((s) => ({ id: s.id, on: t.status === s.id, html: loz(s) })), onPick: (v) => set({ status: v }) });
+  if (kind === 'trans') return TM.pop(anchor, { title: 'Transition to', items: TM.statuses.map((s) => ({ id: s.id, on: t.status === s.id, html: (t.status === s.id ? '' : '<span style="color:var(--mut)">→</span> ') + loz(s) })), onPick: (v) => { TM.update(id, { status: v }); TM.toast(id + ' moved to ' + TM.status(v).name); } });
+  if (kind === 'owner') return TM.pop(anchor, { search: 'Search', items: [{ id: 'none', on: !t.owner, html: TM.avatar(null, 24) + 'Unassigned', text: 'Unassigned' }].concat(TM.users.map((u) => ({ id: u.id, on: t.owner === u.id, html: TM.avatar(u.id, 24) + esc(u.name), text: u.name }))), onPick: (v) => set({ owner: v === 'none' ? null : v }) });
+  if (kind === 'priority') return TM.pop(anchor, { title: 'Priority', items: TM.priorities.slice().sort((a, b) => b.rank - a.rank).map((p) => ({ id: p.id, on: t.priority === p.id, html: priIcon(p.id) + PRI[p.id][0] })), onPick: (v) => set({ priority: v }) });
+  if (kind === 'list') return TM.pop(anchor, { title: 'Parent epic', items: TM.lists.map((l) => ({ id: l.id, on: t.list === l.id, html: epic(l) })), onPick: (v) => set({ list: v }) });
+  if (kind === 'visible') return TM.pop(anchor, { items: ['Yes', 'No'].map((v) => ({ id: v, on: t.cf.visible === v, html: v })), onPick: (v) => set({ cf: { visible: v } }) });
+  if (kind === 'tags') return TM.pop(anchor, { multi: true, search: 'Search labels', items: TM.tags.map((x) => ({ id: x, on: t.tags.includes(x), html: `<span class="lb">${esc(x)}</span>`, text: x })), onPick: (v) => TM.toggleTag(id, v) });
+  if (kind === 'due') { const o = (n) => new Date(TM.today.getTime() + n * 86400000).toISOString().slice(0, 10); const opts = [['Today', o(0)], ['Tomorrow', o(1)], ['Next week', o(7)], ['In two weeks', o(14)], ['Clear', null]]; return TM.pop(anchor, { title: 'Due date', items: opts.map((x, i) => ({ id: i, html: x[0] + (x[1] ? `<span style="margin-left:auto;color:var(--mut);font-size:12px">${TM.fmtDate(x[1])}</span>` : ''), text: x[0], on: t.due === x[1] })), onPick: (i) => set({ due: opts[i][1] }) }); }
+}
+const dflt = (k, g, lane) => { const o = {}; const key = k === 'board' ? (S.group === 'none' ? null : S.group) : null; if (k === 'list') o.list = g; if (k === 'board') { o.status = g; if (key && lane) { if (key === 'owner') o.owner = lane === 'none' ? null : lane; if (key === 'list') o.list = lane; if (key === 'priority') o.priority = lane; } } return o; };
+
+document.addEventListener('click', (e) => {
+  const sc = e.target.closest('[data-scrim]');
+  if (sc && e.target === sc) { if (sc.dataset.scrim === 'detail') S.sel = null; else S.modal = null; return render(); }
+  const el = e.target.closest('[data-nav],[data-act],[data-open],[data-fold],[data-pick],[data-close],[data-subtog],[data-qaopen],[data-fmenu],[data-avf],[data-sort],[data-check],[data-atab],[data-dfold],[data-mpick]');
+  if (!el) return;
+  const d = el.dataset;
+  if (d.check) { e.stopPropagation(); S.checked.has(d.check) ? S.checked.delete(d.check) : S.checked.add(d.check); return render(); }
+  if (d.qaopen) { e.stopPropagation(); const [k, g, lane] = d.qaopen.split(':'); S.qa = { k, g, lane: lane || '' }; return render(); }
+  if (d.pick) { e.stopPropagation(); const [k, id] = d.pick.split(':'); return pick(k, id, el); }
+  if (d.mpick) { const dr = S.modal; return pick(d.mpick, '', el, (p) => { dr.title = $('#msum').value; Object.assign(dr, p); render(); }); }
+  if (d.close) return TM.update(d.close, { status: 'closed' });
+  if (d.subtog) { e.stopPropagation(); const [id, i] = d.subtog.split(':'); return TM.toggleSub(id, +i); }
+  if (d.fold !== undefined) { S.fold[d.fold] = !S.fold[d.fold]; return render(); }
+  if (d.dfold) { S.dfold[d.dfold] = !S.dfold[d.dfold]; return render(); }
+  if (d.atab) { S.atab = d.atab; return render(); }
+  if (d.sort) { S.sort = S.sort.k === d.sort ? { k: d.sort, d: -S.sort.d } : { k: d.sort, d: 1 }; return render(); }
+  if (d.avf) { const a = S.f.owner, i = a.indexOf(d.avf); i < 0 ? a.push(d.avf) : a.splice(i, 1); return render(); }
+  if (d.nav) { S.page = d.nav; if (d.nav === 'board') S.mode = 'modal'; else S.mode = 'drawer'; S.sel = null; return render(); }
+  if (d.fmenu) { const k = d.fmenu; const src = k === 'list' ? TM.lists.map((l) => ({ id: l.id, html: epic(l) })) : k === 'status' ? TM.statuses.map((s) => ({ id: s.id, html: loz(s) })) : k === 'priority' ? TM.priorities.map((p) => ({ id: p.id, html: priIcon(p.id) + PRI[p.id][0] })) : TM.tags.map((x) => ({ id: x, html: `<span class="lb">${esc(x)}</span>` }));
+    return TM.pop(el, { multi: true, items: src.map((i) => Object.assign(i, { on: S.f[k].includes(i.id) })), onPick: (v, it) => { const a = S.f[k]; if (it.on) a.push(v); else a.splice(a.indexOf(v), 1); render(); } }); }
+  if (d.open) { S.sel = d.open; S.mode = S.page === 'board' ? 'modal' : 'drawer'; S.atab = 'all'; S.editDesc = false; return render(); }
+  switch (d.act) {
+    case 'closed': S.sel = null; return render();
+    case 'expand': S.mode = 'modal'; return render();
+    case 'create': S.modal = { title: '', status: 'open', priority: 'medium', owner: null, list: 'dev', another: false }; S.focus = '#msum'; return render();
+    case 'cancelmodal': S.modal = null; return render();
+    case 'submitmodal': return submitModal();
+    case 'onlymine': S.mineOnly = !S.mineOnly; return render();
+    case 'clearall': S.f = { q: '', status: [], owner: [], priority: [], tag: [], list: [] }; S.mineOnly = false; return render();
+    case 'groupmenu': { const board = S.page === 'board'; const opts = board ? [['none', 'None'], ['owner', 'Assignees'], ['list', 'Epic'], ['priority', 'Priority']] : [['none', 'None'], ['status', 'Status'], ['owner', 'Assignee'], ['list', 'Epic']]; return TM.pop(el, { title: 'Group by', items: opts.map((o) => ({ id: o[0], html: o[1], on: (board ? S.group : S.lgroup) === o[0] })), onPick: (v) => { if (board) S.group = v; else S.lgroup = v; render(); } }); }
+    case 'editdesc': S.editDesc = true; S.focus = '#descin'; return render();
+    case 'canceldesc': S.editDesc = false; return render();
+    case 'savedesc': TM.update(S.sel, { desc: $('#descin').value }, true); S.editDesc = false; return render();
+    case 'newest': S.newest = !S.newest; return render();
+    case 'addchild': S.focus = '#subin'; return render();
+    case 'comment': { const v = $('#cmt').value; if (v.trim()) { TM.addComment(S.sel, v); TM.toast('Comment added'); } return; }
+    case 'nop': return TM.toast('Not part of this sample');
+  }
+});
+function submitModal() {
+  const d = S.modal; d.title = $('#msum').value.trim();
+  if (!d.title) { $('#msum').style.borderColor = '#c9372c'; return TM.toast('Summary is required'); }
+  const t = TM.add({ title: d.title, status: d.status, priority: d.priority, owner: d.owner, list: d.list });
+  S.modal = $('#another').checked ? Object.assign({}, d, { title: '', another: true }) : null; S.focus = S.modal ? '#msum' : null; render(); TM.toast('Work item ' + t.id + ' created');
+}
+document.addEventListener('input', (e) => { if (e.target.id === 'q') { S.f.q = e.target.value; const p = e.target.selectionStart; render(); const q = $('#q'); q.focus(); q.setSelectionRange(p, p); } });
+document.addEventListener('change', (e) => {
+  const t = e.target;
+  if (t.dataset.title) TM.update(t.dataset.title, { title: t.value.trim() || TM.get(t.dataset.title).title }, true);
+  if (t.dataset.cf) { const [k, id] = t.dataset.cf.split(':'); TM.update(id, { cf: { [k]: t.value === '' ? null : +t.value } }); }
+});
+document.addEventListener('keydown', (e) => {
+  const t = e.target;
+  if (t.dataset && t.dataset.qa) {
+    if (e.key === 'Escape') { S.qa = null; render(); }
+    if (e.key === 'Enter' && t.value.trim()) { const [k, g, lane] = t.dataset.qa.split(':'); TM.add(Object.assign({ title: t.value.trim() }, dflt(k, g, lane))); S.focus = '#qai'; TM.toast('Work item created'); }
+    return;
+  }
+  if (t.id === 'subin' && e.key === 'Enter') { TM.addSub(S.sel, t.value); S.focus = '#subin'; return; }
+  if (t.id === 'msum' && e.key === 'Enter') return submitModal();
+  if (t.dataset && t.dataset.title && e.key === 'Enter') { e.preventDefault(); t.blur(); return; }
+  if (e.key === 'Escape') { if (document.querySelector('.pop')) return; if (S.modal) { S.modal = null; return render(); } if (S.sel) { S.sel = null; return render(); } }
+  if (!/INPUT|TEXTAREA/.test(t.tagName) && !S.modal && e.key === 'm' && S.sel) { e.preventDefault(); const c = $('#cmt'); if (c) c.focus(); }
+  if (!/INPUT|TEXTAREA/.test(t.tagName) && !S.modal && e.key === 'c' && !S.sel) { S.modal = { title: '', status: 'open', priority: 'medium', owner: null, list: 'dev', another: false }; S.focus = '#msum'; render(); }
+});
+TM.on(render);
+TM.boardDnD($('#page'), (id, col) => { TM.update(id, { status: col }); TM.toast(id + ' moved to ' + TM.status(col).name); });
+render();
+</script>
+</body>
+</html>

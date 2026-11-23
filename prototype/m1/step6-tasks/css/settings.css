@@ -1,0 +1,61 @@
+/* Settings: settings-card.scss, users-page.scss, settings-page.ts styles. */
+.settings-card .card { max-width: 640px; background: var(--py-surface-0); border: 1px solid var(--py-border); border-radius: 10px; padding: 22px; }
+.settings-card .card h2 { font: 600 15px/22px var(--py-font-ui); margin: 0 0 4px; }
+.settings-card .card > p { color: var(--py-ink-muted); font-size: 13px; margin: 0 0 20px; }
+.settings-card .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.settings-card .full { grid-column: 1 / -1; }
+.settings-card .preview { font-size: 12px; color: var(--py-ink-muted); }
+.settings-card .preview strong { color: var(--py-ink); font-weight: 500; }
+.settings-card .warning { margin-top: 16px; padding: 10px 12px; border-radius: 7px; font-size: 12px; line-height: 1.5;
+  background: color-mix(in srgb, var(--py-accent) 14%, var(--py-surface-0)); border: 1px solid color-mix(in srgb, var(--py-accent) 45%, var(--py-border)); }
+.settings-card .foot { display: flex; align-items: center; gap: 12px; margin-top: 22px; }
+.settings-card .saved { font-size: 12px; color: var(--py-status-done); }
+@media (max-width: 640px) {
+.settings-card .grid { grid-template-columns: 1fr; }
+}
+
+
+
+.users-page { display: flex; flex-direction: column; gap: 16px; max-width: 1000px; }
+.users-page .panel { background: var(--py-surface-0); border: 1px solid var(--py-border); border-radius: 10px; }
+.users-page .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px; }
+.users-page .panel-head h2 { font: 600 15px/22px var(--py-font-ui); margin: 0; }
+.users-page .panel-head p { margin: 2px 0 0; font-size: 12px; color: var(--py-ink-muted); }
+.users-page .filters { display: flex; gap: 8px; padding: 0 18px 12px; }
+.users-page .search { flex: 1; max-width: 320px; gap: 8px; }
+.users-page .status { width: 160px; }
+.users-page .table-wrap { overflow-x: auto; border-top: 1px solid var(--py-border); }
+.users-page table { width: 100%; border-collapse: collapse; min-width: 640px; font-size: 13px; }
+.users-page th { text-align: left; font: 600 11px/16px var(--py-font-ui); text-transform: uppercase; letter-spacing: .05em; color: var(--py-ink-muted); background: var(--py-surface-1); padding: 9px 14px; }
+.users-page td { padding: 10px 14px; border-top: 1px solid var(--py-border); vertical-align: middle; }
+.users-page tr.inactive td { color: var(--py-ink-muted); }
+.users-page .person { display: flex; align-items: center; gap: 10px; }
+.users-page .person strong { display: block; font-weight: 500; }
+.users-page .person small { display: block; color: var(--py-ink-muted); font-size: 12px; }
+.users-page .you { color: var(--py-ink-muted); font-weight: 400; margin-left: 4px; }
+.users-page .profile { width: 150px; height: 30px; font-size: 13px; }
+.users-page .chip { margin-left: 8px; padding: 2px 7px; border-radius: 99px; background: var(--py-brand-subtle); color: var(--py-brand); font-size: 11px; font-weight: 600; }
+.users-page .badge { padding: 3px 8px; border-radius: 5px; font-size: 11px; background: var(--py-surface-2); color: var(--py-ink-muted); }
+.users-page .badge.ok { background: color-mix(in srgb, var(--py-status-done) 12%, transparent); color: var(--py-status-done); }
+.users-page .actions { text-align: right; white-space: nowrap; }
+.users-page .empty { text-align: center; color: var(--py-ink-muted); padding: 22px; }
+.users-page .overlay { position: fixed; inset: 0; z-index: 50; background: rgba(12, 16, 24, .45); display: grid; place-items: center; padding: 16px; }
+.users-page .dialog { width: min(460px, 100%); background: var(--py-surface-0); border: 1px solid var(--py-border); border-radius: 12px; box-shadow: var(--py-shadow-lg); padding: 22px; }
+.users-page .dialog h2 { font: 600 17px/24px var(--py-font-ui); margin: 0 0 6px; }
+.users-page .dialog > p { margin: 0 0 16px; color: var(--py-ink-muted); font-size: 13px; }
+.users-page .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+
+
+
+.settings-head h1 { font: 600 24px/1.2 var(--py-font-ui); letter-spacing: -.03em; margin: 0; }
+.settings-head p { margin: 6px 0 0; color: var(--py-ink-muted); font-size: 13px; }
+.settings-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--py-border); margin: 20px 0; }
+.settings-tabs a { padding: 10px 12px; margin-bottom: -1px; border-bottom: 2px solid transparent; color: var(--py-ink-muted); font-size: 13px; text-decoration: none; }
+.settings-tabs a.active { border-bottom-color: var(--py-brand); color: var(--py-brand); font-weight: 600; }
+
+/* Audit log table: reuses the users table styles; these add the pager and small helpers. */
+.users-page .nowrap { white-space: nowrap; }
+.users-page .muted { color: var(--py-ink-muted); }
+.users-page .pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 18px; border-top: 1px solid var(--py-border); flex-wrap: wrap; }
+.users-page .pager-actions { display: flex; align-items: center; gap: 8px; }
+.users-page .pager-size { width: 130px; }

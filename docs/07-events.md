@@ -97,6 +97,39 @@ Changes to the answers themselves are reported by the module that owns the recor
 Platform added the permissions `CUSTOM_FIELDS_VIEW` (every profile) and `CUSTOM_FIELDS_MANAGE` (Admin) in Flyway `V9`,
 which also announced every active member again with their permissions (`"backfill": true`).
 
+`LayoutUpdated` with `change: "statuses"` is also raised when a status of a TASK layout is added, edited, deleted or reordered.
+`ProjectLayoutChanged` for a project's task layout carries `entityType: "TASK"`.
+
+#### Task events (Work, topic `projecty.task`)
+
+Aggregate `TASK`, message key = task id. Payloads carry ids and the display key only (`portalId`, `taskId`, `projectId`,
+`key` such as `WEB-T42`), plus:
+
+| Event | Raised when | Extra payload |
+|---|---|---|
+| `TaskCreated` | A task or subtask is created | `listId`, `parentId`, `statusId` |
+| `TaskUpdated` | Title, description, priority, dates, work hours, completion, owners, tags, followers, list, parent, layout or a custom answer change | `changes` (field names; `customValues.<api_name>` for answers) |
+| `TaskStatusChanged` | The status changes | `fromStatusId`, `toStatusId` |
+| `TaskClosed` | The status moves from an Open to a Closed type | none |
+| `TaskReopened` | The status moves from a Closed to an Open type | none |
+| `TaskTrashed` | A task is trashed (one event per task, subtasks included) | `withParent` |
+| `TaskRestored` | A task is restored (one event per task) | `withParent` |
+| `TaskCommentAdded` | A comment is added | `commentId` |
+| `TaskCommentUpdated` | A comment is edited | `commentId` |
+| `TaskCommentDeleted` | A comment is deleted | `commentId` |
+
+#### Task list events (Work, topic `projecty.tasklist`)
+
+Aggregate `TASKLIST`, message key = list id. Payload: `portalId`, `taskListId`, `projectId`, `change`.
+
+| Event | Raised when |
+|---|---|
+| `TaskListCreated` | A list is created (also the default list "General") |
+| `TaskListUpdated` | A list is renamed, changes visibility, is unarchived or the lists are reordered |
+| `TaskListArchived` | A list is archived |
+
+Platform added `TASKS_VIEW`, `TASKS_CREATE`, `TASKS_EDIT`, `TASKS_DELETE` in Flyway `V10` (with another backfill of member events).
+
 Work is also a **consumer**: group `work-service` reads `projecty.member` from the start (`auto-offset-reset: earliest`), drops repeated `eventId`s using its `processed_event` table, and applies `UserActivated`, `UserProfileChanged` and `UserDeactivated` to its `member_access` table.
 
 ## Rules for producers

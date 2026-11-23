@@ -1,0 +1,109 @@
+/* M1 · Step 4 · Projects. Builds on the Settings table, panel and dialog look (.users-page) and the shared py-* classes. */
+.projects-page { max-width: none; } /* fluid: list, overview and trash fill the page; the form below keeps a readable width */
+.projects-page .page-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.projects-page .page-title h1 { font: 600 24px/1.2 var(--py-font-ui); letter-spacing: -.03em; margin: 0; }
+.projects-page .page-title p { margin: 6px 0 0; color: var(--py-ink-muted); font-size: 13px; max-width: 70ch; }
+.projects-page .page-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.projects-page .py-btn.danger { color: var(--py-status-blocked); }
+.projects-page .back { display: inline-flex; align-items: center; gap: 6px; color: var(--py-ink-muted); font-size: 13px; width: fit-content; }
+.projects-page .back:hover { color: var(--py-ink); }
+.projects-page .filters { flex-wrap: wrap; }
+.projects-page .filters .py-select { width: 160px; }
+.projects-page tr.click { cursor: pointer; }
+.projects-page tr.click:hover td { background: var(--py-surface-1); }
+.projects-page .proj { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.projects-page .proj > div { min-width: 0; }
+.projects-page .proj strong { display: block; font-weight: 500; }
+.projects-page .proj small { display: block; color: var(--py-ink-muted); font-size: 12px; max-width: 46ch; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.projects-page .key { font: 500 11px/1 var(--py-font-mono); padding: 5px 7px; border-radius: var(--py-radius-sm); background: var(--py-surface-2); color: var(--py-ink); letter-spacing: .02em; flex-shrink: 0; }
+.projects-page .nowrap { white-space: nowrap; }
+.projects-page .chev { width: 28px; color: var(--py-ink-muted); }
+.projects-page .py-pill py-icon { width: 14px; height: 14px; }
+.projects-page .pbar { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+.projects-page .pbar .bar { flex: 1; height: 6px; border-radius: 99px; background: var(--py-surface-2); overflow: hidden; }
+.projects-page .pbar .bar i { display: block; height: 100%; background: var(--py-status-done); }
+.projects-page .pbar span { font: 500 12px/16px var(--py-font-ui); color: var(--py-ink-muted); width: 32px; text-align: right; }
+.projects-page .actions { text-align: right; }
+
+/* Overview */
+.projects-page .ov-key { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.projects-page .chip-vis { display: inline-flex; align-items: center; gap: 5px; font: 500 12px/16px var(--py-font-ui); color: var(--py-ink-muted); }
+.projects-page .chip-vis py-icon { width: 14px; height: 14px; }
+.projects-page .status-select { width: 150px; }
+.projects-page .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.projects-page .stat { background: var(--py-surface-0); border: 1px solid var(--py-border); border-radius: 10px; padding: 14px 16px; }
+.projects-page .stat-label { font-size: 11px; color: var(--py-ink-muted); }
+.projects-page .stat-value { font: 600 24px/1 var(--py-font-ui); letter-spacing: -.04em; margin: 10px 0 6px; }
+.projects-page .stat-foot { font-size: 11px; color: var(--py-ink-muted); }
+.projects-page .ov-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 16px; }
+.projects-page .stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.projects-page .about { padding: 0 18px 16px; font-size: 13px; line-height: 1.55; }
+.projects-page .muted { color: var(--py-ink-muted); }
+.projects-page .empty.line { border-top: 1px solid var(--py-border); padding: 20px 18px 24px; font-size: 12px; }
+.projects-page .act { list-style: none; border-top: 1px solid var(--py-border); }
+.projects-page .act li { display: flex; gap: 10px; padding: 11px 18px; border-bottom: 1px solid var(--py-border); font-size: 13px; }
+.projects-page .act li:last-child { border-bottom: 0; }
+.projects-page .act small { color: var(--py-ink-muted); font-size: 12px; }
+.projects-page .members { list-style: none; border-top: 1px solid var(--py-border); }
+.projects-page .members li { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border-bottom: 1px solid var(--py-border); }
+.projects-page .members .mi { flex: 1; min-width: 0; }
+.projects-page .members strong { display: block; font-weight: 500; font-size: 13px; }
+.projects-page .members small { display: block; color: var(--py-ink-muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.projects-page .you { color: var(--py-ink-muted); font-weight: 400; }
+.projects-page .icon-x { border: 0; background: none; color: var(--py-ink-muted); width: 24px; height: 24px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+.projects-page .icon-x:hover { background: var(--py-surface-2); color: var(--py-status-blocked); }
+.projects-page .add-member { display: flex; gap: 8px; padding: 14px 18px 4px; flex-wrap: wrap; }
+.projects-page .add-member .py-select { flex: 1; min-width: 140px; }
+.projects-page .add-member .py-select.role { flex: 0 0 110px; min-width: 0; }
+.projects-page .hint { padding: 6px 18px 16px; font-size: 12px; color: var(--py-ink-muted); }
+@media (max-width: 900px) { .projects-page .ov-grid { grid-template-columns: 1fr; } .projects-page .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Dialogs: mounted in #app, outside .users-page, so they carry their own classes */
+.pd-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(12, 16, 24, .45); display: grid; place-items: center; padding: 16px; overflow-y: auto; }
+.pd-dialog { width: min(560px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; background: var(--py-surface-0); border: 1px solid var(--py-border); border-radius: 12px; box-shadow: var(--py-shadow-lg); padding: 22px; }
+.pd-dialog h2 { font: 600 17px/24px var(--py-font-ui); margin: 0 0 6px; }
+.pd-lead { margin: 0 0 16px; color: var(--py-ink-muted); font-size: 13px; }
+.pd-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.pd-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.key-wrap input { font: 400 14px/20px var(--py-font-mono); text-transform: uppercase; }
+.key-wrap input:disabled, .py-input-wrap input:disabled { color: var(--py-ink-muted); }
+.py-textarea { width: 100%; padding: 8px 10px; border-radius: var(--py-radius-md); border: 1px solid var(--py-border-control); background: var(--py-surface-0); color: var(--py-ink); font: 400 14px/20px var(--py-font-ui); resize: vertical; }
+.py-textarea:focus { outline: 0; border-color: var(--py-brand); box-shadow: 0 0 1px 1px var(--py-brand); }
+@media (max-width: 560px) { .pd-row { grid-template-columns: 1fr; } }
+
+/* List table: keep the cells on one line so the Dates column fits without scrolling */
+.projects-page .py-pill { white-space: nowrap; }
+.projects-page td .person strong { white-space: nowrap; }
+.projects-page .proj small { max-width: 30ch; }
+.projects-page .pbar { min-width: 96px; }
+.projects-page table { min-width: 860px; }
+
+/* Create / edit: a full page */
+.projects-page.form-page { max-width: 1100px; }
+.pf-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+.pf-main, .pf-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.pf-side { position: sticky; top: 72px; }
+.pf-card { padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 16px; }
+.pf-card h2 { font: 600 15px/22px var(--py-font-ui); margin: 0; }
+.pf-sub { margin: -10px 0 0; font-size: 12px; color: var(--py-ink-muted); }
+.pf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.radio-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.radio-card { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 1px solid var(--py-border-control); border-radius: var(--py-radius-lg); cursor: pointer; background: var(--py-surface-0); }
+.radio-card:hover { background: var(--py-surface-1); }
+.radio-card:has(input:checked) { border-color: var(--py-brand); box-shadow: 0 0 0 1px var(--py-brand); background: var(--py-brand-subtle); }
+.radio-card:has(input:focus-visible) { outline: 2px solid var(--py-focus-ring); outline-offset: 2px; }
+.radio-card input { position: absolute; opacity: 0; pointer-events: none; }
+.radio-card .rc-ic { width: 32px; height: 32px; border-radius: 8px; background: var(--py-surface-2); display: grid; place-items: center; flex-shrink: 0; color: var(--py-ink-muted); }
+.radio-card:has(input:checked) .rc-ic { background: var(--py-brand); color: var(--py-on-brand); }
+.radio-card strong { display: block; font-weight: 600; font-size: 13px; }
+.radio-card small { display: block; margin-top: 2px; font-size: 12px; line-height: 16px; color: var(--py-ink-muted); }
+.pf-preview { gap: 12px; }
+.pv-top { display: flex; align-items: center; gap: 10px; }
+.pv-name { font: 600 18px/24px var(--py-font-ui); letter-spacing: -.02em; word-break: break-word; }
+.pv-facts { display: flex; flex-direction: column; margin-top: 4px; }
+.pv-facts div { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--py-border); font-size: 12px; }
+.pv-facts dt { color: var(--py-ink-muted); } .pv-facts dd { font-weight: 500; text-align: right; }
+.pv-facts .mono { font-family: var(--py-font-mono); }
+.pf-bar { position: sticky; bottom: 0; z-index: 4; display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; padding: 12px 0; background: linear-gradient(to top, var(--py-surface-1) 70%, transparent); }
+@media (max-width: 900px) { .pf-grid { grid-template-columns: 1fr; } .pf-side { position: static; order: -1; } }
+@media (max-width: 560px) { .pf-row, .radio-cards { grid-template-columns: 1fr; } }

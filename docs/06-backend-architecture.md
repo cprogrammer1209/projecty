@@ -80,15 +80,17 @@ session ──SupportSessionExpiredEvent──▶ impersonation
 | Module | Owns | Exposes (`api/`) |
 |---|---|---|
 | `access` | `MemberAccess` (portal, user, profile key, permissions, active), `ProcessedEvent`; the Kafka listener on `projecty.member`; the portal-access port the security filter needs | `MemberAccessLookUpService.findMemberAccess` |
-| `project` | `Project`, `ProjectMember`, `ProjectActivity`; every `/api/work/projects*` and `/api/work/project-statuses` endpoint; the `custom_values` and `layout_id` columns of `project`; `PUT /api/work/projects/{id}/layout`; `PATCH /api/work/projects/{id}` is a partial update (only the properties sent change, `null` clears a date, the description or an answer) | — (nothing else needs it yet). Implements `CustomValueHolder` so `customfield` can count and clear its answers and count the projects on a layout |
-| `customfield` | `CustomField`, `CustomFieldOption`, `CustomFieldUniqueValue`, `Layout`, `LayoutSection`, `LayoutField`; every `/api/work/custom-fields*` and `/api/work/layouts*` endpoint; the validator that checks every custom answer (see its README) | `CustomFieldLookUpService` (`findFields`, `validate` (per layout), `changedKeys`), `LayoutLookUpService` (`findActiveLayouts`, `getLayout`, `getDefaultLayoutId`), `CustomFieldWriteService.reserveUniqueValues`, `CustomValueHolder` (implemented by modules that store answers), `CustomFieldResponseDTO` |
+| `project` | `Project`, `ProjectMember`, `ProjectActivity`; every `/api/work/projects*` and `/api/work/project-statuses` endpoint; the `custom_values`, `layout_id` and `task_layout_id` columns of `project`; `PUT /api/work/projects/{id}/layout` and `/task-layout`; `PATCH /api/work/projects/{id}` is a partial update (only the properties sent change, `null` clears a date, the description or an answer) | `ProjectLookUpService.findVisibleProject` (the project if the user may see it, as `ProjectSummaryDTO(id, key, name, taskLayoutId)`). Implements `CustomValueHolder` so `customfield` can count and clear its answers and count the projects on a layout |
+| `customfield` | `CustomField`, `CustomFieldOption`, `CustomFieldUniqueValue`, `Layout`, `LayoutSection`, `LayoutField`, `LayoutStatus` (statuses of TASK layouts); every `/api/work/custom-fields*` and `/api/work/layouts*` endpoint (including `/layouts/{id}/statuses*`); the validator that checks every custom answer (see its README) | `CustomFieldLookUpService` (`findFields`, `validate` (per layout), `changedKeys`), `LayoutLookUpService` (`findActiveLayouts`, `getLayout`, `getDefaultLayoutId`, `findStatuses`, `getStatus`), `CustomFieldWriteService.reserveUniqueValues`, `CustomValueHolder` and `StatusUsageHolder` (implemented by modules that store answers or statuses), `CustomFieldResponseDTO` |
+| `task` | `TaskList`, `Task`, `TaskComment`, `TaskActivity`; every `/api/work/projects/{id}/task-lists`, `/projects/{id}/tasks`, `/task-lists/*`, `/tasks/*` and `/task-comments/*` endpoint; the `task_sequence` numbering (`KEY-T<n>`, never reused) | — (nothing needs it yet). Implements `CustomValueHolder` and `StatusUsageHolder`; reads projects only through `ProjectLookUpService`. Contract: `docs/task-api-contract.md` |
 | `outbox` | `OutboxEvent`; the relay that publishes Work's events (copy of Platform's) | `OutboxWriteService.publish` |
 | `shared` | `PermissionConstants` (names Platform grants), `OutboxEventConstants` | — |
 | `external/broker` | Kafka publisher and topic creation (copy of Platform's) | `BrokerPublisher` |
 
 ```
 project ──▶ access.api, outbox.api, customfield.api   (field and layout ports)
-customfield ──▶ access.api, outbox.api            (never imports project: it calls the CustomValueHolder that project implements)
+task ──▶ access.api, outbox.api, customfield.api, project.api   (project never calls task)
+customfield ──▶ access.api, outbox.api            (never imports project or task: it calls the CustomValueHolder and StatusUsageHolder they implement)
 outbox  ──▶ external/broker
 Platform ──projecty.member events──▶ access
 ```

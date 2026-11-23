@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Task view samples · ProjectY</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font: 400 14px/20px Inter, system-ui, sans-serif; color: #1b2230; background: #f6f7f9; padding: 40px 24px 60px; }
+.page { max-width: 1040px; margin: 0 auto; }
+h1 { font: 600 26px/1.2 Inter, sans-serif; letter-spacing: -.03em; }
+.lead { margin: 8px 0 26px; color: #5b6578; max-width: 75ch; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+a.card { display: block; background: #fff; border: 1px solid #dfe3ea; border-radius: 12px; padding: 18px; color: inherit; text-decoration: none; transition: box-shadow .12s, transform .12s; }
+a.card:hover { box-shadow: 0 8px 24px rgba(20, 30, 50, .1); transform: translateY(-2px); }
+.sw { height: 74px; border-radius: 8px; margin-bottom: 14px; display: flex; overflow: hidden; border: 1px solid #e6e9ef; }
+.sw i { display: block; height: 100%; }
+a.card h2 { font: 600 16px/24px Inter, sans-serif; }
+a.card p { color: #5b6578; font-size: 13px; margin-top: 4px; }
+h3 { font: 600 16px/24px Inter, sans-serif; margin: 34px 0 10px; }
+table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #dfe3ea; border-radius: 12px; overflow: hidden; font-size: 13px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-bottom: 1px solid #edf0f4; }
+th { background: #fafbfc; font-weight: 600; color: #3a4457; }
+td:first-child { font-weight: 500; width: 17%; color: #3a4457; }
+tr:last-child td { border-bottom: 0; }
+.note { margin-top: 26px; font-size: 13px; color: #5b6578; max-width: 80ch; line-height: 1.6; }
+.note b { color: #1b2230; font-weight: 500; }
+</style>
+</head>
+<body><div class="page">
+  <h1>Task view: three styles to choose from</h1>
+  <p class="lead">The same sample project (Website Revamp, key WEB: 3 task lists, 18 tasks) shown the way Zoho Projects, Linear and Jira show it. Open each one and try the list, the board (drag a card to another column), and the task detail.</p>
+  <div class="grid">
+    <a class="card" href="task-zoho.html"><div class="sw"><i style="width:12%;background:#263238"></i><i style="flex:1;background:#fff"></i><i style="width:26%;background:#eaf2fd"></i></div><h2>Zoho style</h2><p>Tasks grouped under task-list headers with a column table. Task detail is a full page: details on the left, content in the middle, comment and activity tabs on the right.</p></a>
+    <a class="card" href="task-linear.html"><div class="sw"><i style="width:22%;background:#f6f6f8"></i><i style="flex:1;background:#fcfcfd"></i></div><h2>Linear style</h2><p>Dense, quiet rows with inline pickers on the status, priority and person. Keyboard first (J/K, S, P, A, C, Space to peek). Issue page with properties on the right.</p></a>
+    <a class="card" href="task-jira.html"><div class="sw"><i style="width:22%;background:#fff;border-right:1px solid #dcdfe4"></i><i style="flex:1;background:#f7f8f9"></i><i style="width:26%;background:#e9f2ff"></i></div><h2>Jira style</h2><p>Backlog sections, a List table and a board with swimlanes. Detail opens as a drawer or modal with a status transition button and a Details panel.</p></a>
+  </div>
+
+  <h3>How they compare, in plain words</h3>
+  <table>
+    <thead><tr><th></th><th>Zoho Projects</th><th>Linear</th><th>Jira</th></tr></thead>
+    <tbody>
+      <tr><td>Feels like</td><td>A familiar business app: white page, blue buttons, lots of labelled columns.</td><td>A fast editor: very dense, almost no borders, everything is a shortcut.</td><td>A work tracker for big teams: lozenges, badges and a toolbar full of filters.</td></tr>
+      <tr><td>List view</td><td>Task-list headers you can fold; a column table with owner, dates, priority, status and progress.</td><td>One thin row per task, grouped by status. Hover shows what you can click.</td><td>Backlog sections (like sprints) and a plain List table with sortable columns.</td></tr>
+      <tr><td>Changing a value</td><td>Click a cell, pick from a menu; or open the task.</td><td>Click the little icon, or press S, P or A on the row. No page change.</td><td>Click the status lozenge or avatar in the row; full edit in the drawer.</td></tr>
+      <tr><td>Board</td><td>Status columns with coloured headers and soft cards.</td><td>Narrow columns with small, borderless cards.</td><td>Capital-letter columns, cards with type icon and key, optional swimlanes.</td></tr>
+      <tr><td>Task detail</td><td>Full page, three columns: details, content, comments.</td><td>Peek panel over the list, or full page with properties on the right.</td><td>Drawer beside the list, or a modal over the board, with a Details panel.</td></tr>
+      <tr><td>Best when</td><td>Non-technical teams who like seeing everything labelled.</td><td>Small, fast teams who live in the keyboard.</td><td>Large teams with many fields, workflows and reports.</td></tr>
+      <tr><td>Cost</td><td>Wide rows need horizontal room; phone needs a different layout.</td><td>Easy to miss options hidden behind shortcuts.</td><td>Many controls on screen; can feel heavy for simple projects.</td></tr>
+    </tbody>
+  </table>
+
+  <p class="note"><b>What is the same in all three:</b> the data (task-model.js), four statuses (Open, In Progress, In Review with type Open, Closed with type Closed), priorities, owners, due dates (some overdue), sub tasks, tags, two custom fields (Effort and Customer visible), comments and activity on several tasks, grouping, filters, quick add, a view switcher and a portal-level My tasks entry in the sidebar. Data lives in memory (reload resets it).</p>
+</div></body>
+</html>
