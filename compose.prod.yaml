@@ -1,0 +1,140 @@
+# Production stack for ProjectY: pulls the images that GitHub Actions pushes to Docker Hub.
+# Runs on a GitHub Codespace or any Docker host. Frontends are on Vercel, so they are optional here.
+#
+#   cp .env.prod.example .env      # then fill in the values
+#   docker compose -f compose.prod.yaml pull
+#   docker compose -f compose.prod.yaml up -d
+#   docker compose -f compose.prod.yaml --profile frontends up -d    # also serve the frontends from containers
+name: projecty-prod
+
+services:
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: platform
+      POSTGRES_USER: projecty
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U projecty -d platform"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Single-node Kafka (KRaft), reachable only from this compose network.
+  kafka:
+    image: apache/kafka:4.0.0
+    restart: unless-stopped
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: INTERNAL://:29092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_LOG_RETENTION_HOURS: 168
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:29092 > /dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
+
+  # Catches all outgoing mail unless SMTP_HOST points at a real provider. Inbox is on localhost:8025 only.
+  mailpit:
+    image: axllent/mailpit:v1.32.0
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8025:8025"
+
+  platform-service:
+    image: ${DOCKERHUB_USER:?set DOCKERHUB_USER}/projecty-platform-service:${IMAGE_TAG:-production}
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/platform
+      SPRING_DATASOURCE_USERNAME: projecty
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_MAIL_HOST: ${SMTP_HOST:-mailpit}
+      SPRING_MAIL_PORT: ${SMTP_PORT:-1025}
+      SPRING_MAIL_USERNAME: ${SMTP_USERNAME:-}
+      SPRING_MAIL_PASSWORD: ${SMTP_PASSWORD:-}
+      PROJECTY_FRONTEND_URL: ${FRONTEND_URL:?set FRONTEND_URL}
+      PROJECTY_CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?set CORS_ALLOWED_ORIGINS}
+      PROJECTY_TOKEN_ISSUER: ${PUBLIC_API_URL:?set PUBLIC_API_URL}
+      PROJECTY_REFRESH_COOKIE_SECURE: "true"
+      PROJECTY_ADMIN_REFRESH_COOKIE_SECURE: "true"
+      PROJECTY_ADMIN_BOOTSTRAP_EMAIL: ${ADMIN_BOOTSTRAP_EMAIL:?set ADMIN_BOOTSTRAP_EMAIL}
+      PROJECTY_ADMIN_BOOTSTRAP_PASSWORD: ${ADMIN_BOOTSTRAP_PASSWORD:?set ADMIN_BOOTSTRAP_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8081/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  work-service:
+    image: ${DOCKERHUB_USER}/projecty-work-service:${IMAGE_TAG:-production}
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/work
+      SPRING_DATASOURCE_USERNAME: projecty
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      PROJECTY_CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      PROJECTY_TOKEN_ISSUER: ${PUBLIC_API_URL}
+      PROJECTY_TOKEN_JWK_SET_URI: http://platform-service:8081/.well-known/jwks.json
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8082/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    depends_on:
+      platform-service:
+        condition: service_healthy
+
+  # Optional: serve the Angular apps from containers instead of Vercel.
+  frontend:
+    profiles: ["frontends"]
+    image: ${DOCKERHUB_USER}/projecty-frontend:${IMAGE_TAG:-production}
+    restart: unless-stopped
+    ports:
+      - "4200:80"
+    depends_on:
+      - platform-service
+      - work-service
+
+  admin-console:
+    profiles: ["frontends"]
+    image: ${DOCKERHUB_USER}/projecty-admin-console:${IMAGE_TAG:-production}
+    restart: unless-stopped
+    ports:
+      - "4300:80"
+    depends_on:
+      - platform-service
+
+volumes:
+  postgres-data:
+  kafka-data:

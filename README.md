@@ -49,6 +49,21 @@ cd admin-console && npm start                     # Admin console :4300
 
 Local credentials are for development only. To reset all data: `docker compose down -v`.
 
+### Everything in Docker
+
+```bash
+docker compose --profile apps up --build -d       # infrastructure plus platform-service, work-service, frontend, admin-console
+```
+
+Same URLs and ports as above (the Angular apps are served by nginx, which proxies `/api` and `/api/work`). Stop host-run copies first, because the ports are the same. Plain `docker compose up -d` still starts only the infrastructure.
+
+## Branches, releases and production
+
+- `PROJECTY_DEV` is where daily work happens. `PROJECTY_PRODUCTION` is the release branch.
+- A pull request into `PROJECTY_PRODUCTION` builds the Docker image (no push). Merging it runs `.github/workflows/docker-publish.yml`, which pushes `<user>/projecty-<repo>:production` and `:<sha>` to Docker Hub. Each of the four app repos needs the secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN`.
+- Production runs from `compose.prod.yaml` (Codespace or any Docker host): `cp .env.prod.example .env`, fill it in, then `docker compose -f compose.prod.yaml pull && docker compose -f compose.prod.yaml up -d`. Add `--profile frontends` to serve the Angular apps from containers too.
+- The frontends are hosted on Vercel. Each has a `vercel.json` that rewrites `/api` to the backend URL: replace `REPLACE-WITH-CODESPACE-NAME` with the Codespace name and make ports 8081 and 8082 public. A Codespace stops when idle and its URL changes if recreated, so treat it as staging.
+
 Work has its own database, `work`. On a fresh volume `docker/postgres/init/01-create-work-db.sql` creates it; on an existing volume run `docker compose exec postgres psql -U projecty -d platform -c "CREATE DATABASE work"` once.
 
 ## Documentation map
