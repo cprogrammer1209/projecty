@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ProjectY Infrastructure Map</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%233b5bdb'/%3E%3Cpath d='M8 9h6v6H8zM18 9h6v6h-6zM13 19h6v6h-6z' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/infra.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">ProjectY <span>infrastructure map</span></div>
+    <nav id="nav" aria-label="Sections">
+      <a href="#overview">Overview</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#flows">Flows</a>
+      <a href="#tools">Tools</a>
+      <a href="#roadmap">Roadmap</a>
+    </nav>
+    <button class="icon-btn" id="theme" type="button" aria-label="Toggle light and dark theme">Theme</button>
+  </header>
+
+  <main>
+    <section id="overview" class="hero">
+      <div class="eyebrow">Learn by building</div>
+      <h1>An event-driven microservice map of ProjectY</h1>
+      <p>What is already built, what you can add next, how each piece works and in which order to learn it. Everything here is clickable: boxes in the diagrams explain themselves, and link to a tool card with what it does in this project and what to practise.</p>
+      <div class="stats" id="stats"></div>
+      <div class="principles">
+        <div class="principle"><h3>Database per service</h3><p>Platform and Work each own their data. Nobody reads another service's tables.</p></div>
+        <div class="principle"><h3>Events, not calls</h3><p>Services react to Kafka events. Adding a consumer never changes a producer.</p></div>
+        <div class="principle"><h3>Reliable by construction</h3><p>Transactional outbox on the way out, idempotent consumer on the way in.</p></div>
+        <div class="principle"><h3>Verify locally</h3><p>Tokens are checked with Platform's public keys; permissions come from a local copy built from events.</p></div>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <div class="sec-head">
+        <div class="eyebrow">Diagram</div>
+        <h2>Architecture</h2>
+        <p>Compare what runs today with where the project can go. Dashed outlines mean not built yet.</p>
+      </div>
+      <div id="arch"></div>
+    </section>
+
+    <section id="flows">
+      <div class="sec-head">
+        <div class="eyebrow">Flowcharts</div>
+        <h2>How things flow</h2>
+        <p>The important paths, step by step, including the failure branches.</p>
+      </div>
+      <div id="flowset"></div>
+    </section>
+
+    <section id="tools">
+      <div class="sec-head">
+        <div class="eyebrow">Catalogue</div>
+        <h2>Tools and applications</h2>
+        <p>Each card says what the tool is, how it would be used in ProjectY, and what to practise. Click a card to open it.</p>
+      </div>
+      <div class="toolbar">
+        <input type="search" id="q" placeholder="Search tools (kafka, cache, tracing, saga ...)" aria-label="Search tools">
+        <div class="chips" id="statusChips" role="group" aria-label="Filter by status"></div>
+      </div>
+      <div class="chips" id="catChips" role="group" aria-label="Filter by category"></div>
+      <div class="count" id="count"></div>
+      <div id="toolList"></div>
+    </section>
+
+    <section id="roadmap">
+      <div class="sec-head">
+        <div class="eyebrow">Suggested order</div>
+        <h2>Learning roadmap</h2>
+        <p>Ten steps, each building on the last. Tick a step when you have finished it; the progress is kept in this browser.</p>
+      </div>
+      <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+      <div class="count" id="progressText"></div>
+      <ol class="road" id="road"></ol>
+    </section>
+  </main>
+
+  <footer>
+    Static page: plain HTML, CSS and JS, no build and no backend. Content lives in <code>js/tools.js</code> (tools, roadmap) and <code>js/diagrams.js</code> (diagrams). Facts about today's architecture come from <code>docs/04</code>, <code>06</code> and <code>07</code>.
+  </footer>
+
+  <script src="js/tools.js"></script>
+  <script src="js/diagrams.js"></script>
+  <script src="js/diagram.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

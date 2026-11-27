@@ -46,6 +46,7 @@ The standard lives in **[ARCHITECTURE.md](../ARCHITECTURE.md)** at the repo root
 | `shared` | `OpaqueTokenHelper` (account, session, admin, impersonation); `AuditEventConstants` (values every auditing module uses) | — |
 | `external/mail` | SMTP sending | `MailService` |
 | `external/broker` | Kafka publisher (`BrokerPublisher`; `projecty.broker.type=logging` only logs, used by tests) and topic creation | `BrokerPublisher` |
+| `external/redis` | Key-value port over Redis (`KeyValueStore`: get, put with TTL, delete, exists, increment, time to live) and `CacheService` on top of it (hit-or-miss `read` with a loader, `peek`/`put` for batch lookups, versions with `bumpAfterCommit`, `evictAfterCommit`). `projecty.redis.type=memory` keeps it in-process (used by tests). **Fails open**: if Redis is down callers see an empty store, and after one failure Redis is left alone for `projecty.redis.backoff` so an outage costs one timeout, not one per call | `KeyValueStore` |
 
 ```
 session       ──▶ account.api, member.api, token.api
@@ -71,6 +72,13 @@ session ──SupportSessionExpiredEvent──▶ impersonation
 - Permission names live in `modules/shared/constants/PermissionConstants`. Profiles grant them in `MemberConstants.SYSTEM_PROFILES`.
 - **Two service beans in `member`:** the read-only `MembershipService` (repositories + `portal.api`) and the management `MemberService` (needs `account.api`). This split prevents a bean cycle, because `account` reads memberships for `/api/me`.
 
+**Redis (cache, rate limits, token denylist).** One Redis shared with Work, always behind `external/redis/KeyValueStore`. If it is down, everything falls back to the database and nothing is throttled.
+- **Membership cache.** `member/internal/helper/MemberAccessCache` holds "active member + permissions" per portal and user (`platform:access:{portalId}:{userId}`, TTL `projecty.redis.access-ttl`). `MembershipServiceImpl` reads through it, so the two per-request checks cost one lookup. `MemberServiceImpl.publish` (every member change goes through it) evicts the entry after the transaction commits. The TTL covers a Flyway permission change.
+- **Rate limits.** `@RateLimit(RateLimitConstants.X)` on a controller method, enforced by `RateLimitInterceptor` (registered before `PermissionInterceptor`): a fixed window per client IP and name, `platform:ratelimit:{name}:{ip}`. Names and numbers: `projecty.rate-limit.limits.*` (login, refresh, signup, email, token). Over the limit: 429 `RATE_LIMITED` with `Retry-After`. The IP is `request.getRemoteAddr()`, so behind a proxy `SERVER_FORWARD_HEADERS_STRATEGY=native` must be set (the compose files do) or every user shares the proxy's address.
+- **Cached reads (phase 2).** Same service-layer pattern everywhere: the service method hands its database code to a small cache helper as a loader, so a hit never runs it. `portal/.../PortalCache` (`findPortal`, `findByIds`, `getCurrent`; evicted by `updateSettings`), `account/.../UserCache` (`findById`, `findByIds`, `getMe`; evicted by sign-in, email verification, password reset and preference changes), `member/.../MemberResponseCache` (active portal ids, `/api/portal/me`, member list, profile list, invitation list). A member change evicts the user's entries and moves the portal's members version from the one place every member change goes through, `MemberServiceImpl.publish`; invitation changes move the invitations version. The keys are listed in `modules/shared/constants/CacheKeyConstants` because a module evicts keys another module caches (a member change drops the account module's `/api/me`). Lists look up their users and portals with one cache probe per id and a single database call for the misses.
+- **Not cached on purpose:** admin tenant and audit screens (rare and constantly changing), the invitation preview and slug check (keyed by user input).
+- **Token denylist.** Every session revocation (logout, refresh-token reuse, password reset, support session end, admin logout) calls `TokenWriteService.denySession`, which writes `denylist:sid:{sessionId}` for the access-token lifetime. `token/internal/helper/DenylistValidator` (in `JwtConfig`) refuses tokens whose `sid` is on it, so a revoked session stops working at once instead of after up to 15 minutes. The key is a **shared contract** with Work (see `docs/07-events.md`, Redis keys).
+
 **Two kinds of access token, one signing key.** Customer tokens have audience `projecty-api` (role USER); admin console tokens have audience `projecty-admin` (role PLATFORM_ADMIN). `SecurityConfig` gives `/api/admin/**` to PLATFORM_ADMIN and the rest of `/api/**` to USER, so neither token works on the other side. A support session is a normal customer token for the target user plus `act` (the admin) and `imp` (session id and end time).
 
 ## Part 4: Work service module map
@@ -86,6 +94,7 @@ session ──SupportSessionExpiredEvent──▶ impersonation
 | `outbox` | `OutboxEvent`; the relay that publishes Work's events (copy of Platform's) | `OutboxWriteService.publish` |
 | `shared` | `PermissionConstants` (names Platform grants), `OutboxEventConstants` | — |
 | `external/broker` | Kafka publisher and topic creation (copy of Platform's) | `BrokerPublisher` |
+| `external/redis` | Key-value port and `CacheService` (copy of Platform's; adds `projecty.redis.definitions-ttl`) | `KeyValueStore` |
 
 ```
 project ──▶ access.api, outbox.api, customfield.api   (field and layout ports)
@@ -94,5 +103,20 @@ customfield ──▶ access.api, outbox.api            (never imports project o
 outbox  ──▶ external/broker
 Platform ──projecty.member events──▶ access
 ```
+
+**Redis in Work.**
+- **Membership cache.** `access/internal/helper/MemberAccessCache` (`work:access:{portalId}:{userId}`) serves `isActiveMember` and `permissions`. `MemberAccessServiceImpl.apply` evicts the entry after the transaction commits, for every member event it applies, so a deactivation takes effect as soon as the event is consumed (about 2 s after the change, including Platform's outbox relay).
+- **Definition cache.** `customfield/internal/helper/DefinitionCache` caches `findFields`, `getLayout` and `findStatuses` as JSON under `work:defs:{portalId}:{version}:{what}`. Every field or layout change bumps `work:defs:{portalId}:ver` after commit (inside the existing `publish` of `CustomFieldServiceImpl`, `LayoutServiceImpl` and `LayoutStatusServiceImpl`), so old entries are never read again and expire after `definitions-ttl`. Only a read-only transaction uses the cache: a transaction that changes data must see its own writes. `findActiveLayouts` and `getDefaultLayoutId` are not cached because they can create the default layout. Project visibility is not cached either, because it depends on the user, the project's members and the trash.
+- **Cached reads (phase 2).** Service-layer helpers `project/.../ProjectResponseCache` and `task/.../TaskResponseCache` wrap `findVisibleProject`, project detail, project list, task detail and the per-project task list. The same `findMemberAccess` the services call for their `caller()` now reads the cached member-access entry too (profile key included).
+  - **Keys carry who is asking.** A response differs per user (`canEdit`, visibility, a Client sees only EXTERNAL lists), so every key has the user and a fingerprint of their access (`modules/shared/helper/CacheKeyHelper`: admin/client plus a hash of the sorted permissions). A profile or permission change gives a new key by itself.
+  - **Keys carry the versions of what they are built from:** the portal's definitions version, and for project data one of three versions owned by `project/api/ProjectCacheService`: the **project** version (the project row, members, visibility), the **task** version of a project (tasks, comments, task lists; also moved by every project change, because task views embed the project's key, name and visibility) and the **list** version of the portal's projects. `ProjectServiceImpl.publish` (every project write) calls `projectChanged`; `TaskHistory.publish`/`publishList` (every task, comment and task-list write) call `tasksChanged`. The lazily created "General" list publishes no event, so `TaskHistory.listsChanged` is called there. Versions move after commit; they are read before the database.
+  - **Task detail** only knows the task id, so a `work:taskproj:{portal}:{task}` entry remembers which project it belongs to (tasks never change project; if a move is added, evict it there).
+  - **Not cached:** `/tasks` across projects (N+1 and an offset cursor), the task-lists endpoint (not read-only: it can create the default list), comments list, project trash.
+- **Token denylist.** `common/security/helper/DenylistValidator` (in `JwtConfig`) refuses a token whose `sid` is at `denylist:sid:{sessionId}`, which Platform writes when a session ends.
+
+**Accepted limits of the Redis caches (both services).**
+- A cached read is stale for at most its TTL (`response-ttl` 60 s, definitions 10 min) in two cases: a write made while Redis was down (its version bump or eviction could not happen, and entries written before the outage come back with Redis), and display data that no write moves, such as `lastLoginAt` in the member list.
+- Only a read-only transaction uses the cache, so a transaction that changes data always reads fresh values; the cost is that write paths (create or edit a task) do not benefit.
+- JSON round trip: responses are cached as JSON and parsed back into the DTO records; `Object` and `Map<String,Object>` values come back as plain JSON types, which the live checks showed to be byte-identical to a fresh response.
 
 `common/` is copied from Platform (response envelope, errors, `X-Portal-Id` filter, `@RequirePermission`); `JwtConfig` differs: it checks Platform's tokens through `projecty.token.jwk-set-uri`, `issuer` and `audience`. The copied outbox, broker and `common/` code is duplicated on purpose for now; a shared library is a later cleanup.

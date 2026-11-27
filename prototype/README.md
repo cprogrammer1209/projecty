@@ -19,6 +19,8 @@ prototype/
       css/  js/  assets/
     explorations/        one-off comparisons, not part of a step (inline-edit.html: HubSpot, Zoho and Linear style editing)
     step5/ ...           added when each step is built, copied from the step before
+  infra/                 static infrastructure map (not a screen prototype): architecture today and target, flowcharts, tool catalogue and learning roadmap for the event-driven services; open infra/index.html
+    index.html  css/  js/
 ```
 
 The plan for what each step contains is in [`docs/project-plan.html`](../docs/project-plan.html) (open it, click a module).

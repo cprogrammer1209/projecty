@@ -23,6 +23,20 @@ services:
       timeout: 3s
       retries: 10
 
+  # Shared by platform-service and work-service: membership cache, rate limits, token denylist, definition cache.
+  # Nothing here is the source of truth, so it needs no volume.
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    labels:
+      org.springframework.boot.ignore: "true"
+
   mailpit:
     image: axllent/mailpit:v1.32.0
     ports:
@@ -91,6 +105,9 @@ services:
       SPRING_DATASOURCE_USERNAME: projecty
       SPRING_DATASOURCE_PASSWORD: projecty
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_DATA_REDIS_HOST: redis
+      # Rate limits count per client IP: trust X-Forwarded-For from the nginx containers (private addresses only).
+      SERVER_FORWARD_HEADERS_STRATEGY: native
       # Same-origin through the frontend containers' nginx, so the browser URL is localhost:4200.
       PROJECTY_TOKEN_ISSUER: http://localhost:8081
     healthcheck:
@@ -103,6 +120,8 @@ services:
       postgres:
         condition: service_healthy
       kafka:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     labels:
       org.springframework.boot.ignore: "true"

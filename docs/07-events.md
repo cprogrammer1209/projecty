@@ -156,6 +156,19 @@ Migration `V7` prepared the first delivery:
 
 Published rows are deleted after `projecty.outbox.retention` (default 7 days). Kafka keeps messages for 7 days locally; a consumer that needs older history has to be started within that window or fed by a new backfill.
 
+## Redis keys (shared contract)
+
+Redis is not a message bus here and nothing is the source of truth in it, but one key is shared between services, so its format is a contract like an event.
+
+| Key | Written by | Read by | Value and lifetime |
+|---|---|---|---|
+| `denylist:sid:{sessionId}` | Platform, when a session ends (logout, refresh-token reuse, password reset, support session ended, admin logout) | Platform and Work, in the JWT validator | `1`, for the access-token lifetime (`projecty.token.access-token-ttl`, 15 min) |
+
+Every other key belongs to one service and is prefixed with it. Platform: `platform:access:…`, `platform:ratelimit:…`, `platform:user:{id}`, `platform:me:{user}`, `platform:portal:{id}`, `platform:portal-current:{id}`, `platform:portals:{user}`, `platform:portal-me:{portal}:{user}`, `platform:resp:members|profiles|invitations:{portal}[:{version}]` and the versions `platform:members:{portal}:ver`, `platform:invitations:{portal}:ver`. Work: `work:access:…`, `work:defs:{portal}:…`, `work:visible:…`, `work:resp:project|projects|task|tasks:…`, `work:taskproj:{portal}:{task}` and the versions `work:proj:{portal}:{project}:ver`, `work:projtasks:{portal}:{project}:ver`, `work:projlist:{portal}:ver`. Rules:
+- Changing the format of `denylist:sid:` is a breaking change for Work: change both services in one release.
+- Redis may be down. Writers and readers both treat an unavailable Redis as "nothing there", so a revoked token then lives until its normal expiry.
+- Both services must use the same Redis instance (same host and password), otherwise the denylist never reaches Work.
+
 ## Known limits
 
 - An event that can never be published (a topic missing from the list, a message over 1 MB) stays at the head of the queue and the relay logs a warning on every poll, so later events wait. A dead-letter table is future work.
